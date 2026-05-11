@@ -1,10 +1,11 @@
 using UnityEngine;
+using Unity.Cinemachine;
 
 public class SpawnJugador : MonoBehaviour
 {
     public GameObject[] personajes;
     public Transform puntoSpawn;
-    public CamaraSeguir camara;
+    public CinemachineCamera vcamPasillo;
 
     void Start()
     {
@@ -16,6 +17,6 @@ public class SpawnJugador : MonoBehaviour
             Quaternion.identity
         );
 
-        camara.objetivo = jugador.transform;
+        vcamPasillo.Target.TrackingTarget = jugador.transform;
     }
 }
