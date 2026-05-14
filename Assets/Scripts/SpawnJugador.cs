@@ -18,5 +18,8 @@ public class SpawnJugador : MonoBehaviour
         );
 
         vcamPasillo.Target.TrackingTarget = jugador.transform;
+        // el database sabe el personaje activo
+            PersonajeType tipo = (PersonajeType)personajeSeleccionado;
+    BullyingDatabase.Instance.SetPersonaje(tipo);
     }
 }
