@@ -55,7 +55,6 @@ public class ControlCorreo : MonoBehaviour
 
     public UnityEvent OnStatsChanged;
 
-    int indice = 0;
     int dia = 1;
     int errores = 0;
     int correctos = 0;
