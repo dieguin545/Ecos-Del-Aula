@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine.Events;
 
 [System.Serializable]
 public class Correo
@@ -14,7 +15,6 @@ public class Correo
     public string texto;
 
     public bool esBullying;
-
 }
 
 [System.Serializable]
@@ -51,8 +51,10 @@ public class ControlCorreo : MonoBehaviour
     public List<Correo> correosDificiles;
 
     List<Correo> correosActuales;
+    Queue<Correo> colaCorreos = new Queue<Correo>();
 
-    int indice = 0;
+    public UnityEvent OnStatsChanged;
+
     int dia = 1;
     int errores = 0;
     int correctos = 0;
@@ -82,18 +84,15 @@ public class ControlCorreo : MonoBehaviour
 
     void Start()
     {
-         panelAviso.SetActive(false);
-         panelFinDia.SetActive(false);
+        panelAviso.SetActive(false);
+        panelFinDia.SetActive(false);
 
-         rutaArchivo = Path.Combine(Application.persistentDataPath, "partida_bullying.json");
+        rutaArchivo = Path.Combine(Application.persistentDataPath, "partida_bullying.json");
 
-         CargarArchivo();
-         CargarCorreos();
-         ActualizarErrores();
-         GuardarTamanosNormales();
-
-
-
+        CargarArchivo();
+        CargarCorreos();
+        ActualizarErrores();
+        GuardarTamanosNormales();
     }
 
     void CargarCorreos()
@@ -113,7 +112,12 @@ public class ControlCorreo : MonoBehaviour
 
         MezclarCorreos();
 
-        indice = 0;
+        colaCorreos.Clear();
+        foreach (Correo c in correosActuales)
+        {
+            colaCorreos.Enqueue(c);
+        }
+
         correosClasificados = 0;
         activo = true;
 
@@ -136,89 +140,70 @@ public class ControlCorreo : MonoBehaviour
 
     void MostrarCorreo()
     {
-        if (indice < correosActuales.Count)
+        if (colaCorreos.Count > 0)
         {
-            string remitente = correosActuales[indice].remitente;
+            Correo correoActual = colaCorreos.Peek();
+            string remitente = correoActual.remitente;
 
-            if (tieneFiltroSpam)
+            if (tieneFiltroSpam == true)
             {
                 if (!remitente.Contains("@uninorte.edu.co"))
                 {
-                    remitente += " [SOSPECHOSO]";
+                    remitente = remitente + " [SOSPECHOSO]";
                 }
             }
 
+            // Usamos 'correoActual' para llenar los textos
             textoRemitente.text = remitente;
-            textoAsunto.text = correosActuales[indice].asunto;
-            textoCorreo.text = correosActuales[indice].texto;
+            textoAsunto.text = correoActual.asunto;
+            textoCorreo.text = correoActual.texto;
             textoResultado.text = "";
         }
     }
 
     public void Evaluar(bool decisionJugador)
     {
-        if (!activo)
+        // Si el juego no esta activo o la fila esta vacia, nos salimos
+        if (activo == false || colaCorreos.Count == 0)
         {
             return;
         }
 
-        if (indice >= correosActuales.Count)
-        {
-            return;
-        }
+        // --- PASO CLAVE EDD: Miramos el correo al frente de la fila ---
+        Correo correoActual = colaCorreos.Peek();
 
-        if (decisionJugador == correosActuales[indice].esBullying)
+        if (decisionJugador == correoActual.esBullying)
         {
             textoResultado.text = "Correcto";
             correctos++;
         }
         else
         {
-            if (tieneSeguro && !seguroUsado)
+            if (tieneSeguro == true && seguroUsado == false)
             {
                 seguroUsado = true;
                 textoResultado.text = "Seguro utilizado";
-                MostrarAviso("El seguro evitó un error");
                 correctos++;
                 correosClasificados++;
 
-                float tiempoEsperaSeguro = 0.5f;
+                float esperaSeguro = 0.5f;
+                if (tieneTeclado == true) { esperaSeguro = 0.2f; }
 
-                if (tieneTeclado)
-                {
-                    tiempoEsperaSeguro = 0.2f;
-                }
-
-                Invoke("SiguienteCorreo", tiempoEsperaSeguro);
+                Invoke("SiguienteCorreo", esperaSeguro);
                 return;
             }
 
             textoResultado.text = "Incorrecto";
             errores++;
             ActualizarErrores();
-            MostrarAviso("Clasificaste mal este correo");
 
-            int limiteErrores = 10;
-
-            if (tieneCafe)
-            {
-                limiteErrores = 11;
-            }
-
-            if (errores >= limiteErrores)
-            {
-                activo = false;
-                CancelInvoke("SiguienteCorreo");
-                Invoke("MostrarPantallaFinDia", 1f);
-                return;
-            }
+            OnStatsChanged.Invoke();
         }
 
         correosClasificados++;
 
         float tiempoEspera = 0.5f;
-
-        if (tieneTeclado)
+        if (tieneTeclado == true)
         {
             tiempoEspera = 0.2f;
         }
@@ -238,7 +223,10 @@ public class ControlCorreo : MonoBehaviour
 
     void SiguienteCorreo()
     {
-        indice++;
+        if (colaCorreos.Count > 0)
+        {
+            colaCorreos.Dequeue();
+        }
 
         if (correosClasificados >= 15)
         {
@@ -252,15 +240,13 @@ public class ControlCorreo : MonoBehaviour
             return;
         }
 
-        if (indice < correosActuales.Count)
+        if (colaCorreos.Count > 0)
         {
             MostrarCorreo();
         }
         else
         {
-            indice = 0;
-            MezclarCorreos();
-            MostrarCorreo();
+            CargarCorreos();
         }
     }
 
@@ -375,8 +361,6 @@ public class ControlCorreo : MonoBehaviour
 
         string json = JsonUtility.ToJson(datos, true);
         File.WriteAllText(rutaArchivo, json);
-
-        Debug.Log("Partida guardada en: " + rutaArchivo);
     }
 
     void CargarArchivo()
@@ -389,14 +373,9 @@ public class ControlCorreo : MonoBehaviour
             dineroTotal = datos.dineroTotal;
             diasTrabajados = datos.diasTrabajados;
             ultimoSueldo = datos.ultimoSueldo;
-
-            Debug.Log("Partida cargada desde: " + rutaArchivo);
-        }
-        else
-        {
-            Debug.Log("No existe archivo guardado todavía");
         }
     }
+
     void GuardarTamanosNormales()
     {
         tamRemitenteNormal = textoRemitente.fontSize;
@@ -419,8 +398,6 @@ public class ControlCorreo : MonoBehaviour
             textoResultado.fontSize = 22;
             textoDia.fontSize = 22;
             textoErrores.fontSize = 22;
-
-            MostrarAviso("Modo lectura activado");
         }
         else
         {
@@ -430,9 +407,6 @@ public class ControlCorreo : MonoBehaviour
             textoResultado.fontSize = tamResultadoNormal;
             textoDia.fontSize = tamDiaNormal;
             textoErrores.fontSize = tamErroresNormal;
-
-            MostrarAviso("Modo lectura desactivado");
         }
     }
-
 }
