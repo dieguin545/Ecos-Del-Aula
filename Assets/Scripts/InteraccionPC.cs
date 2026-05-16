@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class InteraccionPC : MonoBehaviour
 {
+    public static bool PCAbierta { get; private set; }
+    public static int FrameCierrePC { get; private set; } = -100;
+
     [Header("UI de la PC")]
     public GameObject canvasPC;
     public GameObject textoInteractuar;
@@ -34,21 +37,15 @@ public class InteraccionPC : MonoBehaviour
             scriptCamara = camaraPrincipal.GetComponent("ControlCamara3D") as Behaviour;
         }
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        usandoPC = false;
+        PCAbierta = false;
     }
 
     void Update()
     {
-        if (usandoPC)
+        if (MenuPausaAccesibilidad.EstaPausado)
         {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            return;
         }
 
         if (jugadorDentro && Input.GetKeyDown(teclaInteractuar))
@@ -72,6 +69,7 @@ public class InteraccionPC : MonoBehaviour
     void EntrarPC()
     {
         usandoPC = true;
+        PCAbierta = true;
 
         if (canvasPC != null)
         {
@@ -100,6 +98,8 @@ public class InteraccionPC : MonoBehaviour
     void SalirPC()
     {
         usandoPC = false;
+        PCAbierta = false;
+        FrameCierrePC = Time.frameCount;
 
         if (canvasPC != null)
         {
