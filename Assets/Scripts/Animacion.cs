@@ -24,11 +24,11 @@ public float velocidad = 5f;
 
         if (movimientoX > 0)
         {
-            transform.localScale = new Vector3(32, 32, 32);
+            transform.localScale = new Vector3(27, 27, 27);
         }
         else if (movimientoX < 0)
         {
-            transform.localScale = new Vector3(-32, 32, 32);
+            transform.localScale = new Vector3(-27, 27, 27);
         }
     }
 }
