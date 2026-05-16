@@ -58,19 +58,19 @@ public class SistemaTiempo : MonoBehaviour
     }
 
     private void AvanzarBloque()
+{
+    bloqueActual++;
+    SistemaGuardado.Instance.GuardarPartida(); // Guarda al cambiar bloque
+    
+    if (bloqueActual >= bloques.Length)
     {
-        bloqueActual++;
-
-        if (bloqueActual >= bloques.Length)
-        {
-            // Se acabó el día
-            TerminarDia();
-            return;
-        }
-
-        ActualizarUI();
-        NotificarBloque(bloques[bloqueActual]);
+        TerminarDia();
+        return;
     }
+
+    ActualizarUI();
+    NotificarBloque(bloques[bloqueActual]);
+}
 
     private void ActualizarUI()
     {
