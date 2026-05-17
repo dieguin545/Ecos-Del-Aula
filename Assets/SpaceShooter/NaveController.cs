@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 [RequireComponent(typeof(Rigidbody))]
 public class NaveController : MonoBehaviour
@@ -15,6 +16,9 @@ public class NaveController : MonoBehaviour
     public float fuerzaEsquive = 12f;
     public float duracionEsquive = 0.18f;
     public float cooldownEsquive = 0.45f;
+    [SerializeField] private int cargasEsquiveMaximas = 3;
+    [SerializeField] private float recargaCargaSegundos = 2.8f;
+    [SerializeField] private float radioRecoleccionPowerUps = 3.25f;
     public KeyCode teclaEsquivarIzquierda = KeyCode.Q;
     public KeyCode teclaEsquivarDerecha = KeyCode.E;
 
@@ -46,10 +50,21 @@ public class NaveController : MonoBehaviour
     private float tiempoEsquive;
     private float siguienteEsquive;
     private float siguienteDisparo;
+    private float temporizadorRecargaEsquive;
+    private float cooldownBase;
+    private float velocidadBalaBase;
+    private float tiempoRestanteDisparoMejorado;
+    private float multiplicadorCooldownDisparo = 1f;
+    private float multiplicadorVelocidadBala = 1f;
+    private int cargasEsquiveActuales;
 
     private float entradaHorizontal;
     private float entradaAdelante;
     private float entradaVertical;
+
+    public event Action<int, int, float> AlActualizarDash;
+
+    public bool EstaEsquivando => tiempoEsquive > 0f;
 
     private void Awake()
     {
@@ -64,10 +79,24 @@ public class NaveController : MonoBehaviour
         {
             camara = Camera.main;
         }
+
+        cooldownBase = cooldown;
+        velocidadBalaBase = velocidadBala;
+        cargasEsquiveActuales = cargasEsquiveMaximas;
+        PrepararRadioRecoleccionPowerUps();
+        EstiloVisualSpaceShooter.AplicarANave(gameObject);
     }
 
     private void Update()
     {
+        if (!EstaPartidaActiva())
+        {
+            direccionMovimiento = Vector3.zero;
+            return;
+        }
+
+        RecargarEsquive();
+        ActualizarDisparoMejorado();
         LeerMovimiento();
         LeerEsquive();
         LeerDisparo();
@@ -76,6 +105,11 @@ public class NaveController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!EstaPartidaActiva())
+        {
+            return;
+        }
+
         MoverNave();
     }
 
@@ -152,18 +186,19 @@ public class NaveController : MonoBehaviour
             return;
         }
 
+        if (cargasEsquiveActuales <= 0)
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(teclaEsquivarIzquierda))
         {
-            direccionEsquive = -camara.transform.right.normalized;
-            tiempoEsquive = duracionEsquive;
-            siguienteEsquive = Time.time + cooldownEsquive;
+            EjecutarEsquive(-camara.transform.right.normalized);
         }
 
         if (Input.GetKeyDown(teclaEsquivarDerecha))
         {
-            direccionEsquive = camara.transform.right.normalized;
-            tiempoEsquive = duracionEsquive;
-            siguienteEsquive = Time.time + cooldownEsquive;
+            EjecutarEsquive(camara.transform.right.normalized);
         }
     }
 
@@ -211,7 +246,7 @@ public class NaveController : MonoBehaviour
         if (Input.GetMouseButton(0) && Time.time >= siguienteDisparo)
         {
             Disparar();
-            siguienteDisparo = Time.time + cooldown;
+            siguienteDisparo = Time.time + ObtenerCooldownActual();
         }
     }
 
@@ -235,7 +270,7 @@ public class NaveController : MonoBehaviour
 
         if (rbBala != null)
         {
-            rbBala.linearVelocity = direccionDisparo * velocidadBala;
+            rbBala.linearVelocity = direccionDisparo * ObtenerVelocidadBalaActual();
         }
     }
 
@@ -268,5 +303,161 @@ public class NaveController : MonoBehaviour
         }
 
         return rayo.origin + rayo.direction * 500f;
+    }
+
+    private bool EstaPartidaActiva()
+    {
+        return GameManager.instancia == null || GameManager.instancia.PuedeControlarGameplay;
+    }
+
+    public void ConfigurarDash(int cargasMaximas, float recargaSegundos)
+    {
+        cargasEsquiveMaximas = Mathf.Max(1, cargasMaximas);
+        recargaCargaSegundos = Mathf.Max(0.1f, recargaSegundos);
+        cargasEsquiveActuales = cargasEsquiveMaximas;
+        temporizadorRecargaEsquive = 0f;
+        NotificarDash();
+    }
+
+    public void RecuperarCargaDash(int cantidad)
+    {
+        if (cantidad <= 0 || cargasEsquiveActuales >= cargasEsquiveMaximas)
+        {
+            return;
+        }
+
+        cargasEsquiveActuales = Mathf.Min(
+            cargasEsquiveMaximas,
+            cargasEsquiveActuales + cantidad
+        );
+
+        if (cargasEsquiveActuales >= cargasEsquiveMaximas)
+        {
+            temporizadorRecargaEsquive = 0f;
+        }
+
+        NotificarDash();
+    }
+
+    public void ActivarDisparoMejorado(float duracion)
+    {
+        tiempoRestanteDisparoMejorado = Mathf.Max(tiempoRestanteDisparoMejorado, duracion);
+        multiplicadorCooldownDisparo = 0.6f;
+        multiplicadorVelocidadBala = 1.25f;
+    }
+
+    private void EjecutarEsquive(Vector3 direccion)
+    {
+        direccionEsquive = direccion;
+        tiempoEsquive = duracionEsquive;
+        siguienteEsquive = Time.time + cooldownEsquive;
+        cargasEsquiveActuales--;
+
+        if (cargasEsquiveActuales < cargasEsquiveMaximas && temporizadorRecargaEsquive <= 0f)
+        {
+            temporizadorRecargaEsquive = recargaCargaSegundos;
+        }
+
+        NotificarDash();
+    }
+
+    private void RecargarEsquive()
+    {
+        if (cargasEsquiveActuales >= cargasEsquiveMaximas)
+        {
+            return;
+        }
+
+        temporizadorRecargaEsquive -= Time.deltaTime;
+
+        if (temporizadorRecargaEsquive > 0f)
+        {
+            NotificarDash();
+            return;
+        }
+
+        cargasEsquiveActuales++;
+
+        if (cargasEsquiveActuales < cargasEsquiveMaximas)
+        {
+            temporizadorRecargaEsquive = recargaCargaSegundos;
+        }
+        else
+        {
+            temporizadorRecargaEsquive = 0f;
+        }
+
+        NotificarDash();
+    }
+
+    private void ActualizarDisparoMejorado()
+    {
+        if (tiempoRestanteDisparoMejorado <= 0f)
+        {
+            return;
+        }
+
+        tiempoRestanteDisparoMejorado -= Time.deltaTime;
+
+        if (tiempoRestanteDisparoMejorado <= 0f)
+        {
+            multiplicadorCooldownDisparo = 1f;
+            multiplicadorVelocidadBala = 1f;
+        }
+    }
+
+    private float ObtenerCooldownActual()
+    {
+        return Mathf.Max(0.05f, cooldownBase * multiplicadorCooldownDisparo);
+    }
+
+    private float ObtenerVelocidadBalaActual()
+    {
+        return velocidadBalaBase * multiplicadorVelocidadBala;
+    }
+
+    private void PrepararRadioRecoleccionPowerUps()
+    {
+        Transform existente = transform.Find("RadioRecoleccion");
+        GameObject objetoRadio;
+
+        if (existente != null)
+        {
+            objetoRadio = existente.gameObject;
+        }
+        else
+        {
+            objetoRadio = new GameObject("RadioRecoleccion");
+            objetoRadio.transform.SetParent(transform, false);
+        }
+
+        SphereCollider sphereCollider = objetoRadio.GetComponent<SphereCollider>();
+
+        if (sphereCollider == null)
+        {
+            sphereCollider = objetoRadio.AddComponent<SphereCollider>();
+        }
+
+        sphereCollider.isTrigger = true;
+        sphereCollider.radius = Mathf.Max(0.1f, radioRecoleccionPowerUps);
+
+        RadioRecoleccionPowerUps radio =
+            objetoRadio.GetComponent<RadioRecoleccionPowerUps>();
+
+        if (radio == null)
+        {
+            radio = objetoRadio.AddComponent<RadioRecoleccionPowerUps>();
+        }
+
+        radio.Inicializar(this);
+    }
+
+    private void NotificarDash()
+    {
+        AlActualizarDash?.Invoke(
+            cargasEsquiveActuales,
+            cargasEsquiveMaximas,
+            Mathf.Max(0f, temporizadorRecargaEsquive)
+        );
     }
 }

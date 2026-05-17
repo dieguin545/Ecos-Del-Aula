@@ -58,6 +58,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     {
         EstaPausado = false;
         Time.timeScale = 1f;
+        NormalizarArreglosSerializados();
 
         if (camaraPrincipal != null)
         {
@@ -235,13 +236,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             scriptMovimientoJugador.enabled = true;
         }
 
-        for (int i = 0; i < scriptsExtraBloquear.Length; i++)
-        {
-            if (scriptsExtraBloquear[i] != null)
-            {
-                scriptsExtraBloquear[i].enabled = true;
-            }
-        }
+        HabilitarScriptsExtra(true);
 
         if (rutinaCerrarPausa != null)
         {
@@ -340,9 +335,28 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private bool HayOtraPantallaAbierta()
     {
+        if (pantallasQueBloqueanPausa == null || pantallasQueBloqueanPausa.Length == 0)
+        {
+            return false;
+        }
+
         for (int i = 0; i < pantallasQueBloqueanPausa.Length; i++)
         {
-            if (pantallasQueBloqueanPausa[i] != null && pantallasQueBloqueanPausa[i].activeSelf)
+            GameObject pantalla = pantallasQueBloqueanPausa[i];
+
+            if (pantalla == null)
+            {
+                continue;
+            }
+
+            Scene escenaPantalla = pantalla.scene;
+
+            if (!escenaPantalla.IsValid() || !escenaPantalla.isLoaded)
+            {
+                continue;
+            }
+
+            if (pantalla.activeInHierarchy)
             {
                 return true;
             }
@@ -363,13 +377,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             scriptCamara.enabled = !bloquear;
         }
 
-        for (int i = 0; i < scriptsExtraBloquear.Length; i++)
-        {
-            if (scriptsExtraBloquear[i] != null)
-            {
-                scriptsExtraBloquear[i].enabled = !bloquear;
-            }
-        }
+        HabilitarScriptsExtra(!bloquear);
     }
 
     private void MostrarCursorMenu()
@@ -424,6 +432,8 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private void GuardarValoresOriginales()
     {
+        NormalizarArreglosSerializados();
+
         tamanosOriginalesTMP = new float[textosTMP.Length];
         coloresOriginalesTMP = new Color[textosTMP.Length];
 
@@ -468,6 +478,11 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private void AplicarTextosTMP()
     {
+        if (textosTMP == null || tamanosOriginalesTMP == null || coloresOriginalesTMP == null)
+        {
+            return;
+        }
+
         for (int i = 0; i < textosTMP.Length; i++)
         {
             if (textosTMP[i] == null) continue;
@@ -489,6 +504,11 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private void AplicarTextosNormales()
     {
+        if (textosNormales == null || tamanosOriginalesNormales == null || coloresOriginalesNormales == null)
+        {
+            return;
+        }
+
         for (int i = 0; i < textosNormales.Length; i++)
         {
             if (textosNormales[i] == null) continue;
@@ -512,6 +532,11 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private void AplicarFondosUI()
     {
+        if (imagenesUI == null || coloresOriginalesImagenes == null)
+        {
+            return;
+        }
+
         for (int i = 0; i < imagenesUI.Length; i++)
         {
             if (imagenesUI[i] == null) continue;
@@ -544,5 +569,49 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     private bool EstaModoDaltonicoActivo()
     {
         return toggleModoDaltonico != null && toggleModoDaltonico.isOn;
+    }
+
+    private void NormalizarArreglosSerializados()
+    {
+        if (scriptsExtraBloquear == null)
+        {
+            scriptsExtraBloquear = new MonoBehaviour[0];
+        }
+
+        if (pantallasQueBloqueanPausa == null)
+        {
+            pantallasQueBloqueanPausa = new GameObject[0];
+        }
+
+        if (textosTMP == null)
+        {
+            textosTMP = new TextMeshProUGUI[0];
+        }
+
+        if (textosNormales == null)
+        {
+            textosNormales = new Text[0];
+        }
+
+        if (imagenesUI == null)
+        {
+            imagenesUI = new Image[0];
+        }
+    }
+
+    private void HabilitarScriptsExtra(bool habilitar)
+    {
+        if (scriptsExtraBloquear == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < scriptsExtraBloquear.Length; i++)
+        {
+            if (scriptsExtraBloquear[i] != null)
+            {
+                scriptsExtraBloquear[i].enabled = habilitar;
+            }
+        }
     }
 }

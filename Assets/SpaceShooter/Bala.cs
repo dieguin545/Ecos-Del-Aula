@@ -2,10 +2,12 @@ using UnityEngine;
 
 public class Bala : MonoBehaviour
 {
-    public float tiempoVida = 3f;
+    [SerializeField] private float tiempoVida = 3f;
+    [SerializeField] private int danio = 1;
 
     private void Start()
     {
+        EstiloVisualSpaceShooter.AplicarABala(gameObject);
         Destroy(gameObject, tiempoVida);
     }
 
@@ -13,7 +15,17 @@ public class Bala : MonoBehaviour
     {
         if (other.CompareTag("Enemigo"))
         {
-            Destroy(other.gameObject);
+            Meteorito meteorito = other.GetComponent<Meteorito>();
+
+            if (meteorito != null)
+            {
+                meteorito.RecibirImpacto(danio);
+            }
+            else
+            {
+                Destroy(other.gameObject);
+            }
+
             Destroy(gameObject);
         }
     }

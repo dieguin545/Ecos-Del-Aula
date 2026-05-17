@@ -15,6 +15,10 @@ public class CrosshairApuntado : MonoBehaviour
     public float distanciaDeteccion = 500f;
     public string tagEnemigo = "Enemigo";
 
+    private Vector3 escalaOriginal = Vector3.one;
+    private bool modoDaltonico;
+    private bool visiblePorEstado = true;
+
     private void Start()
     {
         if (camara == null)
@@ -27,12 +31,15 @@ public class CrosshairApuntado : MonoBehaviour
             imagenCrosshair = GetComponent<Image>();
         }
 
+        escalaOriginal = transform.localScale;
+        AplicarModoDaltonico(AccesibilidadSpaceShooter.ModoDaltonicoActivo);
         PonerBlanco();
+        EstablecerVisible(visiblePorEstado);
     }
 
     private void Update()
     {
-        if (camara == null || imagenCrosshair == null)
+        if (!visiblePorEstado || camara == null || imagenCrosshair == null)
         {
             return;
         }
@@ -59,6 +66,7 @@ public class CrosshairApuntado : MonoBehaviour
         }
 
         imagenCrosshair.color = Color.white;
+        transform.localScale = escalaOriginal;
     }
 
     private void PonerRojo()
@@ -71,6 +79,23 @@ public class CrosshairApuntado : MonoBehaviour
         else
         {
             imagenCrosshair.color = Color.red;
+        }
+
+        transform.localScale = modoDaltonico ? escalaOriginal * 1.25f : escalaOriginal;
+    }
+
+    public void AplicarModoDaltonico(bool activo)
+    {
+        modoDaltonico = activo;
+    }
+
+    public void EstablecerVisible(bool visible)
+    {
+        visiblePorEstado = visible;
+
+        if (imagenCrosshair != null)
+        {
+            imagenCrosshair.enabled = visible;
         }
     }
 }

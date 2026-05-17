@@ -35,7 +35,7 @@ public class CamaraNave3D : MonoBehaviour
             return;
         }
 
-        if (GameManager.instancia != null && !GameManager.instancia.juegoActivo)
+        if (GameManager.instancia != null && !GameManager.instancia.PuedeControlarGameplay)
         {
             LiberarCursor();
             return;

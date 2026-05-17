@@ -146,16 +146,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e93311722477744ca6e7dc74aa5cf33, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   vidas: 3
   vidasMaximas: 3
-  juegoActivo: 1
   iconosVida:
   - {fileID: 1733006041}
   - {fileID: 873450685}
   - {fileID: 700893929}
+  objetivoEnemigos: 25
+  textoObjetivo: {fileID: 0}
+  textoEstado: {fileID: 0}
+  textoDash: {fileID: 0}
   panelGameOver: {fileID: 1619999988}
+  panelVictoria: {fileID: 0}
+  spawnManager: {fileID: 0}
+  naveController: {fileID: 0}
+  selectorNave: {fileID: 0}
+  menuSpaceShooter: {fileID: 0}
+  controladorPausa: {fileID: 0}
+  accesibilidadSpaceShooter: {fileID: 0}
+  juegoActivo: 1
 --- !u!4 &90886068
 Transform:
   m_ObjectHideFlags: 0
@@ -219,7 +230,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6b4825a77997304691754e639cd013c, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::CrosshairApuntado
   camara: {fileID: 992678448}
   imagenCrosshair: {fileID: 271470174}
@@ -416,6 +427,7 @@ GameObject:
   - component: {fileID: 374511454}
   - component: {fileID: 374511453}
   - component: {fileID: 374511458}
+  - component: {fileID: 374511459}
   m_Layer: 0
   m_Name: Nave
   m_TagString: Nave
@@ -480,7 +492,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 374511452}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -567,6 +579,8 @@ MonoBehaviour:
   fuerzaEsquive: 12
   duracionEsquive: 0.18
   cooldownEsquive: 0.45
+  cargasEsquiveMaximas: 3
+  recargaCargaSegundos: 2.8
   teclaEsquivarIzquierda: 113
   teclaEsquivarDerecha: 101
   teclaSubir: 32
@@ -581,6 +595,46 @@ MonoBehaviour:
   cooldown: 0.25
   velocidadBala: 35
   camara: {fileID: 992678448}
+--- !u!114 &374511459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374511452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ba09217cdda42b0a648e096fdc9b473, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SelectorNave
+  modelosDisponibles:
+  - nombre: Nave Alfa
+    modelo: {fileID: 919132149155446097, guid: 607be57461ed3f049b5420cd6dfb9f37, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: 0, y: 0, z: 0}
+    escalaLocal: {x: 128, y: 128, z: 128}
+  - nombre: Nave Beta
+    modelo: {fileID: 919132149155446097, guid: 50fb1f305cc84b64b9d213008d7491f8, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: 0, y: 0, z: 0}
+    escalaLocal: {x: 128, y: 128, z: 128}
+  - nombre: Nave Gamma
+    modelo: {fileID: 919132149155446097, guid: affab088ea8cf144b9cf4c92e5138f85, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: 0, y: 0, z: 0}
+    escalaLocal: {x: 128, y: 128, z: 128}
+  - nombre: Nave Delta
+    modelo: {fileID: 919132149155446097, guid: b34d7a756deffcd498882f08b8026fda, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: 0, y: 0, z: 0}
+    escalaLocal: {x: 128, y: 128, z: 128}
+  - nombre: Nave Epsilon
+    modelo: {fileID: 919132149155446097, guid: 229ea5aff5ed5e841b5afbe3dc9d0eeb, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: 0, y: 0, z: 0}
+    escalaLocal: {x: 128, y: 128, z: 128}
+  contenedorVisual: {fileID: 0}
+  renderersBase: []
 --- !u!1 &510353917
 GameObject:
   m_ObjectHideFlags: 0
@@ -1861,10 +1915,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnManager
   meteoritoPrefab: {fileID: 918101685120109969, guid: 6dee63ac9f03c1f4d9b40f225201dbe2, type: 3}
-  tiempoInicial: 2
-  tiempoMinimo: 0.5
-  reduccion: 0.05
-  radioSpawn: 14
+  nave: {fileID: 0}
+  intervaloSpawnInicial: 2
+  intervaloSpawnMinimo: 1.1
+  radioMinimo: 18
+  radioMaximo: 32
+  alturaMinima: -15
+  alturaMaxima: 15
+  maxEnemigosIniciales: 8
+  maxEnemigosAbsoluto: 15
+  intentosPosicionSpawn: 8
+  oleadasConfiguradas: []
 --- !u!4 &1932382005
 Transform:
   m_ObjectHideFlags: 0
