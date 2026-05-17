@@ -57,6 +57,7 @@ public class ZonaConfort : MonoBehaviour
         {
             UsarZonaConfort();
         }
+        
     }
 
     private void OnTriggerEnter2D(Collider2D other)
