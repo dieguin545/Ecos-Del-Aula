@@ -127,7 +127,6 @@ public class SelectorNave : MonoBehaviour
         instanciaVisualActual.transform.localPosition = seleccionActual.posicionLocal;
         instanciaVisualActual.transform.localRotation = Quaternion.Euler(seleccionActual.rotacionLocal);
         instanciaVisualActual.transform.localScale = seleccionActual.escalaLocal;
-        EstiloVisualSpaceShooter.AplicarANave(gameObject);
 
         AlCambiarSeleccion?.Invoke(seleccionActual);
     }

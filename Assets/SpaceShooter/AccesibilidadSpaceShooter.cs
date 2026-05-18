@@ -3,24 +3,57 @@ using UnityEngine;
 
 public class AccesibilidadSpaceShooter : MonoBehaviour
 {
-    private const string ClaveModoDaltonico = "ModoDaltonico";
+    private const string ClaveTextoGrande = "accesibilidad_texto_grande";
+    private const string ClaveAltoContraste = "accesibilidad_alto_contraste";
+    private const string ClaveTipoDaltonismo = "accesibilidad_tipo_daltonismo";
+    private const string ClaveReducirEfectos = "accesibilidad_reducir_efectos";
 
-    public static bool ModoDaltonicoActivo { get; private set; }
+    public static bool TextoGrandeActivo { get; private set; }
+    public static bool AltoContrasteActivo { get; private set; }
+    public static bool ReducirEfectosActivo { get; private set; }
+    public static TipoDaltonismo TipoDaltonismoActual { get; private set; }
+    public static bool ModoDaltonicoActivo => TipoDaltonismoActual != TipoDaltonismo.Ninguno;
 
-    public event Action<bool> AlCambiarModoDaltonico;
+    public event Action AlCambiarConfiguracion;
 
     private void Awake()
     {
-        ModoDaltonicoActivo = PlayerPrefs.GetInt(ClaveModoDaltonico, 0) == 1;
+        TextoGrandeActivo = PlayerPrefs.GetInt(ClaveTextoGrande, 0) == 1;
+        AltoContrasteActivo = PlayerPrefs.GetInt(ClaveAltoContraste, 0) == 1;
+        ReducirEfectosActivo = PlayerPrefs.GetInt(ClaveReducirEfectos, 0) == 1;
+        TipoDaltonismoActual = (TipoDaltonismo)PlayerPrefs.GetInt(
+            ClaveTipoDaltonismo,
+            (int)TipoDaltonismo.Ninguno
+        );
     }
 
     public void EstablecerModoDaltonico(bool activo)
     {
-        ModoDaltonicoActivo = activo;
-        PlayerPrefs.SetInt(ClaveModoDaltonico, activo ? 1 : 0);
-        PlayerPrefs.Save();
-        AplicarATodos();
-        AlCambiarModoDaltonico?.Invoke(activo);
+        EstablecerTipoDaltonismo(activo ? TipoDaltonismo.Deuteranopia : TipoDaltonismo.Ninguno);
+    }
+
+    public void EstablecerTipoDaltonismo(TipoDaltonismo tipo)
+    {
+        TipoDaltonismoActual = tipo;
+        GuardarYAplicar();
+    }
+
+    public void EstablecerTextoGrande(bool activo)
+    {
+        TextoGrandeActivo = activo;
+        GuardarYAplicar();
+    }
+
+    public void EstablecerAltoContraste(bool activo)
+    {
+        AltoContrasteActivo = activo;
+        GuardarYAplicar();
+    }
+
+    public void EstablecerReducirEfectos(bool activo)
+    {
+        ReducirEfectosActivo = activo;
+        GuardarYAplicar();
     }
 
     public void AplicarATodos()
@@ -29,7 +62,7 @@ public class AccesibilidadSpaceShooter : MonoBehaviour
 
         for (int i = 0; i < crosshairs.Length; i++)
         {
-            crosshairs[i].AplicarModoDaltonico(ModoDaltonicoActivo);
+            crosshairs[i].AplicarTipoDaltonismo(TipoDaltonismoActual);
         }
 
         Meteorito[] meteoritos = FindObjectsByType<Meteorito>();
@@ -45,5 +78,30 @@ public class AccesibilidadSpaceShooter : MonoBehaviour
         {
             proyectiles[i].AplicarAccesibilidadVisual();
         }
+
+        GameManager gameManager = FindAnyObjectByType<GameManager>();
+
+        if (gameManager != null)
+        {
+            gameManager.AplicarAccesibilidadVisual();
+        }
+
+        FondoEstelarSpaceShooter fondo = FindAnyObjectByType<FondoEstelarSpaceShooter>();
+
+        if (fondo != null)
+        {
+            fondo.AplicarAccesibilidad();
+        }
+    }
+
+    private void GuardarYAplicar()
+    {
+        PlayerPrefs.SetInt(ClaveTextoGrande, TextoGrandeActivo ? 1 : 0);
+        PlayerPrefs.SetInt(ClaveAltoContraste, AltoContrasteActivo ? 1 : 0);
+        PlayerPrefs.SetInt(ClaveReducirEfectos, ReducirEfectosActivo ? 1 : 0);
+        PlayerPrefs.SetInt(ClaveTipoDaltonismo, (int)TipoDaltonismoActual);
+        PlayerPrefs.Save();
+        AplicarATodos();
+        AlCambiarConfiguracion?.Invoke();
     }
 }

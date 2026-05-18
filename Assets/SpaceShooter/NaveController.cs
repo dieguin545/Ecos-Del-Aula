@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using System;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -6,16 +7,24 @@ public class NaveController : MonoBehaviour
 {
     [Header("Movimiento 3D")]
     public float velocidad = 12f;
-    public float velocidadTurbo = 24f;
+    public float velocidadTurbo = 19f;
     public float velocidadVertical = 12f;
-    public float limiteMapa = 35f;
-    public float alturaMinima = -20f;
-    public float alturaMaxima = 20f;
+    [FormerlySerializedAs("limiteMapa")] public float limiteX = 68f;
+    public float limiteZ = 68f;
+    public float alturaMinima = -34f;
+    public float alturaMaxima = 34f;
+
+    [Header("Turbo")]
+    [SerializeField] private float energiaTurboMaxima = 100f;
+    [SerializeField] private float consumoTurboPorSegundo = 25f;
+    [SerializeField] private float regeneracionTurboPorSegundo = 15f;
+    [SerializeField] private float retrasoRegeneracionTurbo = 0.75f;
+    [SerializeField] private float bloqueoTurboAlVaciar = 0.6f;
 
     [Header("Esquive")]
-    public float fuerzaEsquive = 12f;
-    public float duracionEsquive = 0.18f;
-    public float cooldownEsquive = 0.45f;
+    public float fuerzaEsquive = 28f;
+    public float duracionEsquive = 0.22f;
+    public float cooldownEsquive = 0.55f;
     [SerializeField] private int cargasEsquiveMaximas = 3;
     [SerializeField] private float recargaCargaSegundos = 2.8f;
     [SerializeField] private float radioRecoleccionPowerUps = 3.25f;
@@ -56,6 +65,9 @@ public class NaveController : MonoBehaviour
     private float tiempoRestanteDisparoMejorado;
     private float multiplicadorCooldownDisparo = 1f;
     private float multiplicadorVelocidadBala = 1f;
+    private float energiaTurboActual;
+    private float siguienteRegeneracionTurbo;
+    private float turboBloqueadoHasta;
     private int cargasEsquiveActuales;
 
     private float entradaHorizontal;
@@ -63,6 +75,7 @@ public class NaveController : MonoBehaviour
     private float entradaVertical;
 
     public event Action<int, int, float> AlActualizarDash;
+    public event Action<float, float> AlActualizarTurbo;
 
     public bool EstaEsquivando => tiempoEsquive > 0f;
 
@@ -82,6 +95,7 @@ public class NaveController : MonoBehaviour
 
         cooldownBase = cooldown;
         velocidadBalaBase = velocidadBala;
+        energiaTurboActual = energiaTurboMaxima;
         cargasEsquiveActuales = cargasEsquiveMaximas;
         PrepararRadioRecoleccionPowerUps();
         EstiloVisualSpaceShooter.AplicarANave(gameObject);
@@ -96,6 +110,7 @@ public class NaveController : MonoBehaviour
         }
 
         RecargarEsquive();
+        ActualizarTurbo();
         ActualizarDisparoMejorado();
         LeerMovimiento();
         LeerEsquive();
@@ -150,7 +165,7 @@ public class NaveController : MonoBehaviour
 
     private void MoverNave()
     {
-        float velocidadActual = Input.GetKey(teclaTurbo) ? velocidadTurbo : velocidad;
+        float velocidadActual = EstaUsandoTurbo() ? velocidadTurbo : velocidad;
 
         Vector3 movimiento = direccionMovimiento * velocidadActual;
 
@@ -167,9 +182,9 @@ public class NaveController : MonoBehaviour
 
         Vector3 nuevaPosicion = rb.position + movimiento * Time.fixedDeltaTime;
 
-        nuevaPosicion.x = Mathf.Clamp(nuevaPosicion.x, -limiteMapa, limiteMapa);
+        nuevaPosicion.x = Mathf.Clamp(nuevaPosicion.x, -limiteX, limiteX);
         nuevaPosicion.y = Mathf.Clamp(nuevaPosicion.y, alturaMinima, alturaMaxima);
-        nuevaPosicion.z = Mathf.Clamp(nuevaPosicion.z, -limiteMapa, limiteMapa);
+        nuevaPosicion.z = Mathf.Clamp(nuevaPosicion.z, -limiteZ, limiteZ);
 
         rb.MovePosition(nuevaPosicion);
     }
@@ -193,12 +208,12 @@ public class NaveController : MonoBehaviour
 
         if (Input.GetKeyDown(teclaEsquivarIzquierda))
         {
-            EjecutarEsquive(-camara.transform.right.normalized);
+            EjecutarEsquive(ObtenerDireccionDash(-camara.transform.right.normalized));
         }
 
         if (Input.GetKeyDown(teclaEsquivarDerecha))
         {
-            EjecutarEsquive(camara.transform.right.normalized);
+            EjecutarEsquive(ObtenerDireccionDash(camara.transform.right.normalized));
         }
     }
 
@@ -339,6 +354,15 @@ public class NaveController : MonoBehaviour
         NotificarDash();
     }
 
+    public void RecuperarEnergiaTurbo(float cantidad)
+    {
+        energiaTurboActual = Mathf.Min(
+            energiaTurboMaxima,
+            energiaTurboActual + Mathf.Max(0f, cantidad)
+        );
+        NotificarTurbo();
+    }
+
     public void ActivarDisparoMejorado(float duracion)
     {
         tiempoRestanteDisparoMejorado = Mathf.Max(tiempoRestanteDisparoMejorado, duracion);
@@ -359,6 +383,16 @@ public class NaveController : MonoBehaviour
         }
 
         NotificarDash();
+    }
+
+    private Vector3 ObtenerDireccionDash(Vector3 respaldo)
+    {
+        if (direccionMovimiento.sqrMagnitude > 0.01f)
+        {
+            return direccionMovimiento.normalized;
+        }
+
+        return respaldo.sqrMagnitude > 0.01f ? respaldo.normalized : camara.transform.forward.normalized;
     }
 
     private void RecargarEsquive()
@@ -404,6 +438,43 @@ public class NaveController : MonoBehaviour
             multiplicadorCooldownDisparo = 1f;
             multiplicadorVelocidadBala = 1f;
         }
+    }
+
+    private void ActualizarTurbo()
+    {
+        if (EstaUsandoTurbo())
+        {
+            energiaTurboActual = Mathf.Max(
+                0f,
+                energiaTurboActual - consumoTurboPorSegundo * Time.deltaTime
+            );
+            siguienteRegeneracionTurbo = Time.time + retrasoRegeneracionTurbo;
+
+            if (energiaTurboActual <= 0f)
+            {
+                turboBloqueadoHasta = Time.time + bloqueoTurboAlVaciar;
+            }
+        }
+        else if (
+            Time.time >= siguienteRegeneracionTurbo
+            && energiaTurboActual < energiaTurboMaxima
+        )
+        {
+            energiaTurboActual = Mathf.Min(
+                energiaTurboMaxima,
+                energiaTurboActual + regeneracionTurboPorSegundo * Time.deltaTime
+            );
+        }
+
+        NotificarTurbo();
+    }
+
+    private bool EstaUsandoTurbo()
+    {
+        return Input.GetKey(teclaTurbo)
+            && energiaTurboActual > 0f
+            && Time.time >= turboBloqueadoHasta
+            && direccionMovimiento.sqrMagnitude > 0.01f;
     }
 
     private float ObtenerCooldownActual()
@@ -459,5 +530,10 @@ public class NaveController : MonoBehaviour
             cargasEsquiveMaximas,
             Mathf.Max(0f, temporizadorRecargaEsquive)
         );
+    }
+
+    private void NotificarTurbo()
+    {
+        AlActualizarTurbo?.Invoke(energiaTurboActual, energiaTurboMaxima);
     }
 }

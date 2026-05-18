@@ -16,7 +16,18 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int objetivoEnemigos = 25;
     [SerializeField] private TextMeshProUGUI textoObjetivo;
     [SerializeField] private TextMeshProUGUI textoEstado;
+    [SerializeField] private TextMeshProUGUI textoVidas;
     [SerializeField] private TextMeshProUGUI textoDash;
+    [SerializeField] private TextMeshProUGUI textoTurbo;
+    [SerializeField] private TextMeshProUGUI textoAlerta;
+
+    [Header("Sprites HUD futuros")]
+    [SerializeField] private Sprite spriteVida;
+    [SerializeField] private Sprite spriteEscudo;
+    [SerializeField] private Sprite spriteTurbo;
+    [SerializeField] private Sprite spriteDash;
+    [SerializeField] private Sprite spriteReparacion;
+    [SerializeField] private Sprite spriteAmenaza;
 
     [Header("Pantallas")]
     [SerializeField] private GameObject panelGameOver;
@@ -43,6 +54,10 @@ public class GameManager : MonoBehaviour
     private string nombreNaveSeleccionada = "Nave base";
     private bool resultadoRegistrado;
     private Image panelHudVisual;
+    private Image barraTurboFondo;
+    private Image barraTurboRelleno;
+    private TextMeshProUGUI textoGameOverResumen;
+    private TextMeshProUGUI textoVictoriaResumen;
     private bool escudoActivo;
     private float tiempoRestanteEscudo;
     private EstadoPartidaSpaceShooter estadoActual = EstadoPartidaSpaceShooter.Menu;
@@ -95,6 +110,7 @@ public class GameManager : MonoBehaviour
         if (naveController != null)
         {
             naveController.AlActualizarDash -= ActualizarDash;
+            naveController.AlActualizarTurbo -= ActualizarTurbo;
         }
     }
 
@@ -289,6 +305,11 @@ public class GameManager : MonoBehaviour
                 controladorPausa = gameObject.AddComponent<ControladorPausaSpaceShooter>();
             }
         }
+
+        if (GetComponent<GestorAlertasAtaque>() == null)
+        {
+            gameObject.AddComponent<GestorAlertasAtaque>();
+        }
     }
 
     private void ConectarEventos()
@@ -303,6 +324,8 @@ public class GameManager : MonoBehaviour
         {
             naveController.AlActualizarDash -= ActualizarDash;
             naveController.AlActualizarDash += ActualizarDash;
+            naveController.AlActualizarTurbo -= ActualizarTurbo;
+            naveController.AlActualizarTurbo += ActualizarTurbo;
         }
 
         Canvas canvas = FindAnyObjectByType<Canvas>();
@@ -415,6 +438,8 @@ public class GameManager : MonoBehaviour
             panelGameOver.SetActive(true);
         }
 
+        ActualizarResumenFinal(textoGameOverResumen);
+
         if (textoEstado != null)
         {
             textoEstado.text = "Vuelve a intentarlo";
@@ -434,6 +459,8 @@ public class GameManager : MonoBehaviour
         {
             panelVictoria.SetActive(true);
         }
+
+        ActualizarResumenFinal(textoVictoriaResumen);
 
         if (textoEstado != null)
         {
@@ -482,10 +509,21 @@ public class GameManager : MonoBehaviour
             textoEstado = CrearTextoHud(
                 canvas.transform,
                 "TextoEstado",
-                new Vector2(24f, -64f),
-                22f
+                new Vector2(24f, -58f),
+                20f
             );
             textoEstado.text = "Defiendete de los ataques digitales";
+        }
+
+        if (textoVidas == null)
+        {
+            textoVidas = CrearTextoHud(
+                canvas.transform,
+                "TextoVidas",
+                new Vector2(24f, -98f),
+                20f
+            );
+            textoVidas.text = "INTEGRIDAD";
         }
 
         if (textoDash == null)
@@ -493,11 +531,36 @@ public class GameManager : MonoBehaviour
             textoDash = CrearTextoHud(
                 canvas.transform,
                 "TextoDash",
-                new Vector2(24f, -104f),
-                22f
+                new Vector2(24f, -136f),
+                20f
             );
             textoDash.text = "DASH 0/0";
         }
+
+        if (textoTurbo == null)
+        {
+            textoTurbo = CrearTextoHud(
+                canvas.transform,
+                "TextoTurbo",
+                new Vector2(252f, -136f),
+                20f
+            );
+            textoTurbo.text = "TURBO 100%";
+        }
+
+        if (textoAlerta == null)
+        {
+            textoAlerta = CrearTextoHud(
+                canvas.transform,
+                "TextoAlerta",
+                new Vector2(24f, -198f),
+                20f
+            );
+            textoAlerta.text = string.Empty;
+        }
+
+        PrepararBarraTurboSiHaceFalta(canvas.transform);
+        PrepararPanelGameOverSiHaceFalta();
 
         if (panelVictoria == null)
         {
@@ -565,8 +628,17 @@ public class GameManager : MonoBehaviour
             new Vector2(700f, 50f),
             TextAlignmentOptions.Center
         );
-        MenuSpaceShooter.CrearBoton(panel.transform, "BotonVictoriaReiniciar", "Reiniciar", new Vector2(0f, -35f), Reiniciar);
-        MenuSpaceShooter.CrearBoton(panel.transform, "BotonVictoriaMenu", "Volver al menu", new Vector2(0f, -115f), VolverAlMenuInicial);
+        textoVictoriaResumen = MenuSpaceShooter.CrearTexto(
+            panel.transform,
+            "TextoVictoriaResumen",
+            string.Empty,
+            22f,
+            new Vector2(0f, -12f),
+            new Vector2(760f, 112f),
+            TextAlignmentOptions.Center
+        );
+        MenuSpaceShooter.CrearBoton(panel.transform, "BotonVictoriaReiniciar", "Reiniciar", new Vector2(0f, -126f), Reiniciar);
+        MenuSpaceShooter.CrearBoton(panel.transform, "BotonVictoriaMenu", "Volver al menu", new Vector2(0f, -206f), VolverAlMenuInicial);
 
         panel.SetActive(false);
         return panel;
@@ -626,11 +698,31 @@ public class GameManager : MonoBehaviour
         rect.anchorMax = new Vector2(0f, 1f);
         rect.pivot = new Vector2(0f, 1f);
         rect.anchoredPosition = new Vector2(14f, -14f);
-        rect.sizeDelta = new Vector2(430f, 180f);
+        rect.sizeDelta = new Vector2(470f, 230f);
 
         panelHudVisual = panel.GetComponent<Image>();
         panelHudVisual.color = new Color(0.01f, 0.04f, 0.09f, 0.78f);
         panelHudVisual.raycastTarget = false;
+
+        Outline borde = panel.AddComponent<Outline>();
+        borde.effectColor = new Color(0.25f, 0.9f, 1f, 0.42f);
+        borde.effectDistance = new Vector2(1f, -1f);
+    }
+
+    private void ActualizarTurbo(float energiaActual, float energiaMaxima)
+    {
+        if (textoTurbo == null || energiaMaxima <= 0f)
+        {
+            return;
+        }
+
+        float porcentaje = Mathf.Clamp01(energiaActual / energiaMaxima);
+        textoTurbo.text = "TURBO " + Mathf.RoundToInt(porcentaje * 100f) + "%";
+
+        if (barraTurboRelleno != null)
+        {
+            barraTurboRelleno.fillAmount = porcentaje;
+        }
     }
 
     private void AplicarVidasSimples()
@@ -654,15 +746,16 @@ public class GameManager : MonoBehaviour
             }
 
             iconosVida[i].sprite = null;
+            iconosVida[i].sprite = spriteVida;
             iconosVida[i].color = new Color(0.25f, 0.9f, 1f, 1f);
-            iconosVida[i].preserveAspect = false;
+            iconosVida[i].preserveAspect = spriteVida != null;
 
             RectTransform rect = iconosVida[i].rectTransform;
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
             rect.sizeDelta = new Vector2(22f, 22f);
-            rect.anchoredPosition = new Vector2(270f + i * 30f, -138f);
+            rect.anchoredPosition = new Vector2(132f + i * 30f, -98f);
         }
     }
 
@@ -693,11 +786,13 @@ public class GameManager : MonoBehaviour
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(24f + indice * 28f, -138f);
+            rect.anchoredPosition = new Vector2(108f + indice * 28f, -136f);
             rect.sizeDelta = new Vector2(22f, 22f);
 
             Image imagen = objeto.GetComponent<Image>();
+            imagen.sprite = spriteDash;
             imagen.color = new Color(0.25f, 0.9f, 1f, 1f);
+            imagen.preserveAspect = spriteDash != null;
             imagen.raycastTarget = false;
             iconosDash.Add(imagen);
         }
@@ -717,6 +812,251 @@ public class GameManager : MonoBehaviour
         tiempoRestanteEscudo = Mathf.Max(tiempoRestanteEscudo, duracion);
     }
 
+    private void PrepararBarraTurboSiHaceFalta(Transform padre)
+    {
+        if (barraTurboFondo != null || padre == null)
+        {
+            return;
+        }
+
+        GameObject fondo = new GameObject(
+            "BarraTurboFondo",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image)
+        );
+        fondo.transform.SetParent(padre, false);
+
+        RectTransform rectFondo = fondo.GetComponent<RectTransform>();
+        rectFondo.anchorMin = new Vector2(0f, 1f);
+        rectFondo.anchorMax = new Vector2(0f, 1f);
+        rectFondo.pivot = new Vector2(0f, 1f);
+        rectFondo.anchoredPosition = new Vector2(252f, -168f);
+        rectFondo.sizeDelta = new Vector2(184f, 14f);
+
+        barraTurboFondo = fondo.GetComponent<Image>();
+        barraTurboFondo.sprite = spriteTurbo;
+        barraTurboFondo.color = new Color(1f, 1f, 1f, 0.16f);
+        barraTurboFondo.raycastTarget = false;
+
+        GameObject relleno = new GameObject(
+            "BarraTurboRelleno",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image)
+        );
+        relleno.transform.SetParent(fondo.transform, false);
+
+        RectTransform rectRelleno = relleno.GetComponent<RectTransform>();
+        rectRelleno.anchorMin = Vector2.zero;
+        rectRelleno.anchorMax = Vector2.one;
+        rectRelleno.offsetMin = Vector2.zero;
+        rectRelleno.offsetMax = Vector2.zero;
+
+        barraTurboRelleno = relleno.GetComponent<Image>();
+        barraTurboRelleno.color = new Color(0.25f, 0.9f, 1f, 0.95f);
+        barraTurboRelleno.type = Image.Type.Filled;
+        barraTurboRelleno.fillMethod = Image.FillMethod.Horizontal;
+        barraTurboRelleno.fillOrigin = 0;
+        barraTurboRelleno.fillAmount = 1f;
+        barraTurboRelleno.raycastTarget = false;
+    }
+
+    private void PrepararPanelGameOverSiHaceFalta()
+    {
+        if (panelGameOver == null)
+        {
+            return;
+        }
+
+        Image fondo = panelGameOver.GetComponent<Image>();
+
+        if (fondo != null)
+        {
+            fondo.color = new Color(0f, 0f, 0f, 0.84f);
+        }
+
+        if (panelGameOver.transform.Find("TarjetaGameOver") == null)
+        {
+            CrearTarjetaFinal(panelGameOver.transform, "TarjetaGameOver");
+        }
+
+        TextMeshProUGUI titulo = BuscarTextoDirecto(panelGameOver.transform);
+
+        if (titulo != null)
+        {
+            titulo.text = "Sistema comprometido";
+            titulo.fontSize = 48f;
+            RectTransform rectTitulo = titulo.rectTransform;
+            rectTitulo.anchoredPosition = new Vector2(0f, 180f);
+            rectTitulo.sizeDelta = new Vector2(760f, 72f);
+        }
+
+        Transform subtituloExistente = panelGameOver.transform.Find("TextoGameOverSubtitulo");
+
+        if (subtituloExistente == null)
+        {
+            MenuSpaceShooter.CrearTexto(
+                panelGameOver.transform,
+                "TextoGameOverSubtitulo",
+                "Las amenazas digitales superaron tu defensa.",
+                24f,
+                new Vector2(0f, 124f),
+                new Vector2(760f, 42f),
+                TextAlignmentOptions.Center
+            );
+        }
+
+        if (textoGameOverResumen == null)
+        {
+            textoGameOverResumen = MenuSpaceShooter.CrearTexto(
+                panelGameOver.transform,
+                "TextoGameOverResumen",
+                string.Empty,
+                22f,
+                new Vector2(0f, 28f),
+                new Vector2(760f, 128f),
+                TextAlignmentOptions.Center
+            );
+        }
+
+        Button[] botones = panelGameOver.GetComponentsInChildren<Button>(true);
+
+        for (int i = 0; i < botones.Length; i++)
+        {
+            if (botones[i] == null)
+            {
+                continue;
+            }
+
+            if (botones[i].name == "Reintentar")
+            {
+                ConfigurarBotonFinal(botones[i], "Reintentar", new Vector2(-180f, -138f));
+            }
+            else
+            {
+                ConfigurarBotonFinal(botones[i], "Salir a la PC", new Vector2(180f, -138f));
+            }
+        }
+
+        if (panelGameOver.transform.Find("BotonGameOverMenu") == null)
+        {
+            MenuSpaceShooter.CrearBoton(
+                panelGameOver.transform,
+                "BotonGameOverMenu",
+                "Volver al menu",
+                new Vector2(0f, -214f),
+                VolverAlMenuInicial
+            );
+        }
+    }
+
+    private void CrearTarjetaFinal(Transform padre, string nombre)
+    {
+        GameObject tarjeta = new GameObject(
+            nombre,
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image)
+        );
+        tarjeta.transform.SetParent(padre, false);
+        tarjeta.transform.SetAsFirstSibling();
+
+        RectTransform rect = tarjeta.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(780f, 500f);
+
+        Image imagen = tarjeta.GetComponent<Image>();
+        imagen.color = new Color(0.02f, 0.05f, 0.1f, 0.94f);
+        imagen.raycastTarget = false;
+
+        Outline borde = tarjeta.AddComponent<Outline>();
+        borde.effectColor = new Color(0.25f, 0.9f, 1f, 0.4f);
+        borde.effectDistance = new Vector2(1f, -1f);
+    }
+
+    private TextMeshProUGUI BuscarTextoDirecto(Transform padre)
+    {
+        TextMeshProUGUI[] textos = padre.GetComponentsInChildren<TextMeshProUGUI>(true);
+
+        for (int i = 0; i < textos.Length; i++)
+        {
+            if (textos[i] != null && textos[i].transform.parent == padre)
+            {
+                return textos[i];
+            }
+        }
+
+        return null;
+    }
+
+    private void ConfigurarBotonFinal(Button boton, string etiqueta, Vector2 posicion)
+    {
+        RectTransform rect = boton.GetComponent<RectTransform>();
+
+        if (rect != null)
+        {
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = posicion;
+            rect.sizeDelta = new Vector2(260f, 58f);
+        }
+
+        Image imagen = boton.GetComponent<Image>();
+
+        if (imagen != null)
+        {
+            imagen.color = new Color(0.08f, 0.28f, 0.42f, 0.95f);
+        }
+
+        TextMeshProUGUI texto = boton.GetComponentInChildren<TextMeshProUGUI>(true);
+
+        if (texto != null)
+        {
+            texto.text = etiqueta;
+            texto.fontSize = 24f;
+            texto.color = Color.white;
+        }
+    }
+
+    private void ActualizarResumenFinal(TextMeshProUGUI destino)
+    {
+        if (destino == null || ultimoResultado == null)
+        {
+            return;
+        }
+
+        int mejorPuntaje = ultimoResultado.Puntaje;
+
+        if (leaderboard != null)
+        {
+            System.Collections.Generic.IReadOnlyList<RegistroLeaderboard> top = leaderboard.ObtenerTop(1);
+
+            if (top.Count > 0)
+            {
+                mejorPuntaje = Mathf.Max(mejorPuntaje, top[0].puntaje);
+            }
+        }
+
+        destino.text =
+            "Amenazas neutralizadas: "
+            + ultimoResultado.EnemigosDestruidos
+            + "\nDificultad: "
+            + ultimoResultado.Dificultad
+            + "  |  Tiempo: "
+            + ultimoResultado.TiempoSobrevivido.ToString("0.0")
+            + " s"
+            + "\nNave: "
+            + ultimoResultado.NaveUsada
+            + "  |  Puntaje: "
+            + ultimoResultado.Puntaje
+            + "\nMejor registro: "
+            + mejorPuntaje;
+    }
+
     public void RegistrarPuntosExtra(int cantidad)
     {
         datosPartida.RegistrarPuntosExtra(cantidad);
@@ -725,6 +1065,19 @@ public class GameManager : MonoBehaviour
     public void RegistrarPowerUpRecogido(TipoPowerUp tipo)
     {
         datosPartida.RegistrarPowerUpRecogido(tipo);
+    }
+
+    public void MostrarAlertaAmenaza(int cantidad)
+    {
+        if (textoAlerta == null || estadoActual != EstadoPartidaSpaceShooter.Jugando)
+        {
+            return;
+        }
+
+        textoAlerta.text =
+            cantidad <= 1 ? "Amenaza entrante" : "Amenazas entrantes: " + cantidad;
+        CancelInvoke(nameof(OcultarAlertaAmenaza));
+        Invoke(nameof(OcultarAlertaAmenaza), 1.1f);
     }
 
     public void NotificarPausa(bool pausado)
@@ -770,6 +1123,46 @@ public class GameManager : MonoBehaviour
         if (crosshairApuntado != null)
         {
             crosshairApuntado.EstablecerVisible(estadoActual == EstadoPartidaSpaceShooter.Jugando);
+        }
+    }
+
+    public void AplicarAccesibilidadVisual()
+    {
+        float escalaTexto = AccesibilidadSpaceShooter.TextoGrandeActivo ? 1.18f : 1f;
+        Color colorTexto =
+            AccesibilidadSpaceShooter.AltoContrasteActivo ? Color.white : new Color(0.9f, 0.98f, 1f);
+
+        AplicarTextoHud(textoObjetivo, 28f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoEstado, 22f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoDash, 22f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoTurbo, 22f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoAlerta, 20f * escalaTexto, colorTexto);
+
+        if (panelHudVisual != null)
+        {
+            panelHudVisual.color =
+                AccesibilidadSpaceShooter.AltoContrasteActivo
+                    ? new Color(0f, 0f, 0f, 0.94f)
+                    : new Color(0.01f, 0.04f, 0.09f, 0.78f);
+        }
+    }
+
+    private void AplicarTextoHud(TextMeshProUGUI texto, float tamano, Color color)
+    {
+        if (texto == null)
+        {
+            return;
+        }
+
+        texto.fontSize = tamano;
+        texto.color = color;
+    }
+
+    private void OcultarAlertaAmenaza()
+    {
+        if (textoAlerta != null)
+        {
+            textoAlerta.text = string.Empty;
         }
     }
 }

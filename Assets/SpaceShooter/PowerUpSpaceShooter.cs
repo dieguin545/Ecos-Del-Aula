@@ -85,6 +85,7 @@ public class PowerUpSpaceShooter : MonoBehaviour
                 break;
             case TipoPowerUp.Dash:
                 nave.RecuperarCargaDash(1);
+                nave.RecuperarEnergiaTurbo(25f);
                 break;
             case TipoPowerUp.Escudo:
                 gameManager.ActivarEscudo(duracionEscudo);

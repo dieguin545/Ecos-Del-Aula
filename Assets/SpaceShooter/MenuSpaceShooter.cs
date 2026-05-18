@@ -31,7 +31,10 @@ public class MenuSpaceShooter : MonoBehaviour
     private TextMeshProUGUI textoNave;
     private TextMeshProUGUI textoTutorial;
     private TextMeshProUGUI textoLeaderboard;
-    private Toggle toggleDaltonico;
+    private TextMeshProUGUI textoTipoDaltonismo;
+    private Toggle toggleTextoGrande;
+    private Toggle toggleAltoContraste;
+    private Toggle toggleReducirEfectos;
 
     private DificultadSpaceShooter dificultadSeleccionada = DificultadSpaceShooter.Medio;
     private int paginaTutorialActual;
@@ -58,9 +61,19 @@ public class MenuSpaceShooter : MonoBehaviour
         ActualizarTutorial();
         ActualizarLeaderboard();
 
-        if (toggleDaltonico != null)
+        if (toggleTextoGrande != null)
         {
-            toggleDaltonico.isOn = AccesibilidadSpaceShooter.ModoDaltonicoActivo;
+            toggleTextoGrande.isOn = AccesibilidadSpaceShooter.TextoGrandeActivo;
+        }
+
+        if (toggleAltoContraste != null)
+        {
+            toggleAltoContraste.isOn = AccesibilidadSpaceShooter.AltoContrasteActivo;
+        }
+
+        if (toggleReducirEfectos != null)
+        {
+            toggleReducirEfectos.isOn = AccesibilidadSpaceShooter.ReducirEfectosActivo;
         }
     }
 
@@ -186,6 +199,40 @@ public class MenuSpaceShooter : MonoBehaviour
         {
             accesibilidad.EstablecerModoDaltonico(activo);
         }
+    }
+
+    public void AlternarTextoGrande(bool activo)
+    {
+        if (accesibilidad != null)
+        {
+            accesibilidad.EstablecerTextoGrande(activo);
+        }
+    }
+
+    public void AlternarAltoContraste(bool activo)
+    {
+        if (accesibilidad != null)
+        {
+            accesibilidad.EstablecerAltoContraste(activo);
+        }
+    }
+
+    public void AlternarReducirEfectos(bool activo)
+    {
+        if (accesibilidad != null)
+        {
+            accesibilidad.EstablecerReducirEfectos(activo);
+        }
+    }
+
+    public void SeleccionarTipoDaltonismoAnterior()
+    {
+        CambiarTipoDaltonismo(-1);
+    }
+
+    public void SeleccionarTipoDaltonismoSiguiente()
+    {
+        CambiarTipoDaltonismo(1);
     }
 
     public static GameObject CrearPanelBase(Transform padre, string nombre, Color color)
@@ -485,23 +532,52 @@ public class MenuSpaceShooter : MonoBehaviour
         CrearTexto(
             panelOpciones.transform,
             "DescripcionOpciones",
-            "El modo daltonico aumenta contraste y anade senales visuales extra.",
+            "Ajusta lectura, contraste y paleta de amenazas.",
             26f,
-            new Vector2(0f, 160f),
+            new Vector2(0f, 185f),
             new Vector2(900f, 60f),
             TextAlignmentOptions.Center
         );
 
-        toggleDaltonico = CrearToggle(
+        textoTipoDaltonismo = CrearTexto(
             panelOpciones.transform,
-            "ToggleDaltonico",
-            "Modo daltonico",
-            new Vector2(0f, 40f)
+            "TextoTipoDaltonismo",
+            "",
+            26f,
+            new Vector2(0f, 110f),
+            new Vector2(700f, 40f),
+            TextAlignmentOptions.Center
         );
-        toggleDaltonico.onValueChanged.AddListener(AlternarModoDaltonico);
+        CrearBoton(panelOpciones.transform, "BotonDaltonismoAnterior", "<", new Vector2(-220f, 110f), SeleccionarTipoDaltonismoAnterior);
+        CrearBoton(panelOpciones.transform, "BotonDaltonismoSiguiente", ">", new Vector2(220f, 110f), SeleccionarTipoDaltonismoSiguiente);
+
+        toggleTextoGrande = CrearToggle(
+            panelOpciones.transform,
+            "ToggleTextoGrande",
+            "Texto grande",
+            new Vector2(0f, 35f)
+        );
+        toggleTextoGrande.onValueChanged.AddListener(AlternarTextoGrande);
+
+        toggleAltoContraste = CrearToggle(
+            panelOpciones.transform,
+            "ToggleAltoContraste",
+            "Alto contraste",
+            new Vector2(0f, -35f)
+        );
+        toggleAltoContraste.onValueChanged.AddListener(AlternarAltoContraste);
+
+        toggleReducirEfectos = CrearToggle(
+            panelOpciones.transform,
+            "ToggleReducirEfectos",
+            "Reducir efectos",
+            new Vector2(0f, -105f)
+        );
+        toggleReducirEfectos.onValueChanged.AddListener(AlternarReducirEfectos);
 
         CrearBoton(panelOpciones.transform, "BotonOpcionesVolver", "Volver", new Vector2(0f, -220f), VolverAlMenu);
         panelOpciones.SetActive(false);
+        ActualizarTextoTipoDaltonismo();
     }
 
     private Toggle CrearToggle(Transform padre, string nombre, string texto, Vector2 posicion)
@@ -659,6 +735,29 @@ public class MenuSpaceShooter : MonoBehaviour
         if (panelTutorial != null) panelTutorial.SetActive(objetivo == panelTutorial);
         if (panelLeaderboard != null) panelLeaderboard.SetActive(objetivo == panelLeaderboard);
         if (panelOpciones != null) panelOpciones.SetActive(objetivo == panelOpciones);
+    }
+
+    private void CambiarTipoDaltonismo(int delta)
+    {
+        if (accesibilidad == null)
+        {
+            return;
+        }
+
+        int cantidad = System.Enum.GetValues(typeof(TipoDaltonismo)).Length;
+        int indiceActual = (int)AccesibilidadSpaceShooter.TipoDaltonismoActual;
+        int nuevoIndice = (indiceActual + delta + cantidad) % cantidad;
+        accesibilidad.EstablecerTipoDaltonismo((TipoDaltonismo)nuevoIndice);
+        ActualizarTextoTipoDaltonismo();
+    }
+
+    private void ActualizarTextoTipoDaltonismo()
+    {
+        if (textoTipoDaltonismo != null)
+        {
+            textoTipoDaltonismo.text =
+                "Daltonismo: " + AccesibilidadSpaceShooter.TipoDaltonismoActual;
+        }
     }
 
 }

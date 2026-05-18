@@ -7,6 +7,7 @@ public class ProyectilEnemigo : MonoBehaviour
 
     private int danio = 1;
     private Rigidbody rb;
+    private TrailRenderer trail;
 
     private void Awake()
     {
@@ -16,6 +17,7 @@ public class ProyectilEnemigo : MonoBehaviour
     private void Start()
     {
         Destroy(gameObject, tiempoVida);
+        PrepararTrail();
         AplicarAccesibilidadVisual();
     }
 
@@ -55,7 +57,45 @@ public class ProyectilEnemigo : MonoBehaviour
     {
         EstiloVisualSpaceShooter.AplicarAProyectilEnemigo(
             gameObject,
-            AccesibilidadSpaceShooter.ModoDaltonicoActivo
+            AccesibilidadSpaceShooter.TipoDaltonismoActual
         );
+
+        if (trail != null)
+        {
+            Color color;
+
+            switch (AccesibilidadSpaceShooter.TipoDaltonismoActual)
+            {
+                case TipoDaltonismo.Protanopia:
+                case TipoDaltonismo.Deuteranopia:
+                    color = EstiloVisualSpaceShooter.ColorAtaqueEnemigoDaltonico;
+                    break;
+                case TipoDaltonismo.Tritanopia:
+                    color = new Color(1f, 0.18f, 0.55f);
+                    break;
+                case TipoDaltonismo.Acromatopsia:
+                    color = Color.white;
+                    break;
+                default:
+                    color = EstiloVisualSpaceShooter.ColorAtaqueEnemigo;
+                    break;
+            }
+            trail.startColor = color;
+            trail.endColor = new Color(color.r, color.g, color.b, 0f);
+        }
+    }
+
+    private void PrepararTrail()
+    {
+        if (AccesibilidadSpaceShooter.ReducirEfectosActivo)
+        {
+            return;
+        }
+
+        trail = gameObject.AddComponent<TrailRenderer>();
+        trail.time = 0.2f;
+        trail.startWidth = 0.18f;
+        trail.endWidth = 0.03f;
+        trail.material = new Material(Shader.Find("Sprites/Default"));
     }
 }

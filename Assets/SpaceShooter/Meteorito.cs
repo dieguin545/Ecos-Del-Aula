@@ -26,6 +26,7 @@ public class Meteorito : MonoBehaviour
     [SerializeField] private float velocidadProyectil = 16f;
     [SerializeField] private float distanciaLaser = 28f;
     [SerializeField] private float duracionLaserVisible = 0.14f;
+    [SerializeField] private float tiempoAdvertenciaAtaque = 0.45f;
 
     [Header("Recompensas")]
     [SerializeField] private GameObject corazonPrefab;
@@ -49,6 +50,27 @@ public class Meteorito : MonoBehaviour
     private ConfiguracionDificultad dificultadActual =
         ConfiguracionDificultad.CrearPredeterminada(DificultadSpaceShooter.Medio);
     private LineRenderer lineRendererLaser;
+    private Color ColorAtaqueActual
+    {
+        get
+        {
+            switch (AccesibilidadSpaceShooter.TipoDaltonismoActual)
+            {
+                case TipoDaltonismo.Protanopia:
+                case TipoDaltonismo.Deuteranopia:
+                    return EstiloVisualSpaceShooter.ColorAtaqueEnemigoDaltonico;
+                case TipoDaltonismo.Tritanopia:
+                    return new Color(1f, 0.18f, 0.55f);
+                case TipoDaltonismo.Acromatopsia:
+                    return Color.white;
+                default:
+                    return EstiloVisualSpaceShooter.ColorAtaqueEnemigo;
+            }
+        }
+    }
+    private bool ataquePreparado;
+    private float ejecutarAtaqueEn;
+    private GestorAlertasAtaque gestorAlertas;
 
     public event Action<Meteorito, bool> AlMorir;
 
@@ -62,6 +84,7 @@ public class Meteorito : MonoBehaviour
         resistenciaActual = resistenciaBase;
         danioActual = danioBase;
         PrepararTablaDropsSiHaceFalta();
+        gestorAlertas = FindAnyObjectByType<GestorAlertasAtaque>();
     }
 
     private void Start()
@@ -338,6 +361,17 @@ public class Meteorito : MonoBehaviour
             return;
         }
 
+        if (ataquePreparado)
+        {
+            if (Time.time >= ejecutarAtaqueEn)
+            {
+                ataquePreparado = false;
+                EjecutarAtaque();
+            }
+
+            return;
+        }
+
         if (Time.time < siguienteAtaque)
         {
             return;
@@ -345,7 +379,17 @@ public class Meteorito : MonoBehaviour
 
         float intervalo = intervaloAtaqueBase / Mathf.Max(0.1f, dificultadActual.multiplicadorFrecuenciaAtaque);
         siguienteAtaque = Time.time + intervalo;
+        ataquePreparado = true;
+        ejecutarAtaqueEn = Time.time + tiempoAdvertenciaAtaque;
 
+        if (gestorAlertas != null && nave != null)
+        {
+            gestorAlertas.RegistrarAmenaza(this, Vector3.Distance(transform.position, nave.position));
+        }
+    }
+
+    private void EjecutarAtaque()
+    {
         if (tipo == TipoAmenaza.LaserCorrupto)
         {
             LanzarLaser();
@@ -366,7 +410,7 @@ public class Meteorito : MonoBehaviour
         GameObject proyectil = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         proyectil.name = "ProyectilEnemigo";
         proyectil.transform.position = transform.position;
-        proyectil.transform.localScale = Vector3.one * 0.35f;
+        proyectil.transform.localScale = Vector3.one * 0.5f;
 
         Collider collider = proyectil.GetComponent<Collider>();
         collider.isTrigger = true;
@@ -452,9 +496,7 @@ public class Meteorito : MonoBehaviour
     private IEnumerator MostrarLaserTemporal()
     {
         lineRendererLaser.startColor =
-            AccesibilidadSpaceShooter.ModoDaltonicoActivo
-                ? EstiloVisualSpaceShooter.ColorAtaqueEnemigoDaltonico
-                : EstiloVisualSpaceShooter.ColorAtaqueEnemigo;
+            ColorAtaqueActual;
         lineRendererLaser.endColor = lineRendererLaser.startColor;
         lineRendererLaser.enabled = true;
         yield return new WaitForSeconds(duracionLaserVisible);
@@ -465,7 +507,7 @@ public class Meteorito : MonoBehaviour
     {
         EstiloVisualSpaceShooter.AplicarAEnemigo(
             gameObject,
-            AccesibilidadSpaceShooter.ModoDaltonicoActivo
+            AccesibilidadSpaceShooter.TipoDaltonismoActual
         );
     }
 

@@ -21,11 +21,11 @@ public static class EstiloVisualSpaceShooter
         AplicarMaterial(objeto, ObtenerMaterialNave());
     }
 
-    public static void AplicarAEnemigo(GameObject objeto, bool modoDaltonico)
+    public static void AplicarAEnemigo(GameObject objeto, TipoDaltonismo tipoDaltonismo)
     {
         AplicarMaterial(
             objeto,
-            modoDaltonico ? ObtenerMaterialEnemigoDaltonico() : ObtenerMaterialEnemigo()
+            ObtenerMaterialEnemigoPorDaltonismo(tipoDaltonismo)
         );
     }
 
@@ -34,13 +34,11 @@ public static class EstiloVisualSpaceShooter
         AplicarMaterial(objeto, ObtenerMaterialBala());
     }
 
-    public static void AplicarAProyectilEnemigo(GameObject objeto, bool modoDaltonico)
+    public static void AplicarAProyectilEnemigo(GameObject objeto, TipoDaltonismo tipoDaltonismo)
     {
         AplicarMaterial(
             objeto,
-            modoDaltonico
-                ? ObtenerMaterialAtaqueEnemigoDaltonico()
-                : ObtenerMaterialAtaqueEnemigo()
+            ObtenerMaterialAtaqueEnemigoPorDaltonismo(tipoDaltonismo)
         );
     }
 
@@ -134,6 +132,40 @@ public static class EstiloVisualSpaceShooter
         }
 
         return materialAtaqueEnemigoDaltonico;
+    }
+
+    private static Material ObtenerMaterialEnemigoPorDaltonismo(TipoDaltonismo tipoDaltonismo)
+    {
+        switch (tipoDaltonismo)
+        {
+            case TipoDaltonismo.Protanopia:
+            case TipoDaltonismo.Deuteranopia:
+                return ObtenerMaterialEnemigoDaltonico();
+            case TipoDaltonismo.Tritanopia:
+                return CrearMaterialSolido(new Color(1f, 0.18f, 0.55f), new Color(0.8f, 0.15f, 0.5f));
+            case TipoDaltonismo.Acromatopsia:
+                return CrearMaterialSolido(Color.white, Color.white * 0.8f);
+            default:
+                return ObtenerMaterialEnemigo();
+        }
+    }
+
+    private static Material ObtenerMaterialAtaqueEnemigoPorDaltonismo(
+        TipoDaltonismo tipoDaltonismo
+    )
+    {
+        switch (tipoDaltonismo)
+        {
+            case TipoDaltonismo.Protanopia:
+            case TipoDaltonismo.Deuteranopia:
+                return ObtenerMaterialAtaqueEnemigoDaltonico();
+            case TipoDaltonismo.Tritanopia:
+                return CrearMaterialSolido(new Color(1f, 0.18f, 0.55f), new Color(1f, 0.18f, 0.55f));
+            case TipoDaltonismo.Acromatopsia:
+                return CrearMaterialSolido(Color.white, Color.white);
+            default:
+                return ObtenerMaterialAtaqueEnemigo();
+        }
     }
 
     private static Material CrearMaterialSolido(Color color, Color emision)

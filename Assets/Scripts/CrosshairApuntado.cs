@@ -14,9 +14,10 @@ public class CrosshairApuntado : MonoBehaviour
     [Header("Deteccion")]
     public float distanciaDeteccion = 500f;
     public string tagEnemigo = "Enemigo";
+    [SerializeField] private LayerMask capasDeteccion = ~0;
 
     private Vector3 escalaOriginal = Vector3.one;
-    private bool modoDaltonico;
+    private TipoDaltonismo tipoDaltonismo;
     private bool visiblePorEstado = true;
 
     private void Start()
@@ -32,7 +33,8 @@ public class CrosshairApuntado : MonoBehaviour
         }
 
         escalaOriginal = transform.localScale;
-        AplicarModoDaltonico(AccesibilidadSpaceShooter.ModoDaltonicoActivo);
+        PrepararRectTransform();
+        AplicarTipoDaltonismo(AccesibilidadSpaceShooter.TipoDaltonismoActual);
         PonerBlanco();
         EstablecerVisible(visiblePorEstado);
     }
@@ -46,9 +48,20 @@ public class CrosshairApuntado : MonoBehaviour
 
         Ray rayo = camara.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        if (Physics.Raycast(rayo, out RaycastHit hit, distanciaDeteccion, ~0, QueryTriggerInteraction.Collide))
+        RaycastHit[] impactos = Physics.RaycastAll(
+            rayo,
+            distanciaDeteccion,
+            capasDeteccion,
+            QueryTriggerInteraction.Collide
+        );
+
+        System.Array.Sort(impactos, (a, b) => a.distance.CompareTo(b.distance));
+
+        for (int i = 0; i < impactos.Length; i++)
         {
-            if (hit.collider.CompareTag(tagEnemigo))
+            Collider collider = impactos[i].collider;
+
+            if (EsEnemigo(collider))
             {
                 PonerRojo();
                 return;
@@ -65,7 +78,8 @@ public class CrosshairApuntado : MonoBehaviour
             imagenCrosshair.sprite = crosshairBlanco;
         }
 
-        imagenCrosshair.color = Color.white;
+        imagenCrosshair.color =
+            tipoDaltonismo == TipoDaltonismo.Acromatopsia ? Color.white : Color.white;
         transform.localScale = escalaOriginal;
     }
 
@@ -78,15 +92,18 @@ public class CrosshairApuntado : MonoBehaviour
         }
         else
         {
-            imagenCrosshair.color = Color.red;
+            imagenCrosshair.color = ObtenerColorApuntado();
         }
 
-        transform.localScale = modoDaltonico ? escalaOriginal * 1.25f : escalaOriginal;
+        transform.localScale =
+            tipoDaltonismo == TipoDaltonismo.Ninguno
+                ? escalaOriginal
+                : escalaOriginal * 1.25f;
     }
 
-    public void AplicarModoDaltonico(bool activo)
+    public void AplicarTipoDaltonismo(TipoDaltonismo tipo)
     {
-        modoDaltonico = activo;
+        tipoDaltonismo = tipo;
     }
 
     public void EstablecerVisible(bool visible)
@@ -96,6 +113,67 @@ public class CrosshairApuntado : MonoBehaviour
         if (imagenCrosshair != null)
         {
             imagenCrosshair.enabled = visible;
+        }
+    }
+
+    private void PrepararRectTransform()
+    {
+        RectTransform rect = transform as RectTransform;
+
+        if (rect == null)
+        {
+            return;
+        }
+
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(56f, 56f);
+
+        if (imagenCrosshair != null)
+        {
+            imagenCrosshair.preserveAspect = true;
+            imagenCrosshair.raycastTarget = false;
+        }
+    }
+
+    private bool EsEnemigo(Collider collider)
+    {
+        if (collider == null)
+        {
+            return false;
+        }
+
+        Transform actual = collider.transform;
+
+        while (actual != null)
+        {
+            if (actual.CompareTag(tagEnemigo))
+            {
+                return true;
+            }
+
+            actual = actual.parent;
+        }
+
+        return collider.transform.root != null
+            && collider.transform.root.CompareTag(tagEnemigo);
+    }
+
+    private Color ObtenerColorApuntado()
+    {
+        switch (tipoDaltonismo)
+        {
+            case TipoDaltonismo.Protanopia:
+            case TipoDaltonismo.Deuteranopia:
+                return new Color(1f, 0.82f, 0.15f);
+            case TipoDaltonismo.Tritanopia:
+                return new Color(1f, 0.2f, 0.55f);
+            case TipoDaltonismo.Acromatopsia:
+                return Color.white;
+            default:
+                return Color.red;
         }
     }
 }

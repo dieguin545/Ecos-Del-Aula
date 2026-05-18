@@ -396,17 +396,20 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     {
         if (toggleTextoGrande != null)
         {
-            PlayerPrefs.SetInt("TextoGrande", toggleTextoGrande.isOn ? 1 : 0);
+            PlayerPrefs.SetInt("accesibilidad_texto_grande", toggleTextoGrande.isOn ? 1 : 0);
         }
 
         if (toggleAltoContraste != null)
         {
-            PlayerPrefs.SetInt("AltoContraste", toggleAltoContraste.isOn ? 1 : 0);
+            PlayerPrefs.SetInt("accesibilidad_alto_contraste", toggleAltoContraste.isOn ? 1 : 0);
         }
 
         if (toggleModoDaltonico != null)
         {
-            PlayerPrefs.SetInt("ModoDaltonico", toggleModoDaltonico.isOn ? 1 : 0);
+            PlayerPrefs.SetInt(
+                "accesibilidad_tipo_daltonismo",
+                toggleModoDaltonico.isOn ? (int)TipoDaltonismo.Deuteranopia : (int)TipoDaltonismo.Ninguno
+            );
         }
 
         PlayerPrefs.Save();
@@ -416,17 +419,19 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     {
         if (toggleTextoGrande != null)
         {
-            toggleTextoGrande.isOn = PlayerPrefs.GetInt("TextoGrande", 0) == 1;
+            toggleTextoGrande.isOn = PlayerPrefs.GetInt("accesibilidad_texto_grande", 0) == 1;
         }
 
         if (toggleAltoContraste != null)
         {
-            toggleAltoContraste.isOn = PlayerPrefs.GetInt("AltoContraste", 0) == 1;
+            toggleAltoContraste.isOn = PlayerPrefs.GetInt("accesibilidad_alto_contraste", 0) == 1;
         }
 
         if (toggleModoDaltonico != null)
         {
-            toggleModoDaltonico.isOn = PlayerPrefs.GetInt("ModoDaltonico", 0) == 1;
+            toggleModoDaltonico.isOn =
+                PlayerPrefs.GetInt("accesibilidad_tipo_daltonismo", 0)
+                != (int)TipoDaltonismo.Ninguno;
         }
     }
 

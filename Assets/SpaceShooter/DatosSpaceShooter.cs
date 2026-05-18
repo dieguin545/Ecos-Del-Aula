@@ -38,6 +38,15 @@ public enum TipoPowerUp
     Puntos
 }
 
+public enum TipoDaltonismo
+{
+    Ninguno,
+    Protanopia,
+    Deuteranopia,
+    Tritanopia,
+    Acromatopsia
+}
+
 [Serializable]
 public class ConfiguracionDificultad
 {

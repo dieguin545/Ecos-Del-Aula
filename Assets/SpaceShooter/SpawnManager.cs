@@ -12,12 +12,12 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private float intervaloSpawnInicial = 2f;
     [SerializeField] private float intervaloSpawnMinimo = 1.1f;
 
-    [SerializeField] private float radioMinimo = 18f;
-
-    [SerializeField] private float radioMaximo = 32f;
-
-    [SerializeField] private float alturaMinima = -15f;
-    [SerializeField] private float alturaMaxima = 15f;
+    [SerializeField] private float radioMinimo = 24f;
+    [SerializeField] private float radioMaximo = 46f;
+    [SerializeField] private float alturaMinima = -24f;
+    [SerializeField] private float alturaMaxima = 24f;
+    [SerializeField] private float profundidadMinima = -18f;
+    [SerializeField] private float profundidadMaxima = 18f;
     [SerializeField] private int maxEnemigosIniciales = 8;
     [SerializeField] private int maxEnemigosAbsoluto = 15;
     [SerializeField] private int intentosPosicionSpawn = 8;
@@ -192,10 +192,11 @@ public class SpawnManager : MonoBehaviour
             direccionHorizontal.Normalize();
             float radio = UnityEngine.Random.Range(radioMinimo, radioMaximo);
             float altura = UnityEngine.Random.Range(alturaMinima, alturaMaxima);
+            float profundidad = UnityEngine.Random.Range(profundidadMinima, profundidadMaxima);
             Vector3 offset = new Vector3(
                 direccionHorizontal.x * radio,
                 altura,
-                direccionHorizontal.y * radio
+                direccionHorizontal.y * radio + profundidad
             );
 
             ultimaPosicion = nave.position + offset;

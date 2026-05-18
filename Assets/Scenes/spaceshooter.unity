@@ -146,7 +146,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e93311722477744ca6e7dc74aa5cf33, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   vidas: 3
   vidasMaximas: 3
@@ -157,7 +157,16 @@ MonoBehaviour:
   objetivoEnemigos: 25
   textoObjetivo: {fileID: 0}
   textoEstado: {fileID: 0}
+  textoVidas: {fileID: 0}
   textoDash: {fileID: 0}
+  textoTurbo: {fileID: 0}
+  textoAlerta: {fileID: 0}
+  spriteVida: {fileID: 0}
+  spriteEscudo: {fileID: 0}
+  spriteTurbo: {fileID: 0}
+  spriteDash: {fileID: 0}
+  spriteReparacion: {fileID: 0}
+  spriteAmenaza: {fileID: 0}
   panelGameOver: {fileID: 1619999988}
   panelVictoria: {fileID: 0}
   spawnManager: {fileID: 0}
@@ -166,6 +175,7 @@ MonoBehaviour:
   menuSpaceShooter: {fileID: 0}
   controladorPausa: {fileID: 0}
   accesibilidadSpaceShooter: {fileID: 0}
+  crosshairApuntado: {fileID: 0}
   juegoActivo: 1
 --- !u!4 &90886068
 Transform:
@@ -196,7 +206,7 @@ GameObject:
   - component: {fileID: 271470173}
   m_Layer: 5
   m_Name: Crosshair
-  m_TagString: Untagged
+  m_TagString: Enemigo
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -230,7 +240,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6b4825a77997304691754e639cd013c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosshairApuntado
   camara: {fileID: 992678448}
   imagenCrosshair: {fileID: 271470174}
@@ -238,6 +248,9 @@ MonoBehaviour:
   crosshairRojo: {fileID: 21300000, guid: a0d966d1ff3f9c24095486d572156ec0, type: 3}
   distanciaDeteccion: 500
   tagEnemigo: Enemigo
+  capasDeteccion:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &271470174
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -571,16 +584,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NaveController
   velocidad: 12
-  velocidadTurbo: 24
+  velocidadTurbo: 19
   velocidadVertical: 12
-  limiteMapa: 35
-  alturaMinima: -20
-  alturaMaxima: 20
-  fuerzaEsquive: 12
-  duracionEsquive: 0.18
-  cooldownEsquive: 0.45
+  limiteX: 68
+  limiteZ: 68
+  alturaMinima: -34
+  alturaMaxima: 34
+  energiaTurboMaxima: 100
+  consumoTurboPorSegundo: 25
+  regeneracionTurboPorSegundo: 15
+  retrasoRegeneracionTurbo: 0.75
+  bloqueoTurboAlVaciar: 0.6
+  fuerzaEsquive: 28
+  duracionEsquive: 0.22
+  cooldownEsquive: 0.55
   cargasEsquiveMaximas: 3
   recargaCargaSegundos: 2.8
+  radioRecoleccionPowerUps: 3.25
   teclaEsquivarIzquierda: 113
   teclaEsquivarDerecha: 101
   teclaSubir: 32
@@ -605,34 +625,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ba09217cdda42b0a648e096fdc9b473, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SelectorNave
   modelosDisponibles:
   - nombre: Nave Alfa
-    modelo: {fileID: 919132149155446097, guid: 607be57461ed3f049b5420cd6dfb9f37, type: 3}
+    modelo: {fileID: 2026871341374051399, guid: c73abf0e21bb2fa49ba820b9917dc80f, type: 3}
     posicionLocal: {x: 0, y: 0, z: 0}
-    rotacionLocal: {x: 0, y: 0, z: 0}
-    escalaLocal: {x: 128, y: 128, z: 128}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
   - nombre: Nave Beta
-    modelo: {fileID: 919132149155446097, guid: 50fb1f305cc84b64b9d213008d7491f8, type: 3}
+    modelo: {fileID: 7274037728988152624, guid: dd0db27467480d0468122d624d8510fe, type: 3}
     posicionLocal: {x: 0, y: 0, z: 0}
-    rotacionLocal: {x: 0, y: 0, z: 0}
-    escalaLocal: {x: 128, y: 128, z: 128}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
   - nombre: Nave Gamma
-    modelo: {fileID: 919132149155446097, guid: affab088ea8cf144b9cf4c92e5138f85, type: 3}
+    modelo: {fileID: 8217582540683966967, guid: d5377a69309910a49857d895dc8d40cd, type: 3}
     posicionLocal: {x: 0, y: 0, z: 0}
-    rotacionLocal: {x: 0, y: 0, z: 0}
-    escalaLocal: {x: 128, y: 128, z: 128}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
   - nombre: Nave Delta
-    modelo: {fileID: 919132149155446097, guid: b34d7a756deffcd498882f08b8026fda, type: 3}
+    modelo: {fileID: 6773325737190591225, guid: f37bacfb37e27f44ab050de8ddd2f4ba, type: 3}
     posicionLocal: {x: 0, y: 0, z: 0}
-    rotacionLocal: {x: 0, y: 0, z: 0}
-    escalaLocal: {x: 128, y: 128, z: 128}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
   - nombre: Nave Epsilon
-    modelo: {fileID: 919132149155446097, guid: 229ea5aff5ed5e841b5afbe3dc9d0eeb, type: 3}
+    modelo: {fileID: 5781906109265505200, guid: 8a8521d232e2d244985c629e2b01bedb, type: 3}
     posicionLocal: {x: 0, y: 0, z: 0}
-    rotacionLocal: {x: 0, y: 0, z: 0}
-    escalaLocal: {x: 128, y: 128, z: 128}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
   contenedorVisual: {fileID: 0}
   renderersBase: []
 --- !u!1 &510353917
@@ -1918,10 +1938,12 @@ MonoBehaviour:
   nave: {fileID: 0}
   intervaloSpawnInicial: 2
   intervaloSpawnMinimo: 1.1
-  radioMinimo: 18
-  radioMaximo: 32
-  alturaMinima: -15
-  alturaMaxima: 15
+  radioMinimo: 24
+  radioMaximo: 46
+  alturaMinima: -26
+  alturaMaxima: 26
+  profundidadMinima: -28
+  profundidadMaxima: 28
   maxEnemigosIniciales: 8
   maxEnemigosAbsoluto: 15
   intentosPosicionSpawn: 8
