@@ -38,4 +38,11 @@ public class PanelAyuda : MonoBehaviour
     {
         textoAyuda.text = mensajes[paginaActual];
     }
+
+    public void Cerrar()
+    {
+        paginaActual = 0;
+        MostrarPagina();
+        gameObject.SetActive(false);
+    }
 }
