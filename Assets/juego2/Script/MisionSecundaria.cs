@@ -84,21 +84,17 @@ public class MisionSecundaria : MonoBehaviour
     }
 }
 
-    private void IniciarMision()
+ private void IniciarMision()
 {
     misionIniciada = true;
     MostrarDialogo(mision.dialogoInicio);
     MisionManager.Instance.RegistrarMision(mision);
 
-    // Si no requiere objeto da la recompensa al instante
-    if ((mision.objetoRequerido == "" || mision.objetoRequerido == null) 
-        && mision.objetoRecompensa != "")
-    {
+    // Solo agrega el objeto al inventario, NO completa la mision
+    if (mision.objetoRecompensa != "")
         Inventario.Instance.AgregarObjeto(new Objeto(mision.objetoRecompensa));
-        mision.completada = true;
-        MisionManager.Instance.CompletarMision(mision.id);
-    }
 }
+
 
     private void VerificarMision()
 {

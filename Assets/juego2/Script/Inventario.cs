@@ -66,18 +66,22 @@ public class Inventario : MonoBehaviour
     }
 
     public void EliminarObjeto(string nombre)
+{
+    Debug.Log("Intentando eliminar: '" + nombre + "'");
+    LinkedListNode<Objeto> nodo = objetos.First;
+    while (nodo != null)
     {
-        LinkedListNode<Objeto> nodo = objetos.First;
-        while (nodo != null)
+        Debug.Log("Comparando con: '" + nodo.Value.nombre + "'");
+        if (nodo.Value.nombre == nombre)
         {
-            if (nodo.Value.nombre == nombre)
-            {
-                objetos.Remove(nodo);
-                return;
-            }
-            nodo = nodo.Next;
+            objetos.Remove(nodo);
+            Debug.Log("Objeto eliminado: " + nombre);
+            return;
         }
+        nodo = nodo.Next;
     }
+    Debug.Log("Objeto NO encontrado: " + nombre);
+}
 
     public int GetCantidadObjetos()
     {
@@ -100,34 +104,34 @@ public class Inventario : MonoBehaviour
     }
 
     private void ActualizarUI()
+{
+    // Limpia slots anteriores
+    foreach (Transform hijo in contenedorObjetos)
+        Destroy(hijo.gameObject);
+
+    if (objetos.Count == 0)
     {
-        // Limpia slots anteriores
-        foreach (Transform hijo in contenedorObjetos)
-            Destroy(hijo.gameObject);
+        textoVacio.gameObject.SetActive(true);
+        textoVacio.text = "Tu inventario está vacío";
+        return;
+    }
 
-        if (objetos.Count == 0)
+    textoVacio.gameObject.SetActive(false);
+
+    foreach (Objeto obj in objetos)
+    {
+        GameObject slot = Instantiate(prefabSlot, contenedorObjetos);
+        TextMeshProUGUI[] textos = slot.GetComponentsInChildren<TextMeshProUGUI>();
+        if (textos.Length >= 1)
         {
-            textoVacio.gameObject.SetActive(true);
-            textoVacio.text = "Tu inventario está vacío";
-            return;
+            textos[0].text = obj.nombre;
         }
-
-        textoVacio.gameObject.SetActive(false);
-
-        foreach (Objeto obj in objetos)
+        if (obj.icono != null)
         {
-            GameObject slot = Instantiate(prefabSlot, contenedorObjetos);
-            TextMeshProUGUI[] textos = slot.GetComponentsInChildren<TextMeshProUGUI>();
-            if (textos.Length >= 2)
-            {
-                textos[0].text = obj.nombre;
-            }
-            if (obj.icono != null)
-            {
-                Image imagen = slot.GetComponentInChildren<Image>();
-                if (imagen != null)
-                    imagen.sprite = obj.icono;
-            }
+            Image imagen = slot.GetComponentInChildren<Image>();
+            if (imagen != null)
+                imagen.sprite = obj.icono;
         }
     }
+}
 }

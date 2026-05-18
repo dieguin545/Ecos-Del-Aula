@@ -2,7 +2,7 @@ public enum PersonajeType
 {
     Negro,
     Emo,
-    Otaku,
     Furro,
+    Otaku,
     Nerd
 }
