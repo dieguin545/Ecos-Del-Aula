@@ -2,28 +2,30 @@ using UnityEngine;
 
 public class Bala : MonoBehaviour
 {
-    public float velocidad = 20f;
-    Vector3 direccion;
+    [SerializeField] private float tiempoVida = 3f;
+    [SerializeField] private int danio = 1;
 
-    public void SetDireccion(Vector3 dir)
+    private void Start()
     {
-        direccion = dir;
+        EstiloVisualSpaceShooter.AplicarABala(gameObject);
+        Destroy(gameObject, tiempoVida);
     }
 
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        transform.position += direccion * velocidad * Time.deltaTime;
-
-        if (Vector3.Distance(transform.position, Vector3.zero) > 60f)
-            Destroy(gameObject);
-    }
-
-    void OnTriggerEnter(Collider otro)
-    {
-        if (otro.CompareTag("Meteorito"))
+        if (other.CompareTag("Enemigo"))
         {
-            Meteorito m = otro.GetComponent<Meteorito>();
-            if (m != null) m.Morir();
+            Meteorito meteorito = other.GetComponent<Meteorito>();
+
+            if (meteorito != null)
+            {
+                meteorito.RecibirImpacto(danio);
+            }
+            else
+            {
+                Destroy(other.gameObject);
+            }
+
             Destroy(gameObject);
         }
     }
