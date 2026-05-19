@@ -1,6 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
-
 [System.Serializable]
 public class Mision
 {
@@ -17,6 +17,9 @@ public class MisionSecundaria : MonoBehaviour
     [Header("Configuracion")]
     public Mision mision;
     public bool misionIniciada = false;
+
+    [Header("Sprites")]
+    public Sprite iconoRecompensa;
 
     [Header("UI")]
     public GameObject burbujaDialogo;
@@ -71,58 +74,49 @@ public class MisionSecundaria : MonoBehaviour
     }
 
     private void Interactuar()
-{
-    if (mision.completada) return;
-
-    if (!misionIniciada)
     {
-        IniciarMision();
+        if (mision.completada) return;
+
+        if (!misionIniciada)
+            IniciarMision();
+        else
+            VerificarMision();
     }
-    else
+
+    private void IniciarMision()
     {
-        VerificarMision();
+        misionIniciada = true;
+        MostrarDialogo(mision.dialogoInicio);
+        MisionManager.Instance.RegistrarMision(mision);
+
+        if (mision.objetoRecompensa != "")
+            Inventario.Instance.AgregarObjeto(new Objeto(mision.objetoRecompensa, iconoRecompensa));
     }
-}
-
- private void IniciarMision()
-{
-    misionIniciada = true;
-    MostrarDialogo(mision.dialogoInicio);
-    MisionManager.Instance.RegistrarMision(mision);
-
-    // Solo agrega el objeto al inventario, NO completa la mision
-    if (mision.objetoRecompensa != "")
-        Inventario.Instance.AgregarObjeto(new Objeto(mision.objetoRecompensa));
-}
-
 
     private void VerificarMision()
-{
-    // Si no requiere objeto simplemente completa
-    if (mision.objetoRequerido == "" || mision.objetoRequerido == null)
     {
-        mision.completada = true;
-        if (mision.objetoRecompensa != "")
-            Inventario.Instance.AgregarObjeto(new Objeto(mision.objetoRecompensa));
-        MostrarDialogo(mision.dialogoCompletado);
-        MisionManager.Instance.CompletarMision(mision.id);
-        return;
-    }
+        if (mision.objetoRequerido == "" || mision.objetoRequerido == null)
+        {
+            mision.completada = true;
+            MostrarDialogo(mision.dialogoCompletado);
+            MisionManager.Instance.CompletarMision(mision.id);
+            return;
+        }
 
-    if (Inventario.Instance.TieneObjeto(mision.objetoRequerido))
-    {
-        mision.completada = true;
-        Inventario.Instance.EliminarObjeto(mision.objetoRequerido);
-        if (mision.objetoRecompensa != "")
-            Inventario.Instance.AgregarObjeto(new Objeto(mision.objetoRecompensa));
-        MostrarDialogo(mision.dialogoCompletado);
-        MisionManager.Instance.CompletarMision(mision.id);
+        if (Inventario.Instance.TieneObjeto(mision.objetoRequerido))
+        {
+            mision.completada = true;
+            Inventario.Instance.EliminarObjeto(mision.objetoRequerido);
+            if (mision.objetoRecompensa != "")
+                Inventario.Instance.AgregarObjeto(new Objeto(mision.objetoRecompensa, iconoRecompensa));
+            MostrarDialogo(mision.dialogoCompletado);
+            MisionManager.Instance.CompletarMision(mision.id);
+        }
+        else
+        {
+            MostrarDialogo("Aún no tienes lo que necesito...");
+        }
     }
-    else
-    {
-        MostrarDialogo("Aún no tienes lo que necesito...");
-    }
-}
 
     private void MostrarDialogo(string mensaje)
     {

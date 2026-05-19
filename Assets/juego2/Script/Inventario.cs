@@ -119,19 +119,22 @@ public class Inventario : MonoBehaviour
     textoVacio.gameObject.SetActive(false);
 
     foreach (Objeto obj in objetos)
+{
+    GameObject slot = Instantiate(prefabSlot, contenedorObjetos);
+    
+    // Asigna el nombre
+    TextMeshProUGUI[] textos = slot.GetComponentsInChildren<TextMeshProUGUI>();
+    if (textos.Length >= 1)
+        textos[0].text = obj.nombre;
+
+    // Asigna el icono buscando por nombre
+    Transform iconoTransform = slot.transform.Find("IconoObjeto");
+    if (iconoTransform != null && obj.icono != null)
     {
-        GameObject slot = Instantiate(prefabSlot, contenedorObjetos);
-        TextMeshProUGUI[] textos = slot.GetComponentsInChildren<TextMeshProUGUI>();
-        if (textos.Length >= 1)
-        {
-            textos[0].text = obj.nombre;
-        }
-        if (obj.icono != null)
-        {
-            Image imagen = slot.GetComponentInChildren<Image>();
-            if (imagen != null)
-                imagen.sprite = obj.icono;
-        }
+        Image icono = iconoTransform.GetComponent<Image>();
+        if (icono != null)
+            icono.sprite = obj.icono;
     }
+}
 }
 }
