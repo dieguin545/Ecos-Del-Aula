@@ -1,4 +1,4 @@
-using System.Collections;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -23,6 +23,28 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     public Toggle toggleTextoGrande;
     public Toggle toggleAltoContraste;
     public Toggle toggleModoDaltonico;
+    public Toggle toggleReducirEfectos;
+
+    [Header("Tipos de daltonismo")]
+    public Button botonDaltonismoNinguno;
+    public Button botonDaltonismoProtanopia;
+    public Button botonDaltonismoDeuteranopia;
+    public Button botonDaltonismoTritanopia;
+    public Button botonDaltonismoAcromatopsia;
+
+    [Header("Partidas")]
+    public Button botonSlot1;
+    public Button botonSlot2;
+    public Button botonSlot3;
+    public TextMeshProUGUI textoSlotActivo;
+
+    [Header("Detalle de slot")]
+    public GameObject panelDetalleSlot;
+    public TextMeshProUGUI textoDetalleSlot;
+    public Button botonEntrarSlot;
+    public Button botonBorrarSlot;
+    public Button botonConfirmarBorrarSlot;
+    public Button botonCancelarSlot;
 
     [Header("Jugador y camara")]
     public MonoBehaviour scriptMovimientoJugador;
@@ -51,13 +73,14 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     private Color[] coloresOriginalesTMP;
     private Color[] coloresOriginalesNormales;
     private Color[] coloresOriginalesImagenes;
-
-    private Coroutine rutinaCerrarPausa;
+    private int slotSeleccionado = 1;
+    private bool confirmandoBorradoSlot;
 
     private void Start()
     {
         EstaPausado = false;
         Time.timeScale = 1f;
+
         NormalizarArreglosSerializados();
 
         if (camaraPrincipal != null)
@@ -79,9 +102,13 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             panelOpciones.SetActive(false);
         }
 
+        if (panelDetalleSlot != null)
+        {
+            panelDetalleSlot.SetActive(false);
+        }
+
         BloquearJugadorYCamara(false);
         OcultarCursorGameplay();
-
         AplicarAccesibilidad();
     }
 
@@ -94,6 +121,12 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         if (MenuAbierto())
         {
+            if (panelDetalleSlot != null && panelDetalleSlot.activeSelf)
+            {
+                CerrarDetalleSlot();
+                return;
+            }
+
             Continuar();
             return;
         }
@@ -104,11 +137,6 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         }
 
         if (Time.frameCount <= InteraccionPC.FrameCierrePC + 1)
-        {
-            return;
-        }
-
-        if (HayOtraPantallaAbierta())
         {
             return;
         }
@@ -156,6 +184,30 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             botonVolver.onClick.AddListener(VolverAPausa);
         }
 
+        if (botonEntrarSlot != null)
+        {
+            botonEntrarSlot.onClick.RemoveAllListeners();
+            botonEntrarSlot.onClick.AddListener(EntrarSlotSeleccionado);
+        }
+
+        if (botonBorrarSlot != null)
+        {
+            botonBorrarSlot.onClick.RemoveAllListeners();
+            botonBorrarSlot.onClick.AddListener(SolicitarBorrarSlot);
+        }
+
+        if (botonConfirmarBorrarSlot != null)
+        {
+            botonConfirmarBorrarSlot.onClick.RemoveAllListeners();
+            botonConfirmarBorrarSlot.onClick.AddListener(ConfirmarBorrarSlot);
+        }
+
+        if (botonCancelarSlot != null)
+        {
+            botonCancelarSlot.onClick.RemoveAllListeners();
+            botonCancelarSlot.onClick.AddListener(CerrarDetalleSlot);
+        }
+
         if (toggleTextoGrande != null)
         {
             toggleTextoGrande.onValueChanged.RemoveAllListeners();
@@ -185,14 +237,29 @@ public class MenuPausaAccesibilidad : MonoBehaviour
                 AplicarAccesibilidad();
             });
         }
+
+        if (toggleReducirEfectos != null)
+        {
+            toggleReducirEfectos.onValueChanged.RemoveAllListeners();
+            toggleReducirEfectos.gameObject.SetActive(false);
+        }
+
+        ConectarBotonDaltonismo(botonDaltonismoNinguno, TipoDaltonismo.Ninguno);
+        ConectarBotonDaltonismo(botonDaltonismoProtanopia, TipoDaltonismo.Protanopia);
+        ConectarBotonDaltonismo(botonDaltonismoDeuteranopia, TipoDaltonismo.Deuteranopia);
+        ConectarBotonDaltonismo(botonDaltonismoTritanopia, TipoDaltonismo.Tritanopia);
+        ConectarBotonDaltonismo(botonDaltonismoAcromatopsia, TipoDaltonismo.Acromatopsia);
+
+        ConectarBotonSlot(botonSlot1, 1);
+        ConectarBotonSlot(botonSlot2, 2);
+        ConectarBotonSlot(botonSlot3, 3);
     }
 
     public void Pausar()
     {
-        if (rutinaCerrarPausa != null)
+        if (InteraccionPC.PCAbierta)
         {
-            StopCoroutine(rutinaCerrarPausa);
-            rutinaCerrarPausa = null;
+            return;
         }
 
         EstaPausado = true;
@@ -205,6 +272,11 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         if (panelOpciones != null)
         {
             panelOpciones.SetActive(false);
+        }
+
+        if (panelDetalleSlot != null)
+        {
+            panelDetalleSlot.SetActive(false);
         }
 
         Time.timeScale = 0f;
@@ -229,38 +301,11 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         Time.timeScale = 1f;
 
-        OcultarCursorGameplay();
-
-        if (scriptMovimientoJugador != null)
+        if (!InteraccionPC.PCAbierta)
         {
-            scriptMovimientoJugador.enabled = true;
-        }
-
-        HabilitarScriptsExtra(true);
-
-        if (rutinaCerrarPausa != null)
-        {
-            StopCoroutine(rutinaCerrarPausa);
-        }
-
-        rutinaCerrarPausa = StartCoroutine(ReactivarCamaraDespuesDeUnFrame());
-    }
-
-    private IEnumerator ReactivarCamaraDespuesDeUnFrame()
-    {
-        yield return null;
-
-        if (!EstaPausado && !InteraccionPC.PCAbierta)
-        {
-            if (scriptCamara != null)
-            {
-                scriptCamara.enabled = true;
-            }
-
+            BloquearJugadorYCamara(false);
             OcultarCursorGameplay();
         }
-
-        rutinaCerrarPausa = null;
     }
 
     public void AbrirOpciones()
@@ -275,6 +320,11 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         if (panelOpciones != null)
         {
             panelOpciones.SetActive(true);
+        }
+
+        if (panelDetalleSlot != null)
+        {
+            panelDetalleSlot.SetActive(false);
         }
 
         Time.timeScale = 0f;
@@ -295,6 +345,11 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         if (panelPausa != null)
         {
             panelPausa.SetActive(true);
+        }
+
+        if (panelDetalleSlot != null)
+        {
+            panelDetalleSlot.SetActive(false);
         }
 
         Time.timeScale = 0f;
@@ -329,40 +384,9 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     {
         bool pausaAbierta = panelPausa != null && panelPausa.activeSelf;
         bool opcionesAbiertas = panelOpciones != null && panelOpciones.activeSelf;
+        bool detalleSlotAbierto = panelDetalleSlot != null && panelDetalleSlot.activeSelf;
 
-        return EstaPausado || pausaAbierta || opcionesAbiertas;
-    }
-
-    private bool HayOtraPantallaAbierta()
-    {
-        if (pantallasQueBloqueanPausa == null || pantallasQueBloqueanPausa.Length == 0)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < pantallasQueBloqueanPausa.Length; i++)
-        {
-            GameObject pantalla = pantallasQueBloqueanPausa[i];
-
-            if (pantalla == null)
-            {
-                continue;
-            }
-
-            Scene escenaPantalla = pantalla.scene;
-
-            if (!escenaPantalla.IsValid() || !escenaPantalla.isLoaded)
-            {
-                continue;
-            }
-
-            if (pantalla.activeInHierarchy)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return EstaPausado || pausaAbierta || opcionesAbiertas || detalleSlotAbierto;
     }
 
     private void BloquearJugadorYCamara(bool bloquear)
@@ -394,45 +418,40 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private void GuardarOpciones()
     {
-        if (toggleTextoGrande != null)
-        {
-            PlayerPrefs.SetInt("accesibilidad_texto_grande", toggleTextoGrande.isOn ? 1 : 0);
-        }
-
-        if (toggleAltoContraste != null)
-        {
-            PlayerPrefs.SetInt("accesibilidad_alto_contraste", toggleAltoContraste.isOn ? 1 : 0);
-        }
-
-        if (toggleModoDaltonico != null)
-        {
-            PlayerPrefs.SetInt(
-                "accesibilidad_tipo_daltonismo",
-                toggleModoDaltonico.isOn ? (int)TipoDaltonismo.Deuteranopia : (int)TipoDaltonismo.Ninguno
-            );
-        }
-
-        PlayerPrefs.Save();
+        ConfiguracionAccesibilidadJuego.Guardar(
+            EstaTextoGrandeActivo(),
+            EstaAltoContrasteActivo(),
+            ObtenerTipoDaltonismoSeleccionado(),
+            false
+        );
     }
 
     private void CargarOpciones()
     {
         if (toggleTextoGrande != null)
         {
-            toggleTextoGrande.isOn = PlayerPrefs.GetInt("accesibilidad_texto_grande", 0) == 1;
+            toggleTextoGrande.isOn = ConfiguracionAccesibilidadJuego.TextoGrandeActivo;
         }
 
         if (toggleAltoContraste != null)
         {
-            toggleAltoContraste.isOn = PlayerPrefs.GetInt("accesibilidad_alto_contraste", 0) == 1;
+            toggleAltoContraste.isOn = ConfiguracionAccesibilidadJuego.AltoContrasteActivo;
         }
 
         if (toggleModoDaltonico != null)
         {
             toggleModoDaltonico.isOn =
-                PlayerPrefs.GetInt("accesibilidad_tipo_daltonismo", 0)
-                != (int)TipoDaltonismo.Ninguno;
+                ConfiguracionAccesibilidadJuego.TipoDaltonismoActual != TipoDaltonismo.Ninguno;
         }
+
+        if (toggleReducirEfectos != null)
+        {
+            toggleReducirEfectos.isOn = false;
+            toggleReducirEfectos.gameObject.SetActive(false);
+        }
+
+        ActualizarTextoSlotActivo();
+        ActualizarBotonesDaltonismo();
     }
 
     private void GuardarValoresOriginales()
@@ -490,20 +509,22 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         for (int i = 0; i < textosTMP.Length; i++)
         {
-            if (textosTMP[i] == null) continue;
-
-            float tamanoBase = tamanosOriginalesTMP[i] <= 0 ? textosTMP[i].fontSize : tamanosOriginalesTMP[i];
-
-            textosTMP[i].fontSize = EstaTextoGrandeActivo() ? tamanoBase * 1.25f : tamanoBase;
-
-            if (EstaModoDaltonicoActivo())
+            if (textosTMP[i] == null)
             {
-                textosTMP[i].color = new Color(0.2f, 0.75f, 1f);
+                continue;
             }
-            else
-            {
-                textosTMP[i].color = coloresOriginalesTMP[i];
-            }
+
+            float tamanoBase = tamanosOriginalesTMP[i] <= 0f
+                ? textosTMP[i].fontSize
+                : tamanosOriginalesTMP[i];
+
+            textosTMP[i].fontSize = EstaTextoGrandeActivo()
+                ? tamanoBase * 1.25f
+                : tamanoBase;
+
+            textosTMP[i].color = EstaModoDaltonicoActivo()
+                ? new Color(0.2f, 0.75f, 1f)
+                : coloresOriginalesTMP[i];
         }
     }
 
@@ -516,22 +537,22 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         for (int i = 0; i < textosNormales.Length; i++)
         {
-            if (textosNormales[i] == null) continue;
+            if (textosNormales[i] == null)
+            {
+                continue;
+            }
 
-            int tamanoBase = tamanosOriginalesNormales[i] <= 0 ? textosNormales[i].fontSize : tamanosOriginalesNormales[i];
+            int tamanoBase = tamanosOriginalesNormales[i] <= 0
+                ? textosNormales[i].fontSize
+                : tamanosOriginalesNormales[i];
 
             textosNormales[i].fontSize = EstaTextoGrandeActivo()
                 ? Mathf.RoundToInt(tamanoBase * 1.25f)
                 : tamanoBase;
 
-            if (EstaModoDaltonicoActivo())
-            {
-                textosNormales[i].color = new Color(0.2f, 0.75f, 1f);
-            }
-            else
-            {
-                textosNormales[i].color = coloresOriginalesNormales[i];
-            }
+            textosNormales[i].color = EstaModoDaltonicoActivo()
+                ? new Color(0.2f, 0.75f, 1f)
+                : coloresOriginalesNormales[i];
         }
     }
 
@@ -544,9 +565,16 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         for (int i = 0; i < imagenesUI.Length; i++)
         {
-            if (imagenesUI[i] == null) continue;
+            if (imagenesUI[i] == null)
+            {
+                continue;
+            }
 
-            if (EstaAltoContrasteActivo())
+            if (imagenesUI[i].sprite != null)
+            {
+                imagenesUI[i].color = Color.white;
+            }
+            else if (EstaAltoContrasteActivo())
             {
                 imagenesUI[i].color = new Color(0f, 0f, 0f, 0.9f);
             }
@@ -573,7 +601,245 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private bool EstaModoDaltonicoActivo()
     {
-        return toggleModoDaltonico != null && toggleModoDaltonico.isOn;
+        return ConfiguracionAccesibilidadJuego.TipoDaltonismoActual != TipoDaltonismo.Ninguno;
+    }
+
+    private bool EstaReducirEfectosActivo()
+    {
+        return false;
+    }
+
+    private TipoDaltonismo ObtenerTipoDaltonismoSeleccionado()
+    {
+        if (toggleModoDaltonico != null && !toggleModoDaltonico.isOn)
+        {
+            return TipoDaltonismo.Ninguno;
+        }
+
+        TipoDaltonismo tipoGuardado = ConfiguracionAccesibilidadJuego.TipoDaltonismoActual;
+
+        return tipoGuardado == TipoDaltonismo.Ninguno && toggleModoDaltonico != null
+            ? TipoDaltonismo.Deuteranopia
+            : tipoGuardado;
+    }
+
+    private void ConectarBotonDaltonismo(Button boton, TipoDaltonismo tipo)
+    {
+        if (boton == null)
+        {
+            return;
+        }
+
+        boton.onClick.RemoveAllListeners();
+        boton.onClick.AddListener(() => SeleccionarTipoDaltonismo(tipo));
+    }
+
+    private void ConectarBotonSlot(Button boton, int slot)
+    {
+        if (boton == null)
+        {
+            return;
+        }
+
+        boton.onClick.RemoveAllListeners();
+        boton.onClick.AddListener(() => AbrirDetalleSlot(slot));
+    }
+
+    public void SeleccionarTipoDaltonismo(TipoDaltonismo tipo)
+    {
+        if (toggleModoDaltonico != null)
+        {
+            toggleModoDaltonico.isOn = tipo != TipoDaltonismo.Ninguno;
+        }
+
+        ConfiguracionAccesibilidadJuego.Guardar(
+            EstaTextoGrandeActivo(),
+            EstaAltoContrasteActivo(),
+            tipo,
+            false
+        );
+
+        ActualizarBotonesDaltonismo();
+        AplicarAccesibilidad();
+    }
+
+    public void AbrirDetalleSlot(int slot)
+    {
+        slotSeleccionado = slot;
+        confirmandoBorradoSlot = false;
+
+        if (panelOpciones != null)
+        {
+            panelOpciones.SetActive(false);
+        }
+
+        if (panelDetalleSlot != null)
+        {
+            panelDetalleSlot.SetActive(true);
+        }
+
+        ActualizarDetalleSlot();
+    }
+
+    public void EntrarSlotSeleccionado()
+    {
+        ControlCorreo controlCorreo = FindAnyObjectByType<ControlCorreo>();
+
+        if (controlCorreo != null)
+        {
+            controlCorreo.GuardarProgresoActual();
+        }
+
+        GestorGuardadoJuego gestor = new GestorGuardadoJuego(
+            Path.Combine(Application.persistentDataPath, "partida_bullying.json")
+        );
+
+        if (!gestor.SeleccionarSlot(slotSeleccionado))
+        {
+            return;
+        }
+
+        EstaPausado = false;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void SolicitarBorrarSlot()
+    {
+        confirmandoBorradoSlot = true;
+        ActualizarDetalleSlot();
+    }
+
+    public void ConfirmarBorrarSlot()
+    {
+        GestorGuardadoJuego gestor = new GestorGuardadoJuego(
+            Path.Combine(Application.persistentDataPath, "partida_bullying.json")
+        );
+
+        gestor.BorrarSlot(slotSeleccionado);
+        confirmandoBorradoSlot = false;
+        ActualizarTextoSlotActivo();
+        ActualizarDetalleSlot();
+    }
+
+    public void CerrarDetalleSlot()
+    {
+        confirmandoBorradoSlot = false;
+
+        if (panelDetalleSlot != null)
+        {
+            panelDetalleSlot.SetActive(false);
+        }
+
+        if (panelOpciones != null)
+        {
+            panelOpciones.SetActive(true);
+        }
+
+        ActualizarTextoSlotActivo();
+    }
+
+    private void ActualizarDetalleSlot()
+    {
+        GestorGuardadoJuego gestor = new GestorGuardadoJuego(
+            Path.Combine(Application.persistentDataPath, "partida_bullying.json")
+        );
+
+        ResumenSlotGuardadoJuego resumen = gestor.ObtenerResumenSlotPublico(slotSeleccionado);
+        bool tieneDatos = resumen != null && resumen.tieneDatos && gestor.ExisteGuardado(slotSeleccionado);
+        string rutaSlot = gestor.ObtenerRutaSlotPublica(slotSeleccionado);
+        string archivoSlot = gestor.ObtenerNombreArchivoSlot(slotSeleccionado);
+
+        if (textoDetalleSlot != null)
+        {
+            if (confirmandoBorradoSlot)
+            {
+                textoDetalleSlot.text =
+                    "Slot " + slotSeleccionado +
+                    "\nSeguro que quieres borrar este slot?\nEsta accion no borra los otros slots.";
+            }
+            else if (tieneDatos)
+            {
+                textoDetalleSlot.text =
+                    "Slot " + slotSeleccionado +
+                    "\nEstado: partida guardada" +
+                    "\nDia: " + resumen.diaActual +
+                    "\nDinero: $" + resumen.dineroTotal +
+                    "\nUltimo guardado: " + (string.IsNullOrWhiteSpace(resumen.ultimaPartidaIso) ? "sin fecha" : resumen.ultimaPartidaIso) +
+                    "\nArchivo: " + archivoSlot +
+                    "\nRuta: " + rutaSlot;
+            }
+            else
+            {
+                textoDetalleSlot.text =
+                    "Slot " + slotSeleccionado +
+                    "\nEstado: Slot vacio" +
+                    "\nArchivo: aun no creado" +
+                    "\nRuta: " + rutaSlot +
+                    "\nPuedes crear una partida nueva en este slot.";
+            }
+        }
+
+        if (botonEntrarSlot != null)
+        {
+            botonEntrarSlot.gameObject.SetActive(!confirmandoBorradoSlot);
+            TextMeshProUGUI textoBoton = botonEntrarSlot.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            if (textoBoton != null)
+            {
+                textoBoton.text = tieneDatos ? "Entrar" : "Crear / Entrar";
+            }
+        }
+
+        if (botonBorrarSlot != null)
+        {
+            botonBorrarSlot.gameObject.SetActive(!confirmandoBorradoSlot);
+            botonBorrarSlot.interactable = tieneDatos;
+        }
+
+        if (botonConfirmarBorrarSlot != null)
+        {
+            botonConfirmarBorrarSlot.gameObject.SetActive(confirmandoBorradoSlot);
+        }
+    }
+
+    private void ActualizarTextoSlotActivo()
+    {
+        if (textoSlotActivo == null)
+        {
+            return;
+        }
+
+        GestorGuardadoJuego gestor = new GestorGuardadoJuego(
+            Path.Combine(Application.persistentDataPath, "partida_bullying.json")
+        );
+
+        textoSlotActivo.text = "Slot activo: " + gestor.SlotActivo;
+    }
+
+    private void ActualizarBotonesDaltonismo()
+    {
+        TipoDaltonismo actual = ConfiguracionAccesibilidadJuego.TipoDaltonismoActual;
+
+        MarcarBotonDaltonismo(botonDaltonismoNinguno, actual == TipoDaltonismo.Ninguno);
+        MarcarBotonDaltonismo(botonDaltonismoProtanopia, actual == TipoDaltonismo.Protanopia);
+        MarcarBotonDaltonismo(botonDaltonismoDeuteranopia, actual == TipoDaltonismo.Deuteranopia);
+        MarcarBotonDaltonismo(botonDaltonismoTritanopia, actual == TipoDaltonismo.Tritanopia);
+        MarcarBotonDaltonismo(botonDaltonismoAcromatopsia, actual == TipoDaltonismo.Acromatopsia);
+    }
+
+    private void MarcarBotonDaltonismo(Button boton, bool seleccionado)
+    {
+        if (boton == null)
+        {
+            return;
+        }
+
+        EstiloUIJuego.AplicarBoton(
+            boton,
+            seleccionado ? EstiloUIJuego.Acento : EstiloUIJuego.FondoTarjeta,
+            seleccionado ? EstiloUIJuego.AcentoCalido : new Color(0.14f, 0.38f, 0.58f, 1f)
+        );
     }
 
     private void NormalizarArreglosSerializados()
@@ -617,6 +883,15 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             {
                 scriptsExtraBloquear[i].enabled = habilitar;
             }
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (EstaPausado)
+        {
+            EstaPausado = false;
+            Time.timeScale = 1f;
         }
     }
 }

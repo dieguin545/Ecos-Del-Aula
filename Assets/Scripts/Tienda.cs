@@ -2,22 +2,37 @@ using UnityEngine;
 
 public class Tienda : MonoBehaviour
 {
-public GameObject panelTienda;
+    public GameObject panelTienda;
+    private GestorVentanasPC gestorVentanas;
+
     void Start()
     {
-        panelTienda.SetActive(false);
-    }
-    public void abrir()
-    {
-        if (panelTienda.activeSelf)
+        gestorVentanas = FindAnyObjectByType<GestorVentanasPC>();
+
+        if (panelTienda != null)
         {
             panelTienda.SetActive(false);
         }
-        else
-        {
-            panelTienda.SetActive(true);
-        }
     }
 
- 
+    public void abrir()
+    {
+        if (panelTienda == null)
+        {
+            return;
+        }
+
+        if (gestorVentanas == null)
+        {
+            gestorVentanas = FindAnyObjectByType<GestorVentanasPC>();
+        }
+
+        if (gestorVentanas != null)
+        {
+            gestorVentanas.AlternarVentana(panelTienda);
+            return;
+        }
+
+        panelTienda.SetActive(!panelTienda.activeSelf);
+    }
 }

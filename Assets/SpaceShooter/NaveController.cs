@@ -20,6 +20,7 @@ public class NaveController : MonoBehaviour
     [SerializeField] private float regeneracionTurboPorSegundo = 15f;
     [SerializeField] private float retrasoRegeneracionTurbo = 0.75f;
     [SerializeField] private float bloqueoTurboAlVaciar = 0.6f;
+    [SerializeField] private ParticleSystem humoTurbo;
 
     [Header("Esquive")]
     public float fuerzaEsquive = 28f;
@@ -98,6 +99,7 @@ public class NaveController : MonoBehaviour
         energiaTurboActual = energiaTurboMaxima;
         cargasEsquiveActuales = cargasEsquiveMaximas;
         PrepararRadioRecoleccionPowerUps();
+        PrepararHumoTurbo();
         EstiloVisualSpaceShooter.AplicarANave(gameObject);
     }
 
@@ -442,7 +444,9 @@ public class NaveController : MonoBehaviour
 
     private void ActualizarTurbo()
     {
-        if (EstaUsandoTurbo())
+        bool usandoTurbo = EstaUsandoTurbo();
+
+        if (usandoTurbo)
         {
             energiaTurboActual = Mathf.Max(
                 0f,
@@ -466,6 +470,7 @@ public class NaveController : MonoBehaviour
             );
         }
 
+        ActualizarHumoTurbo(usandoTurbo && energiaTurboActual > 0f);
         NotificarTurbo();
     }
 
@@ -521,6 +526,84 @@ public class NaveController : MonoBehaviour
         }
 
         radio.Inicializar(this);
+    }
+
+    private void PrepararHumoTurbo()
+    {
+        if (humoTurbo == null)
+        {
+            Transform existente = transform.Find("HumoTurbo");
+
+            if (existente != null)
+            {
+                humoTurbo = existente.GetComponent<ParticleSystem>();
+            }
+        }
+
+        if (humoTurbo == null)
+        {
+            GameObject objeto = new GameObject("HumoTurbo");
+            objeto.transform.SetParent(transform, false);
+            objeto.transform.localPosition = new Vector3(0f, -0.2f, -1.6f);
+            objeto.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            humoTurbo = objeto.AddComponent<ParticleSystem>();
+        }
+
+        ParticleSystem.MainModule main = humoTurbo.main;
+        main.loop = true;
+        main.playOnAwake = false;
+        main.startLifetime = 0.45f;
+        main.startSpeed = 3.2f;
+        main.startSize = 0.22f;
+        main.startColor = new Color(0.45f, 0.9f, 1f, 0.45f);
+        main.simulationSpace = ParticleSystemSimulationSpace.Local;
+
+        ParticleSystem.EmissionModule emission = humoTurbo.emission;
+        emission.rateOverTime = 32f;
+
+        ParticleSystem.ShapeModule shape = humoTurbo.shape;
+        shape.shapeType = ParticleSystemShapeType.Cone;
+        shape.angle = 16f;
+        shape.radius = 0.22f;
+
+        ParticleSystem.ColorOverLifetimeModule colorOverLifetime = humoTurbo.colorOverLifetime;
+        colorOverLifetime.enabled = true;
+        Gradient gradiente = new Gradient();
+        gradiente.SetKeys(
+            new[]
+            {
+                new GradientColorKey(new Color(0.45f, 0.9f, 1f), 0f),
+                new GradientColorKey(new Color(0.1f, 0.35f, 0.55f), 1f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(0.5f, 0f),
+                new GradientAlphaKey(0f, 1f)
+            }
+        );
+        colorOverLifetime.color = gradiente;
+
+        ActualizarHumoTurbo(false);
+    }
+
+    private void ActualizarHumoTurbo(bool activo)
+    {
+        if (humoTurbo == null)
+        {
+            return;
+        }
+
+        if (activo)
+        {
+            if (!humoTurbo.isPlaying)
+            {
+                humoTurbo.Play();
+            }
+        }
+        else if (humoTurbo.isPlaying)
+        {
+            humoTurbo.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
     }
 
     private void NotificarDash()

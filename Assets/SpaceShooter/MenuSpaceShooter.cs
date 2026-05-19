@@ -34,7 +34,6 @@ public class MenuSpaceShooter : MonoBehaviour
     private TextMeshProUGUI textoTipoDaltonismo;
     private Toggle toggleTextoGrande;
     private Toggle toggleAltoContraste;
-    private Toggle toggleReducirEfectos;
 
     private DificultadSpaceShooter dificultadSeleccionada = DificultadSpaceShooter.Medio;
     private int paginaTutorialActual;
@@ -71,10 +70,6 @@ public class MenuSpaceShooter : MonoBehaviour
             toggleAltoContraste.isOn = AccesibilidadSpaceShooter.AltoContrasteActivo;
         }
 
-        if (toggleReducirEfectos != null)
-        {
-            toggleReducirEfectos.isOn = AccesibilidadSpaceShooter.ReducirEfectosActivo;
-        }
     }
 
     public void MostrarMenuInicial()
@@ -219,10 +214,7 @@ public class MenuSpaceShooter : MonoBehaviour
 
     public void AlternarReducirEfectos(bool activo)
     {
-        if (accesibilidad != null)
-        {
-            accesibilidad.EstablecerReducirEfectos(activo);
-        }
+        // Opcion retirada de la UI visible; se conserva el metodo por compatibilidad.
     }
 
     public void SeleccionarTipoDaltonismoAnterior()
@@ -302,6 +294,19 @@ public class MenuSpaceShooter : MonoBehaviour
         UnityEngine.Events.UnityAction accion
     )
     {
+        return CrearBoton(padre, nombre, texto, posicion, accion, new Vector2(260f, 58f), 24f);
+    }
+
+    public static Button CrearBoton(
+        Transform padre,
+        string nombre,
+        string texto,
+        Vector2 posicion,
+        UnityEngine.Events.UnityAction accion,
+        Vector2 tamano,
+        float tamanoTexto
+    )
+    {
         GameObject objeto = new GameObject(
             nombre,
             typeof(RectTransform),
@@ -317,7 +322,7 @@ public class MenuSpaceShooter : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = posicion;
-        rect.sizeDelta = new Vector2(260f, 58f);
+        rect.sizeDelta = tamano;
 
         Image imagen = objeto.GetComponent<Image>();
         imagen.color = new Color(0.08f, 0.28f, 0.42f, 0.95f);
@@ -329,9 +334,9 @@ public class MenuSpaceShooter : MonoBehaviour
             objeto.transform,
             "Texto",
             texto,
-            24f,
+            tamanoTexto,
             Vector2.zero,
-            new Vector2(250f, 50f),
+            new Vector2(Mathf.Max(10f, tamano.x - 10f), Mathf.Max(10f, tamano.y - 8f)),
             TextAlignmentOptions.Center
         );
         textoBoton.raycastTarget = false;
@@ -548,14 +553,14 @@ public class MenuSpaceShooter : MonoBehaviour
             new Vector2(700f, 40f),
             TextAlignmentOptions.Center
         );
-        CrearBoton(panelOpciones.transform, "BotonDaltonismoAnterior", "<", new Vector2(-220f, 110f), SeleccionarTipoDaltonismoAnterior);
-        CrearBoton(panelOpciones.transform, "BotonDaltonismoSiguiente", ">", new Vector2(220f, 110f), SeleccionarTipoDaltonismoSiguiente);
+        CrearBoton(panelOpciones.transform, "BotonDaltonismoAnterior", "<", new Vector2(-255f, 110f), SeleccionarTipoDaltonismoAnterior, new Vector2(58f, 42f), 22f);
+        CrearBoton(panelOpciones.transform, "BotonDaltonismoSiguiente", ">", new Vector2(255f, 110f), SeleccionarTipoDaltonismoSiguiente, new Vector2(58f, 42f), 22f);
 
         toggleTextoGrande = CrearToggle(
             panelOpciones.transform,
             "ToggleTextoGrande",
             "Texto grande",
-            new Vector2(0f, 35f)
+            new Vector2(0f, 30f)
         );
         toggleTextoGrande.onValueChanged.AddListener(AlternarTextoGrande);
 
@@ -563,19 +568,11 @@ public class MenuSpaceShooter : MonoBehaviour
             panelOpciones.transform,
             "ToggleAltoContraste",
             "Alto contraste",
-            new Vector2(0f, -35f)
+            new Vector2(0f, -32f)
         );
         toggleAltoContraste.onValueChanged.AddListener(AlternarAltoContraste);
 
-        toggleReducirEfectos = CrearToggle(
-            panelOpciones.transform,
-            "ToggleReducirEfectos",
-            "Reducir efectos",
-            new Vector2(0f, -105f)
-        );
-        toggleReducirEfectos.onValueChanged.AddListener(AlternarReducirEfectos);
-
-        CrearBoton(panelOpciones.transform, "BotonOpcionesVolver", "Volver", new Vector2(0f, -220f), VolverAlMenu);
+        CrearBoton(panelOpciones.transform, "BotonOpcionesVolver", "Volver", new Vector2(0f, -160f), VolverAlMenu, new Vector2(180f, 44f), 20f);
         panelOpciones.SetActive(false);
         ActualizarTextoTipoDaltonismo();
     }
@@ -756,7 +753,7 @@ public class MenuSpaceShooter : MonoBehaviour
         if (textoTipoDaltonismo != null)
         {
             textoTipoDaltonismo.text =
-                "Daltonismo: " + AccesibilidadSpaceShooter.TipoDaltonismoActual;
+                "Modos de daltonismo: " + AccesibilidadSpaceShooter.TipoDaltonismoActual;
         }
     }
 

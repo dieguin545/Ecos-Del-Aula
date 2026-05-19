@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: Bullying and Dungeons, no mercy
+  productName: Ecos del Aula
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -602,14 +602,14 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Bullying and Dungeons, no mercy
+  metroPackageName: Ecos del Aula
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Bullying and Dungeons, no mercy
+  metroApplicationDescription: Ecos del Aula: Entry Filter
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -683,7 +683,7 @@ PlayerSettings:
   cloudProjectId: c3e54a43-48de-4743-8aec-f7edebb72227
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Bullying and Dungeons, no mercy
+  projectName: Ecos del Aula
   organizationId: jota_xd
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
