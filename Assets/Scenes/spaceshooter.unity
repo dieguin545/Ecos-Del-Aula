@@ -150,12 +150,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   vidas: 3
   vidasMaximas: 3
-  juegoActivo: 1
   iconosVida:
   - {fileID: 1733006041}
   - {fileID: 873450685}
   - {fileID: 700893929}
+  objetivoEnemigos: 25
+  textoObjetivo: {fileID: 0}
+  textoEstado: {fileID: 0}
+  textoVidas: {fileID: 0}
+  textoDash: {fileID: 0}
+  textoTurbo: {fileID: 0}
+  textoAlerta: {fileID: 0}
+  spriteVida: {fileID: 0}
+  spriteEscudo: {fileID: 0}
+  spriteTurbo: {fileID: 0}
+  spriteDash: {fileID: 0}
+  spriteReparacion: {fileID: 0}
+  spriteAmenaza: {fileID: 0}
   panelGameOver: {fileID: 1619999988}
+  panelVictoria: {fileID: 0}
+  spawnManager: {fileID: 0}
+  naveController: {fileID: 0}
+  selectorNave: {fileID: 0}
+  menuSpaceShooter: {fileID: 0}
+  controladorPausa: {fileID: 0}
+  accesibilidadSpaceShooter: {fileID: 0}
+  crosshairApuntado: {fileID: 0}
+  juegoActivo: 1
 --- !u!4 &90886068
 Transform:
   m_ObjectHideFlags: 0
@@ -171,6 +192,103 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &271470171
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 271470172}
+  - component: {fileID: 271470175}
+  - component: {fileID: 271470174}
+  - component: {fileID: 271470173}
+  m_Layer: 5
+  m_Name: Crosshair
+  m_TagString: Enemigo
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &271470172
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 271470171}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2083921734}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 64, y: 64}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &271470173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 271470171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6b4825a77997304691754e639cd013c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CrosshairApuntado
+  camara: {fileID: 992678448}
+  imagenCrosshair: {fileID: 271470174}
+  crosshairBlanco: {fileID: 21300000, guid: a8ba3ab4167316e428ebe957d45ce3b9, type: 3}
+  crosshairRojo: {fileID: 21300000, guid: a0d966d1ff3f9c24095486d572156ec0, type: 3}
+  distanciaDeteccion: 500
+  tagEnemigo: Enemigo
+  capasDeteccion:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &271470174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 271470171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: a8ba3ab4167316e428ebe957d45ce3b9, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &271470175
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 271470171}
+  m_CullTransparentMesh: 1
 --- !u!1 &275947146
 GameObject:
   m_ObjectHideFlags: 0
@@ -322,6 +440,7 @@ GameObject:
   - component: {fileID: 374511454}
   - component: {fileID: 374511453}
   - component: {fileID: 374511458}
+  - component: {fileID: 374511459}
   m_Layer: 0
   m_Name: Nave
   m_TagString: Nave
@@ -354,7 +473,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 116
+  m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!136 &374511454
 CapsuleCollider:
@@ -386,7 +505,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 374511452}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -464,13 +583,78 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 218407f8effbf244696fdfdf23af6f35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NaveController
-  velocidad: 6
-  limiteX: 9.5
-  limiteZ: 9.5
+  velocidad: 12
+  velocidadTurbo: 19
+  velocidadVertical: 12
+  limiteX: 68
+  limiteZ: 68
+  alturaMinima: -34
+  alturaMaxima: 34
+  energiaTurboMaxima: 100
+  consumoTurboPorSegundo: 25
+  regeneracionTurboPorSegundo: 15
+  retrasoRegeneracionTurbo: 0.75
+  bloqueoTurboAlVaciar: 0.6
+  fuerzaEsquive: 28
+  duracionEsquive: 0.22
+  cooldownEsquive: 0.55
+  cargasEsquiveMaximas: 3
+  recargaCargaSegundos: 2.8
+  radioRecoleccionPowerUps: 3.25
+  teclaEsquivarIzquierda: 113
+  teclaEsquivarDerecha: 101
+  teclaSubir: 32
+  teclaBajar: 306
+  teclaTurbo: 304
+  velocidadRotacion: 12
+  inclinacionLateral: 35
+  inclinacionVertical: 20
+  rotacionExtraModelo: {x: 90, y: 0, z: 0}
   balaPrefab: {fileID: 718153308275281028, guid: 763d66ee5d0fb61429c49a366b39e146, type: 3}
   puntoDisparo: {fileID: 510353918}
   cooldown: 0.25
+  velocidadBala: 35
   camara: {fileID: 992678448}
+--- !u!114 &374511459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374511452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ba09217cdda42b0a648e096fdc9b473, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelectorNave
+  modelosDisponibles:
+  - nombre: Nave Alfa
+    modelo: {fileID: 2026871341374051399, guid: c73abf0e21bb2fa49ba820b9917dc80f, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
+  - nombre: Nave Beta
+    modelo: {fileID: 7274037728988152624, guid: dd0db27467480d0468122d624d8510fe, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
+  - nombre: Nave Gamma
+    modelo: {fileID: 8217582540683966967, guid: d5377a69309910a49857d895dc8d40cd, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
+  - nombre: Nave Delta
+    modelo: {fileID: 6773325737190591225, guid: f37bacfb37e27f44ab050de8ddd2f4ba, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
+  - nombre: Nave Epsilon
+    modelo: {fileID: 5781906109265505200, guid: 8a8521d232e2d244985c629e2b01bedb, type: 3}
+    posicionLocal: {x: 0, y: 0, z: 0}
+    rotacionLocal: {x: -90, y: 0, z: 0}
+    escalaLocal: {x: 1, y: 1, z: 1}
+  contenedorVisual: {fileID: 0}
+  renderersBase: []
 --- !u!1 &510353917
 GameObject:
   m_ObjectHideFlags: 0
@@ -797,7 +981,7 @@ GameObject:
   - component: {fileID: 992678448}
   - component: {fileID: 992678447}
   - component: {fileID: 992678451}
-  - component: {fileID: 992678450}
+  - component: {fileID: 992678452}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -879,23 +1063,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &992678450
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 992678446}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45092e077ed61ae4fa48f68c8c77672a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CamaraOrbit
-  objetivo: {fileID: 374511457}
-  distancia: 15
-  sensibilidad: 3
-  limiteVerticalMin: 10
-  limiteVerticalMax: 80
 --- !u!114 &992678451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -940,6 +1107,25 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &992678452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992678446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20736e39360a3ee44a4635db91a4c6e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CamaraNave
+  objetivo: {fileID: 374511457}
+  distancia: 10
+  altura: 2.5
+  suavizado: 12
+  sensibilidadMouse: 3
+  limiteArriba: -35
+  limiteAbajo: 60
 --- !u!1 &1035445777
 GameObject:
   m_ObjectHideFlags: 0
@@ -1749,10 +1935,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnManager
   meteoritoPrefab: {fileID: 918101685120109969, guid: 6dee63ac9f03c1f4d9b40f225201dbe2, type: 3}
-  tiempoInicial: 2
-  tiempoMinimo: 0.5
-  reduccion: 0.05
-  radioSpawn: 14
+  nave: {fileID: 0}
+  intervaloSpawnInicial: 2
+  intervaloSpawnMinimo: 1.1
+  radioMinimo: 24
+  radioMaximo: 46
+  alturaMinima: -26
+  alturaMaxima: 26
+  profundidadMinima: -28
+  profundidadMaxima: 28
+  maxEnemigosIniciales: 8
+  maxEnemigosAbsoluto: 15
+  intentosPosicionSpawn: 8
+  oleadasConfiguradas: []
 --- !u!4 &1932382005
 Transform:
   m_ObjectHideFlags: 0
@@ -1801,6 +1996,7 @@ RectTransform:
   m_Children:
   - {fileID: 2117761624}
   - {fileID: 1619999991}
+  - {fileID: 271470172}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

@@ -2,19 +2,36 @@ using UnityEngine;
 public class CerrarCorreo : MonoBehaviour
 {
     public GameObject VentanaCorreo;
+    private GestorVentanasPC gestorVentanas;
+
     void Start()
     {
-        VentanaCorreo.SetActive(false);
+        gestorVentanas = FindAnyObjectByType<GestorVentanasPC>();
+
+        if (VentanaCorreo != null)
+        {
+            VentanaCorreo.SetActive(false);
+        }
     }
-   public void TogglePanelCorreo()
-{
-    if(VentanaCorreo.activeSelf)
+
+    public void TogglePanelCorreo()
     {
-        VentanaCorreo.SetActive(false);
+        if (VentanaCorreo == null)
+        {
+            return;
+        }
+
+        if (gestorVentanas == null)
+        {
+            gestorVentanas = FindAnyObjectByType<GestorVentanasPC>();
+        }
+
+        if (gestorVentanas != null)
+        {
+            gestorVentanas.AlternarVentana(VentanaCorreo);
+            return;
+        }
+
+        VentanaCorreo.SetActive(!VentanaCorreo.activeSelf);
     }
-    else
-    {
-        VentanaCorreo.SetActive(true);
-    }
-}
 }
