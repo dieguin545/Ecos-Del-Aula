@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ColorblindFilter.Scripts;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 
 public class AplicadorAccesibilidadGlobal : MonoBehaviour
 {
+    private const string NombreOverlayDaltonismo = "OverlayDaltonismoGlobal";
     private static AplicadorAccesibilidadGlobal instancia;
     private readonly Dictionary<TextMeshProUGUI, float> tamanosBaseTMP = new Dictionary<TextMeshProUGUI, float>();
     private readonly Dictionary<Text, int> tamanosBaseText = new Dictionary<Text, int>();
@@ -68,6 +70,8 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
         AplicarTextosLegacy();
         AplicarImagenes();
         AplicarBotones();
+        AplicarFiltroDaltonismoCamara();
+        AplicarOverlayDaltonismoUI();
     }
 
     private void AplicarTextosTMP()
@@ -228,6 +232,130 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
                 return new Color(0.38f, 0.08f, 0.32f, 1f);
             default:
                 return new Color(0.06f, 0.19f, 0.32f, 1f);
+        }
+    }
+
+    private void AplicarFiltroDaltonismoCamara()
+    {
+        TipoDaltonismo tipo = ConfiguracionAccesibilidadJuego.TipoDaltonismoActual;
+        Camera[] camaras = FindObjectsByType<Camera>(FindObjectsInactive.Exclude);
+
+        for (int i = 0; i < camaras.Length; i++)
+        {
+            Camera camara = camaras[i];
+
+            if (camara == null)
+            {
+                continue;
+            }
+
+            ColorblindFilter.Scripts.ColorblindFilter filtro =
+                camara.GetComponent<ColorblindFilter.Scripts.ColorblindFilter>();
+
+            if (filtro == null && tipo != TipoDaltonismo.Ninguno)
+            {
+                filtro = camara.gameObject.AddComponent<ColorblindFilter.Scripts.ColorblindFilter>();
+            }
+
+            if (filtro == null)
+            {
+                continue;
+            }
+
+            filtro.SetUseFilter(tipo != TipoDaltonismo.Ninguno);
+
+            switch (tipo)
+            {
+                case TipoDaltonismo.Protanopia:
+                    filtro.ChangeBlindType(BlindnessType.Protanopia);
+                    break;
+                case TipoDaltonismo.Deuteranopia:
+                    filtro.ChangeBlindType(BlindnessType.Deuteranopia);
+                    break;
+                case TipoDaltonismo.Tritanopia:
+                    filtro.ChangeBlindType(BlindnessType.Tritanopia);
+                    break;
+                case TipoDaltonismo.Acromatopsia:
+                    filtro.ChangeBlindType(BlindnessType.Achromatopsia);
+                    break;
+            }
+        }
+    }
+
+    private void AplicarOverlayDaltonismoUI()
+    {
+        Color colorOverlay = ObtenerColorOverlayDaltonismo();
+        bool debeMostrar = colorOverlay.a > 0.01f;
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include);
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+
+            if (canvas == null || canvas.renderMode == RenderMode.WorldSpace)
+            {
+                continue;
+            }
+
+            Transform existente = canvas.transform.Find(NombreOverlayDaltonismo);
+            GameObject overlay = existente != null ? existente.gameObject : CrearOverlayDaltonismo(canvas.transform);
+
+            if (overlay == null)
+            {
+                continue;
+            }
+
+            Image imagen = overlay.GetComponent<Image>();
+
+            if (imagen != null)
+            {
+                imagen.color = colorOverlay;
+                imagen.raycastTarget = false;
+            }
+
+            overlay.SetActive(debeMostrar);
+            overlay.transform.SetAsLastSibling();
+        }
+    }
+
+    private GameObject CrearOverlayDaltonismo(Transform padre)
+    {
+        GameObject overlay = new GameObject(NombreOverlayDaltonismo, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        overlay.transform.SetParent(padre, false);
+
+        RectTransform rect = overlay.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        Image imagen = overlay.GetComponent<Image>();
+        imagen.raycastTarget = false;
+
+        return overlay;
+    }
+
+    private Color ObtenerColorOverlayDaltonismo()
+    {
+        TipoDaltonismo tipo = ConfiguracionAccesibilidadJuego.TipoDaltonismoActual;
+
+        if (ConfiguracionAccesibilidadJuego.AltoContrasteActivo)
+        {
+            return new Color(0f, 0f, 0f, 0.12f);
+        }
+
+        switch (tipo)
+        {
+            case TipoDaltonismo.Protanopia:
+                return new Color(0.02f, 0.12f, 0.34f, 0.16f);
+            case TipoDaltonismo.Deuteranopia:
+                return new Color(0.34f, 0.22f, 0.04f, 0.15f);
+            case TipoDaltonismo.Tritanopia:
+                return new Color(0.36f, 0.04f, 0.28f, 0.15f);
+            case TipoDaltonismo.Acromatopsia:
+                return new Color(0f, 0f, 0f, 0.24f);
+            default:
+                return new Color(0f, 0f, 0f, 0f);
         }
     }
 }

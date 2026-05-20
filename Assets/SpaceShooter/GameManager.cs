@@ -61,6 +61,7 @@ public class GameManager : MonoBehaviour
     private bool escudoActivo;
     private float tiempoRestanteEscudo;
     private EstadoPartidaSpaceShooter estadoActual = EstadoPartidaSpaceShooter.Menu;
+    private EstadoPartidaSpaceShooter estadoAntesDePausa = EstadoPartidaSpaceShooter.Menu;
 
     public bool juegoActivo;
     public bool victoria { get; private set; }
@@ -71,6 +72,7 @@ public class GameManager : MonoBehaviour
     public bool TieneEscudo => escudoActivo;
     public bool PuedePausar =>
         estadoActual == EstadoPartidaSpaceShooter.Jugando
+        || estadoActual == EstadoPartidaSpaceShooter.Menu
         || estadoActual == EstadoPartidaSpaceShooter.Pausa;
     public bool PuedeControlarGameplay => estadoActual == EstadoPartidaSpaceShooter.Jugando;
 
@@ -393,6 +395,19 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void CargarSpritesHudSiHaceFalta()
+    {
+        if (spriteVida == null)
+        {
+            spriteVida = RecursosVisualesSpaceShooter.CargarSpriteEditor("integridad_icon.png");
+        }
+
+        if (spriteDash == null)
+        {
+            spriteDash = RecursosVisualesSpaceShooter.CargarSpriteEditor("dash_icon.png");
+        }
+    }
+
     private void ActualizarDash(int cargasActuales, int cargasMaximas, float recargaRestante)
     {
         if (textoDash == null)
@@ -419,11 +434,12 @@ public class GameManager : MonoBehaviour
             }
 
             bool disponible = i < cargasActuales;
-            icono.sprite = null;
+            icono.sprite = spriteDash;
             icono.color =
                 disponible
-                    ? new Color(0.25f, 0.9f, 1f, 1f)
-                    : new Color(0.25f, 0.9f, 1f, 0.22f);
+                    ? (spriteDash != null ? Color.white : new Color(0.25f, 0.9f, 1f, 1f))
+                    : (spriteDash != null ? new Color(1f, 1f, 1f, 0.22f) : new Color(0.25f, 0.9f, 1f, 0.22f));
+            icono.preserveAspect = spriteDash != null;
         }
     }
 
@@ -491,6 +507,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        CargarSpritesHudSiHaceFalta();
         PrepararFondoEstelarSiHaceFalta();
         PrepararPanelHudSiHaceFalta(canvas.transform);
 
@@ -745,9 +762,8 @@ public class GameManager : MonoBehaviour
                 continue;
             }
 
-            iconosVida[i].sprite = null;
             iconosVida[i].sprite = spriteVida;
-            iconosVida[i].color = new Color(0.25f, 0.9f, 1f, 1f);
+            iconosVida[i].color = spriteVida != null ? Color.white : new Color(0.25f, 0.9f, 1f, 1f);
             iconosVida[i].preserveAspect = spriteVida != null;
 
             RectTransform rect = iconosVida[i].rectTransform;
@@ -1082,13 +1098,29 @@ public class GameManager : MonoBehaviour
 
     public void NotificarPausa(bool pausado)
     {
-        if (pausado && estadoActual == EstadoPartidaSpaceShooter.Jugando)
+        if (
+            pausado
+            && estadoActual != EstadoPartidaSpaceShooter.Pausa
+            && estadoActual != EstadoPartidaSpaceShooter.GameOver
+            && estadoActual != EstadoPartidaSpaceShooter.Victoria
+        )
         {
+            estadoAntesDePausa = estadoActual;
             EstablecerEstado(EstadoPartidaSpaceShooter.Pausa);
         }
         else if (!pausado && estadoActual == EstadoPartidaSpaceShooter.Pausa)
         {
-            EstablecerEstado(EstadoPartidaSpaceShooter.Jugando);
+            EstadoPartidaSpaceShooter estadoDestino =
+                estadoAntesDePausa == EstadoPartidaSpaceShooter.Pausa
+                    ? EstadoPartidaSpaceShooter.Menu
+                    : estadoAntesDePausa;
+
+            EstablecerEstado(estadoDestino);
+
+            if (estadoDestino == EstadoPartidaSpaceShooter.Menu && menuSpaceShooter != null)
+            {
+                menuSpaceShooter.MostrarMenuInicial();
+            }
         }
     }
 

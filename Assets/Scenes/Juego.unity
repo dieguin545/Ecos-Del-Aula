@@ -7698,7 +7698,7 @@ MonoBehaviour:
   botonSiguiente: {fileID: 0}
   textoIndicadorPagina: {fileID: 0}
   mensajes:
-  - 'Bienvenido a Ecos del Aula: Entry Filter
+  - 'Bienvenido a Ecos del Aula
 
     para este juego deberas abrir
     la app "correo" para empezar a trabajar clasificando correos.'

@@ -19,7 +19,7 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (GestorEntradaGlobal.PausaPresionada())
         {
             if (pausado)
             {
@@ -97,12 +97,18 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
     {
         pausado = false;
         Time.timeScale = 1f;
+
         if (gameManager != null)
         {
             gameManager.NotificarPausa(false);
         }
+
+        InteraccionPC.ResetearEstadoGlobalPC();
+        MenuPausaAccesibilidad.ResetearEstadoGlobalPausa();
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
         SceneManager.LoadScene("Juego");
     }
 
