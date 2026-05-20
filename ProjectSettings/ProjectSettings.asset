@@ -609,7 +609,7 @@ PlayerSettings:
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Ecos del Aula: Entry Filter
+  metroApplicationDescription: Bullying and Dungeons, no mercy
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -683,7 +683,7 @@ PlayerSettings:
   cloudProjectId: c3e54a43-48de-4743-8aec-f7edebb72227
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Ecos del Aula
+  projectName: Bullying and Dungeons, no mercy
   organizationId: jota_xd
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

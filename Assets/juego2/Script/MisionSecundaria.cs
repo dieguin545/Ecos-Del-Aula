@@ -1,6 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
-
 [System.Serializable]
 public class Mision
 {
@@ -17,6 +17,9 @@ public class MisionSecundaria : MonoBehaviour
     [Header("Configuracion")]
     public Mision mision;
     public bool misionIniciada = false;
+
+    [Header("Sprites")]
+    public Sprite iconoRecompensa;
 
     [Header("UI")]
     public GameObject burbujaDialogo;

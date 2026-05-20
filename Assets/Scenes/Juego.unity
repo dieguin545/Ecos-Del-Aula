@@ -861,6 +861,7 @@ MonoBehaviour:
   canvasFinDia: {fileID: 363055770}
   textoTituloFinDia: {fileID: 1296914806}
   textoResumenFinDia: {fileID: 2096192292}
+  botonContinuarFinDia: {fileID: 0}
   correosFaciles:
   - remitente: kzolanof@uninorte.edu.co
     asunto: vete de aqui
@@ -3787,6 +3788,7 @@ MonoBehaviour:
   iconoFinanzas: {fileID: 0}
   iconoBlocNotas: {fileID: 0}
   iconoAyuda: {fileID: 0}
+  iconoLecturaFacil: {fileID: 0}
   iconoSpaceShooter: {fileID: 0}
 --- !u!65 &566917111
 BoxCollider:
@@ -7698,8 +7700,8 @@ MonoBehaviour:
   mensajes:
   - 'Bienvenido a Ecos del Aula
 
-    para este juego deberas abrir la app "correo"
-    para empezar a trabajar clasificando correos.'
+    para este juego deberas abrir
+    la app "correo" para empezar a trabajar clasificando correos.'
   - Cada vez que veas un correo con algun insulto o algo sospechoso deberas reportar,
     si el correo no tiene nada sospechoso deberas dejarlo pasar.
   - "Cada dia va a ir aumentando la dificultad donde deberas estar mas atento a peque\xF1os
@@ -8154,6 +8156,8 @@ MonoBehaviour:
   textoDiasTrabajados: {fileID: 1796884560}
   imagenIconoFinanzas: {fileID: 0}
   spriteIconoFinanzas: {fileID: 0}
+  imagenDecorativaFinanzas: {fileID: 0}
+  spriteImagenDecorativaFinanzas: {fileID: 0}
 --- !u!1 &1737253813
 GameObject:
   m_ObjectHideFlags: 0
@@ -8690,7 +8694,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1782240839
 RectTransform:
   m_ObjectHideFlags: 0

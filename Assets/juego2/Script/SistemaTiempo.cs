@@ -14,7 +14,7 @@ public class SistemaTiempo : MonoBehaviour
     public static SistemaTiempo Instance;
 
     [Header("Configuracion")]
-    public float duracionBloque = 150f; // 2.5 minutos por bloque = 10 minutos total
+    public float duracionBloque = 75f; // 2.5 minutos por bloque = 10 minutos total
     private float timerActual = 0f;
     private int bloqueActual = 0;
 
