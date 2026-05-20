@@ -98,6 +98,7 @@ public class AccesibilidadSpaceShooter : MonoBehaviour
         PlayerPrefs.SetInt(ClaveTipoDaltonismo, (int)TipoDaltonismoActual);
         PlayerPrefs.Save();
         AplicarATodos();
+        AplicadorAccesibilidadGlobal.AplicarEscenaActual();
         AlCambiarConfiguracion?.Invoke();
     }
 }

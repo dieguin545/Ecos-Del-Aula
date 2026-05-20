@@ -9,6 +9,7 @@ using UnityEngine.Events;
 [System.Serializable]
 public class Correo
 {
+    public string idCorreo;
     public string remitente;
     public string asunto;
 
@@ -16,6 +17,17 @@ public class Correo
     public string texto;
 
     public bool esBullying;
+    public int dia;
+    public int dificultad;
+    public string idCasoRelacionado;
+    public TipoDecisionCorreo decisionCorrecta;
+    public string evidenciaQueDesbloquea;
+    public bool esAmbiguo;
+    public int severidad = 1;
+    public string[] pistas;
+
+    [TextArea(2, 4)]
+    public string explicacionEducativa;
 }
 
 public class ControlCorreo : MonoBehaviour
@@ -29,6 +41,7 @@ public class ControlCorreo : MonoBehaviour
 
     public GameObject panelAviso;
     public Text textoAviso;
+    public Button botonRevisarCaso;
 
     public GameObject panelFinDia;
     public CanvasGroup canvasFinDia;
@@ -53,7 +66,9 @@ public class ControlCorreo : MonoBehaviour
     private bool activo = true;
     private bool modoLecturaActivado;
     private bool resumenFinDiaAbierto;
+    private readonly HashSet<string> correosConContextoRevisado = new HashSet<string>();
     private GestorGuardadoJuego gestorGuardado;
+    private GestorCasos gestorCasos;
 
     private int tamRemitenteNormal;
     private int tamAsuntoNormal;
@@ -73,6 +88,13 @@ public class ControlCorreo : MonoBehaviour
     public bool tieneFiltroSpam;
     public bool tieneTeclado;
 
+    public DificultadEntryFilter dificultadEntryFilter = DificultadEntryFilter.Normal;
+    public int bienestarEstudiantil = 70;
+    public int confianzaEscolar = 70;
+    public int precision = 0;
+    private int evidenciasEncontradasDia;
+    private int casosAbiertosDia;
+
     public int DiaActual => dia;
     public int Errores => errores;
     public int Correctos => correctos;
@@ -88,32 +110,48 @@ public class ControlCorreo : MonoBehaviour
         gestorGuardado = new GestorGuardadoJuego(
             Path.Combine(Application.persistentDataPath, "partida_bullying.json")
         );
+        AsegurarGestorCasos();
 
         CargarProgreso();
         PrepararUiSiHaceFalta();
         PrepararPanelFinDiaSiHaceFalta();
         GuardarTamanosNormales();
-        CargarCorreos();
+        CargarCorreos(true);
         ActualizarErrores();
         AplicarModoLectura();
     }
 
-    private void CargarCorreos()
+    private void AsegurarGestorCasos()
     {
-        if (dia == 1)
+        if (gestorCasos != null)
         {
-            correosActuales = new List<Correo>(correosFaciles);
-        }
-        else if (dia == 2)
-        {
-            correosActuales = new List<Correo>(correosMedios);
-        }
-        else
-        {
-            correosActuales = new List<Correo>(correosDificiles);
+            gestorCasos.InicializarSiHaceFalta();
+            return;
         }
 
+        gestorCasos = FindAnyObjectByType<GestorCasos>(FindObjectsInactive.Include);
+
+        if (gestorCasos == null)
+        {
+            Canvas canvas = GetComponentInParent<Canvas>(true);
+            GameObject contenedor = canvas != null ? canvas.gameObject : gameObject;
+            gestorCasos = contenedor.GetComponent<GestorCasos>();
+
+            if (gestorCasos == null)
+            {
+                gestorCasos = contenedor.AddComponent<GestorCasos>();
+            }
+        }
+
+        gestorCasos.InicializarSiHaceFalta();
+    }
+
+    private void CargarCorreos(bool reiniciarContadoresDia)
+    {
+        correosActuales = ObtenerCorreosParaDia();
+
         MezclarCorreos();
+        EnriquecerCorreosSiHaceFalta();
         colaCorreos.Clear();
 
         foreach (Correo c in correosActuales)
@@ -121,15 +159,30 @@ public class ControlCorreo : MonoBehaviour
             colaCorreos.Enqueue(c);
         }
 
-        correosClasificados = 0;
+        if (reiniciarContadoresDia)
+        {
+            correosClasificados = 0;
+            evidenciasEncontradasDia = 0;
+            casosAbiertosDia = 0;
+            correosConContextoRevisado.Clear();
+        }
+
         activo = true;
 
         if (textoDia != null)
         {
-            textoDia.text = "Dia " + dia;
+            textoDia.text = "Día " + dia;
         }
 
-        MostrarCorreo();
+        if (colaCorreos.Count > 0)
+        {
+            MostrarCorreo();
+        }
+        else
+        {
+            activo = false;
+            Invoke(nameof(MostrarPantallaFinDia), 0.2f);
+        }
     }
 
     private void MezclarCorreos()
@@ -142,6 +195,433 @@ public class ControlCorreo : MonoBehaviour
             correosActuales[i] = correosActuales[random];
             correosActuales[random] = temporal;
         }
+    }
+
+    private List<Correo> ObtenerCorreosParaDia()
+    {
+        List<Correo> correosSerializados;
+
+        if (dia == 1)
+        {
+            correosSerializados = correosFaciles;
+        }
+        else if (dia == 2)
+        {
+            correosSerializados = correosMedios;
+        }
+        else
+        {
+            correosSerializados = correosDificiles;
+        }
+
+        if (ListaCorreosActualizada(correosSerializados))
+        {
+            return new List<Correo>(correosSerializados);
+        }
+
+        return CrearCorreosAcademicos(dia);
+    }
+
+    private bool ListaCorreosActualizada(List<Correo> correos)
+    {
+        if (correos == null || correos.Count < 6)
+        {
+            return false;
+        }
+
+        int normales = 0;
+        int claros = 0;
+        int ambiguos = 0;
+        bool versionAcademica = false;
+
+        for (int i = 0; i < correos.Count; i++)
+        {
+            Correo correo = correos[i];
+
+            if (correo == null)
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(correo.idCorreo) && correo.idCorreo.StartsWith("ef_", System.StringComparison.Ordinal))
+            {
+                versionAcademica = true;
+            }
+
+            if (correo.esAmbiguo)
+            {
+                ambiguos++;
+            }
+            else if (correo.esBullying)
+            {
+                claros++;
+            }
+            else
+            {
+                normales++;
+            }
+        }
+
+        return versionAcademica && normales > 0 && claros > 0 && ambiguos > 0;
+    }
+
+    private List<Correo> CrearCorreosAcademicos(int diaObjetivo)
+    {
+        if (diaObjetivo == 1)
+        {
+            return CrearCorreosDiaUno();
+        }
+
+        if (diaObjetivo == 2)
+        {
+            return CrearCorreosDiaDos();
+        }
+
+        return CrearCorreosDiaTresEnAdelante();
+    }
+
+    private List<Correo> CrearCorreosDiaUno()
+    {
+        return new List<Correo>
+        {
+            CrearCorreo(
+                "ef_d1_normal_monitoria",
+                "monitoria.sistemas@uninorte.edu.co",
+                "Cambio de salón",
+                "La monitoría de hoy será en el salón B-204. Recuerden llevar sus apuntes.",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: era un aviso académico normal.",
+                "aviso institucional sin daño"
+            ),
+            CrearCorreo(
+                "ef_d1_normal_trabajo",
+                "laura.mendez@uninorte.edu.co",
+                "Trabajo de grupo",
+                "Puedes enviarme tu parte antes de las 6 para unirla al documento final?",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: era una solicitud académica normal.",
+                "solicitud directa sin humillación"
+            ),
+            CrearCorreo(
+                "ef_d1_normal_tablero",
+                "andres.rojas@uninorte.edu.co",
+                "Foto del tablero",
+                "No alcancé a copiar el ejercicio. ¿Me mandas la foto del tablero?",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: pedir apuntes no es acoso.",
+                "no hay señales de daño"
+            ),
+            CrearCorreo(
+                "ef_d1_normal_exposicion",
+                "profesor.martinez@uninorte.edu.co",
+                "Orden de exposiciones",
+                "El orden de exposiciones se publicará mañana en el aula virtual.",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: era información institucional.",
+                "mensaje formal de profesor"
+            ),
+            CrearCorreo(
+                "ef_d1_claro_reunion",
+                "grupo7.proyecto@uninorte.edu.co",
+                "Reunión",
+                "No vengas a la reunión. Nadie quiere trabajar contigo.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                false,
+                "grupo_ciencias",
+                "ef_ev_d1_reunion_exclusion",
+                2,
+                "Correcto: hay exclusión explícita y daño social.",
+                "exclusión directa"
+            ),
+            CrearCorreo(
+                "ef_d1_claro_exposicion",
+                "estudiante.grupo7@uninorte.edu.co",
+                "Exposición",
+                "Si hablas mañana, todos se van a burlar otra vez.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                false,
+                "presion_para_callar",
+                "ef_ev_d1_burla_anunciada",
+                2,
+                "Correcto: anticipa humillación pública y presiona a callar.",
+                "humillación anunciada"
+            ),
+            CrearCorreo(
+                "ef_d1_claro_grupo",
+                "marcos.grupo3@uninorte.edu.co",
+                "Chat del grupo",
+                "Te sacamos del chat porque siempre arruinas todo.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                false,
+                "grupo_ciencias",
+                "ef_ev_d1_expulsion_chat",
+                2,
+                "Correcto: expulsa y humilla a una persona del grupo.",
+                "exclusión con ataque personal"
+            ),
+            CrearCorreo(
+                "ef_d1_ambiguo_presentacion",
+                "grupo.ciencias@uninorte.edu.co",
+                "Presentación",
+                "Mejor esta vez presentamos nosotros para avanzar más rápido.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                true,
+                "grupo_ciencias",
+                "ef_ev_d1_presentacion_repetida",
+                2,
+                "Error: el contexto mostraba exclusión repetida dentro del grupo.",
+                "historial: ya la dejaron por fuera de dos reuniones"
+            )
+        };
+    }
+
+    private List<Correo> CrearCorreosDiaDos()
+    {
+        return new List<Correo>
+        {
+            CrearCorreo("ef_d2_normal_orientacion", "orientacion@uninorte.edu.co", "Taller de convivencia", "El viernes habrá un taller voluntario sobre trabajo colaborativo.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era una invitación institucional.", "mensaje institucional"),
+            CrearCorreo("ef_d2_normal_apuntes", "camila.torres@uninorte.edu.co", "Apuntes", "No entendí tu punto en clase. ¿Me lo explicas después?", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: pedir aclaración no es acoso.", "pregunta académica respetuosa"),
+            CrearCorreo("ef_d2_normal_laboratorio", "laboratorios@uninorte.edu.co", "Reserva de sala", "La sala de cómputo queda reservada de 2 a 4 p.m. para el parcial práctico.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era información académica.", "aviso institucional"),
+            CrearCorreo("ef_d2_normal_documento", "valeria.paz@uninorte.edu.co", "Documento final", "Revisé el documento y dejé comentarios para corregir citas antes de entregarlo.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era retroalimentación de trabajo.", "comentarios académicos"),
+            CrearCorreo("ef_d2_claro_no_vengas", "equipo.proyecto4@uninorte.edu.co", "Reunión de hoy", "No le digan la hora a Laura. Así terminamos sin que estorbe.", true, TipoDecisionCorreo.Reportar, false, "grupo_ciencias", "ef_ev_d2_ocultar_hora", 3, "Correcto: hay exclusión intencional y organizada.", "exclusión planificada"),
+            CrearCorreo("ef_d2_claro_captura", "nicolas.chat@uninorte.edu.co", "Captura", "Mandemos otra captura al grupo para que se rían como ayer.", true, TipoDecisionCorreo.Reportar, false, "capturas_chat", "ef_ev_d2_captura_humillar", 3, "Correcto: difundir capturas para humillar es ciberacoso.", "difusión de capturas"),
+            CrearCorreo("ef_d2_claro_callar", "mateo.rivera@uninorte.edu.co", "No digas nada", "Si cuentas lo del chat, todos se van a molestar contigo.", true, TipoDecisionCorreo.Reportar, false, "presion_para_callar", "ef_ev_d2_presion_silencio", 3, "Correcto: hay presión social para impedir pedir ayuda.", "presión para callar"),
+            CrearCorreo("ef_d2_claro_apodo", "grupo.seccion2@uninorte.edu.co", "Apodo", "Sigamos llamándole así en clase para ver si por fin deja de hablar.", true, TipoDecisionCorreo.Reportar, false, "el_apodo", "ef_ev_d2_apodo_clase", 2, "Correcto: el apodo se usa para humillar y silenciar.", "burla repetida"),
+            CrearCorreo("ef_d2_ambiguo_broma", "daniela.mora@uninorte.edu.co", "Broma de ayer", "Era solo una broma, no te lo tomes tan serio.", true, TipoDecisionCorreo.Reportar, true, "el_apodo", "ef_ev_d2_broma_repetida", 2, "Error: el caso mostraba que la broma era parte de un patrón repetido.", "historial: mismo comentario apareció tres veces esta semana"),
+            CrearCorreo("ef_d2_ambiguo_grupo", "grupo.ciencias@uninorte.edu.co", "Avance", "El grupo decidió hacerlo sin ti para avanzar más rápido.", true, TipoDecisionCorreo.Reportar, true, "grupo_ciencias", "ef_ev_d2_avance_sin_ti", 2, "Error: el contexto mostraba aislamiento repetido, no solo organización.", "historial: no le avisaron reuniones anteriores"),
+            CrearCorreo("ef_d2_ambiguo_malentendido", "sara.lopez@uninorte.edu.co", "Meme", "Te envié el meme porque dijiste que también veías esa serie.", false, TipoDecisionCorreo.Aceptar, true, "malentendido", "ef_ev_d2_meme_consentido", 1, "Error: el contexto mostraba una conversación amistosa, no burla.", "contexto: ambos hablaron de la serie antes"),
+            CrearCorreo("ef_d2_ambiguo_preguntas", "julian.reyes@uninorte.edu.co", "Clase de hoy", "¿Otra vez vas a preguntar eso en clase?", true, TipoDecisionCorreo.Reportar, true, "estudiante_aplicado", "ef_ev_d2_preguntas_repetidas", 2, "Error: el contexto mostraba burlas repetidas por participar.", "historial: comentarios similares después de cada clase")
+        };
+    }
+
+    private List<Correo> CrearCorreosDiaTresEnAdelante()
+    {
+        return new List<Correo>
+        {
+            CrearCorreo("ef_d3_normal_biblioteca", "biblioteca@uninorte.edu.co", "Préstamo de libros", "Recuerda devolver los libros de consulta antes del lunes.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era un recordatorio institucional.", "recordatorio normal"),
+            CrearCorreo("ef_d3_normal_cita", "profesor.martinez@uninorte.edu.co", "Revisión de avance", "Puedes pasar mañana por mi oficina para revisar el avance del proyecto.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era una cita académica.", "mensaje formal"),
+            CrearCorreo("ef_d3_normal_equipo", "ana.garcia@uninorte.edu.co", "División de tareas", "Yo hago la introducción y tú revisas las referencias. ¿Te parece?", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era coordinación de tareas.", "acuerdo de trabajo"),
+            CrearCorreo("ef_d3_normal_monitoria", "monitoria.calculo@uninorte.edu.co", "Ejercicios resueltos", "Ya están disponibles los ejercicios de práctica para el parcial.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era material de apoyo académico.", "aviso académico"),
+            CrearCorreo("ef_d3_normal_convivencia", "convivencia@uninorte.edu.co", "Canal de apoyo", "Si necesitas orientación sobre conflictos de grupo, puedes solicitar cita confidencial.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era información de apoyo.", "canal institucional"),
+            CrearCorreo("ef_d3_claro_rumor", "grupo.seccion5@uninorte.edu.co", "Rumor", "Digamos que hizo trampa para que nadie quiera trabajar con él.", true, TipoDecisionCorreo.Reportar, false, "rumor_curso", "ef_ev_d3_rumor_trampa", 3, "Correcto: crear un rumor para aislar causa daño.", "rumor intencional"),
+            CrearCorreo("ef_d3_claro_discriminatorio", "estudiante.seccion6@uninorte.edu.co", "Comentario", "No lo inviten; siempre hacen quedar mal al grupo por su forma de hablar.", true, TipoDecisionCorreo.Reportar, false, "comentario_discriminatorio", "ef_ev_d3_forma_hablar", 3, "Correcto: discrimina y excluye por una característica personal.", "comentario discriminatorio"),
+            CrearCorreo("ef_d3_claro_silencio", "mateo.rivera@uninorte.edu.co", "Mejor callado", "Mejor quédate callado en la exposición, das vergüenza.", true, TipoDecisionCorreo.Reportar, false, "presion_para_callar", "ef_ev_d3_verguenza_exposicion", 3, "Correcto: humilla y busca silenciar.", "humillación directa"),
+            CrearCorreo("ef_d3_claro_capturas", "chat.parcial@uninorte.edu.co", "Capturas", "Subamos sus audios al grupo para que todos vean lo ridículo que suena.", true, TipoDecisionCorreo.Reportar, false, "capturas_chat", "ef_ev_d3_audios_humillar", 3, "Correcto: exponer audios para ridiculizar es ciberacoso.", "difusión para humillar"),
+            CrearCorreo("ef_d3_claro_aplicado", "grupo.laboratorio@uninorte.edu.co", "El aplicado", "No le pasen el enlace. Siempre se cree mejor que todos.", true, TipoDecisionCorreo.Reportar, false, "estudiante_aplicado", "ef_ev_d3_no_enlace", 2, "Correcto: hay exclusión por rendimiento académico.", "exclusión del enlace"),
+            CrearCorreo("ef_d3_ambiguo_presentar", "grupo.ciencias@uninorte.edu.co", "Presentación final", "Mejor esta vez no presentas tú.", true, TipoDecisionCorreo.Reportar, true, "grupo_ciencias", "ef_ev_d3_no_presenta", 2, "Error: el caso mostraba patrón de apartarla de decisiones del grupo.", "historial: ya fue excluida de ensayo y reunión"),
+            CrearCorreo("ef_d3_ambiguo_rumor", "nicolas.observador@uninorte.edu.co", "Lo que dicen", "Dicen que no conviene juntarse con Samuel para el proyecto.", true, TipoDecisionCorreo.Reportar, true, "rumor_curso", "ef_ev_d3_no_juntarse", 2, "Error: el contexto mostraba rumor usado para aislar.", "historial: varias personas repitieron el mismo rumor"),
+            CrearCorreo("ef_d3_ambiguo_conflicto", "valeria.paz@uninorte.edu.co", "Discusión del grupo", "No lo dije de mala forma, pero todos se incomodaron con el comentario.", false, TipoDecisionCorreo.Aceptar, true, "malentendido", "ef_ev_d3_conflicto_normal", 1, "Error: el contexto mostraba conflicto puntual, no acoso repetido.", "contexto: hubo disculpa y no se repitió"),
+            CrearCorreo("ef_d3_ambiguo_discriminacion", "camila.torres@uninorte.edu.co", "Comentario incómodo", "Otra vez hicieron el chiste sobre su acento en el chat.", true, TipoDecisionCorreo.Reportar, true, "comentario_discriminatorio", "ef_ev_d3_chiste_acento", 3, "Error: el contexto mostraba repetición de comentarios discriminatorios.", "historial: mismo chiste apareció en dos clases"),
+            CrearCorreo("ef_d3_ambiguo_falso", "marcos.grupo3@uninorte.edu.co", "Entrega del trabajo", "Laura no subió su parte y necesitamos saber cómo seguimos.", false, TipoDecisionCorreo.Aceptar, true, "malentendido", "ef_ev_d3_entrega_faltante", 1, "Error: el contexto mostraba una coordinación académica, no ataque personal.", "contexto: el grupo pidió ayuda sin excluir ni insultar")
+        };
+    }
+
+    private Correo CrearCorreo(
+        string id,
+        string remitente,
+        string asunto,
+        string texto,
+        bool esBullying,
+        TipoDecisionCorreo decision,
+        bool ambiguo,
+        string idCaso,
+        string idEvidencia,
+        int severidad,
+        string explicacion,
+        params string[] pistas
+    )
+    {
+        return new Correo
+        {
+            idCorreo = id,
+            remitente = remitente,
+            asunto = asunto,
+            texto = texto,
+            esBullying = esBullying,
+            dia = dia,
+            dificultad = Mathf.Clamp(dia, 1, 3),
+            idCasoRelacionado = idCaso,
+            decisionCorrecta = decision,
+            evidenciaQueDesbloquea = idEvidencia,
+            esAmbiguo = ambiguo,
+            severidad = severidad,
+            explicacionEducativa = explicacion,
+            pistas = pistas
+        };
+    }
+
+    private void EnriquecerCorreosSiHaceFalta()
+    {
+        for (int i = 0; i < correosActuales.Count; i++)
+        {
+            Correo correo = correosActuales[i];
+
+            if (correo == null)
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(correo.idCorreo))
+            {
+                correo.idCorreo = "correo_" + dia + "_" + i;
+            }
+
+            if (correo.dia <= 0)
+            {
+                correo.dia = dia;
+            }
+
+            if (correo.decisionCorrecta == TipoDecisionCorreo.SinDefinir)
+            {
+                correo.decisionCorrecta = correo.esBullying
+                    ? TipoDecisionCorreo.Reportar
+                    : TipoDecisionCorreo.Aceptar;
+            }
+
+            string texto = ((correo.asunto ?? string.Empty) + " " + (correo.texto ?? string.Empty)).ToLowerInvariant();
+
+            bool requiereContexto =
+                texto.Contains("reunion")
+                || texto.Contains("reunión")
+                || texto.Contains("captura")
+                || texto.Contains("rumor")
+                || texto.Contains("no digas")
+                || texto.Contains("grupo")
+                || texto.Contains("meme");
+
+            bool correoCuradoAcademico =
+                !string.IsNullOrWhiteSpace(correo.idCorreo) &&
+                correo.idCorreo.StartsWith("ef_", System.StringComparison.Ordinal);
+
+            if (requiereContexto && dificultadEntryFilter != DificultadEntryFilter.Facil && !correoCuradoAcademico)
+            {
+                correo.esAmbiguo = true;
+            }
+
+            if (correo.severidad <= 0)
+            {
+                correo.severidad = correo.esBullying ? 2 : 1;
+            }
+
+            if (string.IsNullOrWhiteSpace(correo.idCasoRelacionado) && (correo.esAmbiguo || correo.esBullying))
+            {
+                correo.idCasoRelacionado = InferirCasoCorreo(correo);
+            }
+
+            if (correo.pistas == null || correo.pistas.Length == 0)
+            {
+                correo.pistas = CrearPistasCorreo(correo);
+            }
+
+            if (string.IsNullOrWhiteSpace(correo.explicacionEducativa))
+            {
+                correo.explicacionEducativa = CrearExplicacionCorreo(correo);
+            }
+        }
+    }
+
+    private string InferirCasoCorreo(Correo correo)
+    {
+        string texto = ((correo.asunto ?? string.Empty) + " " + (correo.texto ?? string.Empty)).ToLowerInvariant();
+
+        if (texto.Contains("captura") || texto.Contains("chat"))
+        {
+            return "capturas_chat";
+        }
+
+        if (texto.Contains("rumor") || texto.Contains("dicen"))
+        {
+            return "rumor_curso";
+        }
+
+        if (texto.Contains("reunion") || texto.Contains("reunión") || texto.Contains("grupo"))
+        {
+            return "grupo_ciencias";
+        }
+
+        if (texto.Contains("meme") || texto.Contains("apodo") || texto.Contains("serie"))
+        {
+            return "el_apodo";
+        }
+
+        if (texto.Contains("no digas") || texto.Contains("callar"))
+        {
+            return "presion_para_callar";
+        }
+
+        return correo.esBullying ? "presion_para_callar" : string.Empty;
+    }
+
+    private string[] CrearPistasCorreo(Correo correo)
+    {
+        List<string> pistas = new List<string>();
+        string texto = ((correo.asunto ?? string.Empty) + " " + (correo.texto ?? string.Empty)).ToLowerInvariant();
+
+        if (texto.Contains("no digas") || texto.Contains("callar"))
+        {
+            pistas.Add("posible presión para guardar silencio");
+        }
+
+        if (texto.Contains("captura") || texto.Contains("chat"))
+        {
+            pistas.Add("posible difusión de información privada");
+        }
+
+        if (texto.Contains("reunion") || texto.Contains("reunión") || texto.Contains("grupo"))
+        {
+            pistas.Add("revisar si hay exclusión repetida");
+        }
+
+        if (texto.Contains("meme") || texto.Contains("apodo"))
+        {
+            pistas.Add("distinguir broma aislada de burla repetida");
+        }
+
+        if (pistas.Count == 0)
+        {
+            pistas.Add(correo.esAmbiguo ? "falta contexto" : "no hay señales claras");
+        }
+
+        return pistas.ToArray();
+    }
+
+    private string CrearExplicacionCorreo(Correo correo)
+    {
+        if (correo.decisionCorrecta == TipoDecisionCorreo.RevisarCaso)
+        {
+            return "La decisión recomendada es revisar contexto antes de acusar o ignorar.";
+        }
+
+        if (correo.decisionCorrecta == TipoDecisionCorreo.Reportar)
+        {
+            return "Hay señales suficientes de daño, presión o acoso que deben reportarse.";
+        }
+
+        return "El correo parece comunicación normal o conflicto sin evidencia suficiente de acoso.";
     }
 
     private void MostrarCorreo()
@@ -159,13 +639,41 @@ public class ControlCorreo : MonoBehaviour
             remitente += " [SOSPECHOSO]";
         }
 
+        string cuerpo = correoActual.texto;
+
+        if (tieneFiltroSpam)
+        {
+            cuerpo += "\n\nPISTA DEL FILTRO: " + ObtenerPistaFiltro(correoActual);
+        }
+
+        if (correoActual.esAmbiguo && ContextoRevisado(correoActual))
+        {
+            cuerpo += "\n\nCONTEXTO: evidencia registrada en Casos. Decide con cuidado.";
+        }
+
         if (textoRemitente != null) textoRemitente.text = remitente;
         if (textoAsunto != null) textoAsunto.text = correoActual.asunto;
-        if (textoCorreo != null) textoCorreo.text = correoActual.texto;
+        if (textoCorreo != null) textoCorreo.text = cuerpo;
         if (textoResultado != null) textoResultado.text = string.Empty;
+        ActualizarCajaFeedback(false);
+    }
+
+    private string ObtenerPistaFiltro(Correo correo)
+    {
+        if (correo == null || correo.pistas == null || correo.pistas.Length == 0)
+        {
+            return "No se detectaron señales claras. Puede requerir contexto.";
+        }
+
+        return correo.pistas[0];
     }
 
     public void Evaluar(bool decisionJugador)
+    {
+        EvaluarDecision(decisionJugador ? TipoDecisionCorreo.Reportar : TipoDecisionCorreo.Aceptar);
+    }
+
+    public void EvaluarDecision(TipoDecisionCorreo decisionJugador)
     {
         if (!activo || colaCorreos.Count == 0)
         {
@@ -174,32 +682,69 @@ public class ControlCorreo : MonoBehaviour
 
         Correo correoActual = colaCorreos.Peek();
 
-        if (decisionJugador == correoActual.esBullying)
+        if (decisionJugador == TipoDecisionCorreo.RevisarCaso)
         {
-            MostrarResultado("Correcto", EstiloUIJuego.Acento);
+            ProcesarRevisionContexto(correoActual);
+            return;
+        }
+
+        if (DebeRevisarContextoAntesDeClasificar(correoActual))
+        {
+            MostrarResultado(
+                "Incorrecto - faltaba revisar contexto antes de clasificar este correo.",
+                EstiloUIJuego.Peligro
+            );
+            errores++;
+            confianzaEscolar = Mathf.Max(0, confianzaEscolar - 2);
+            precision = Mathf.Max(0, precision - 3);
+            ActualizarErrores();
+            OnStatsChanged?.Invoke();
+            correosClasificados++;
+            ActualizarPrecision();
+            InvocarSiguienteCorreo(false);
+            GuardarProgresoActual();
+            return;
+        }
+
+        TipoDecisionCorreo decisionEsperada = ObtenerDecisionEsperada(correoActual);
+
+        bool decisionCorrecta = decisionJugador == decisionEsperada;
+
+        if (decisionCorrecta)
+        {
+            string mensajeCorrecto = "Correcto - "
+                + ObtenerTextoDecision(decisionJugador)
+                + ". "
+                + ObtenerFeedbackCorrecto(correoActual, decisionJugador);
+            MostrarResultado(mensajeCorrecto, EstiloUIJuego.Acento);
             correctos++;
+            bienestarEstudiantil = Mathf.Min(100, bienestarEstudiantil + (decisionJugador == TipoDecisionCorreo.Reportar ? 2 : 1));
+            confianzaEscolar = Mathf.Min(100, confianzaEscolar + 1);
         }
         else
         {
             if (tieneSeguro && !seguroUsado)
             {
                 seguroUsado = true;
-                MostrarResultado("Seguro utilizado", EstiloUIJuego.Acento);
+                MostrarResultado("Seguro usado: evitaste la penalización", EstiloUIJuego.Acento);
                 correctos++;
                 correosClasificados++;
-                InvocarSiguienteCorreo();
+                ActualizarPrecision();
+                InvocarSiguienteCorreo(false);
                 GuardarProgresoActual();
                 return;
             }
 
-            MostrarResultado("Incorrecto", EstiloUIJuego.Peligro);
+            MostrarResultado("Incorrecto - " + correoActual.explicacionEducativa, EstiloUIJuego.Peligro);
             errores++;
+            AplicarConsecuenciaError(decisionJugador, correoActual);
             ActualizarErrores();
             OnStatsChanged?.Invoke();
         }
 
         correosClasificados++;
-        InvocarSiguienteCorreo();
+        ActualizarPrecision();
+        InvocarSiguienteCorreo(decisionCorrecta);
         GuardarProgresoActual();
     }
 
@@ -213,9 +758,209 @@ public class ControlCorreo : MonoBehaviour
         Evaluar(false);
     }
 
-    private void InvocarSiguienteCorreo()
+    public void EvaluarRevisarCaso()
     {
-        float tiempoEspera = tieneTeclado ? 0.2f : 0.5f;
+        EvaluarDecision(TipoDecisionCorreo.RevisarCaso);
+    }
+
+    private void ProcesarRevisionContexto(Correo correoActual)
+    {
+        if (correoActual == null)
+        {
+            return;
+        }
+
+        if (ContextoRevisado(correoActual))
+        {
+            MostrarResultado(
+                "Contexto ya revisado. Decide ahora con Aceptar o Reportar.",
+                EstiloUIJuego.Acento
+            );
+            return;
+        }
+
+        string mensajeRevision = RegistrarRevisionCaso(correoActual);
+
+        if (string.IsNullOrWhiteSpace(mensajeRevision) ||
+            mensajeRevision.Contains("no requiere expediente"))
+        {
+            MostrarResultado(
+                "Este correo no necesita expediente. Clasifícalo con Aceptar o Reportar.",
+                EstiloUIJuego.TextoPrincipal
+            );
+            return;
+        }
+
+        correosConContextoRevisado.Add(ClaveCorreo(correoActual));
+        MostrarResultado(
+            mensajeRevision + ". Ahora decide con Aceptar o Reportar.",
+            EstiloUIJuego.Acento
+        );
+        OnStatsChanged?.Invoke();
+        GuardarProgresoActual();
+    }
+
+    public void AplicarImpactoDecisionCaso(DecisionCaso decision)
+    {
+        if (decision == null)
+        {
+            return;
+        }
+
+        bienestarEstudiantil = Mathf.Clamp(
+            bienestarEstudiantil + decision.impactoBienestar,
+            0,
+            100
+        );
+        confianzaEscolar = Mathf.Clamp(
+            confianzaEscolar + decision.impactoConfianza,
+            0,
+            100
+        );
+        precision = Mathf.Clamp(precision + decision.impactoPrecision, 0, 100);
+        GuardarProgresoActual();
+    }
+
+    private TipoDecisionCorreo ObtenerDecisionEsperada(Correo correo)
+    {
+        if (correo != null &&
+            correo.decisionCorrecta != TipoDecisionCorreo.SinDefinir &&
+            correo.decisionCorrecta != TipoDecisionCorreo.RevisarCaso)
+        {
+            return correo.decisionCorrecta;
+        }
+
+        return correo != null && correo.esBullying
+            ? TipoDecisionCorreo.Reportar
+            : TipoDecisionCorreo.Aceptar;
+    }
+
+    private bool DebeRevisarContextoAntesDeClasificar(Correo correo)
+    {
+        return correo != null && correo.esAmbiguo && !ContextoRevisado(correo);
+    }
+
+    private bool ContextoRevisado(Correo correo)
+    {
+        return correo != null && correosConContextoRevisado.Contains(ClaveCorreo(correo));
+    }
+
+    private string ClaveCorreo(Correo correo)
+    {
+        if (correo == null)
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(correo.idCorreo))
+        {
+            return correo.idCorreo;
+        }
+
+        return dia + "_" + correo.remitente + "_" + correo.asunto;
+    }
+
+    private string ObtenerFeedbackCorrecto(Correo correo, TipoDecisionCorreo decision)
+    {
+        if (correo != null && correo.esAmbiguo && ContextoRevisado(correo))
+        {
+            return "El contexto del caso aclaró la decisión.";
+        }
+
+        if (decision == TipoDecisionCorreo.Reportar)
+        {
+            return "Había señales suficientes de acoso, exclusión o daño.";
+        }
+
+        return "Era comunicación académica normal o no había evidencia de acoso.";
+    }
+
+    private string ObtenerTextoDecision(TipoDecisionCorreo decision)
+    {
+        switch (decision)
+        {
+            case TipoDecisionCorreo.Reportar:
+                return "Reportar";
+            case TipoDecisionCorreo.RevisarCaso:
+                return "Revisar contexto";
+            default:
+                return "Aceptar";
+        }
+    }
+
+    private string RegistrarRevisionCaso(Correo correoActual)
+    {
+        AsegurarGestorCasos();
+
+        if (gestorCasos == null)
+        {
+            MostrarResultado("No se encontró la app Casos.", EstiloUIJuego.Peligro);
+            return "No se encontró la app Casos.";
+        }
+
+        bool agregado = gestorCasos.RegistrarRevisionCorreo(correoActual, dia, out string mensaje);
+
+        if (agregado)
+        {
+            evidenciasEncontradasDia++;
+            casosAbiertosDia = Mathf.Max(casosAbiertosDia, ContarCasosActivos());
+        }
+
+        return mensaje;
+    }
+
+    private int ContarCasosActivos()
+    {
+        if (gestorCasos == null)
+        {
+            return 0;
+        }
+
+        int total = 0;
+        IReadOnlyList<CasoBullying> casos = gestorCasos.Casos;
+
+        for (int i = 0; i < casos.Count; i++)
+        {
+            if (casos[i] != null && casos[i].desbloqueado)
+            {
+                total++;
+            }
+        }
+
+        return total;
+    }
+
+    private void AplicarConsecuenciaError(TipoDecisionCorreo decisionJugador, Correo correo)
+    {
+        if (correo != null && correo.esBullying && decisionJugador == TipoDecisionCorreo.Aceptar)
+        {
+            bienestarEstudiantil = Mathf.Max(0, bienestarEstudiantil - 8);
+            confianzaEscolar = Mathf.Max(0, confianzaEscolar - 2);
+            return;
+        }
+
+        if (correo != null && !correo.esBullying && decisionJugador == TipoDecisionCorreo.Reportar)
+        {
+            confianzaEscolar = Mathf.Max(0, confianzaEscolar - 7);
+            bienestarEstudiantil = Mathf.Max(0, bienestarEstudiantil - 1);
+            return;
+        }
+
+        precision = Mathf.Max(0, precision - 3);
+    }
+
+    private void ActualizarPrecision()
+    {
+        precision = correosClasificados <= 0
+            ? 0
+            : Mathf.RoundToInt((float)correctos / Mathf.Max(1, correosClasificados) * 100f);
+    }
+
+    private void InvocarSiguienteCorreo(bool decisionCorrecta)
+    {
+        float tiempoEspera = decisionCorrecta
+            ? (tieneTeclado ? 1.1f : 1.4f)
+            : 3.8f;
         Invoke(nameof(SiguienteCorreo), tiempoEspera);
     }
 
@@ -226,13 +971,14 @@ public class ControlCorreo : MonoBehaviour
             colaCorreos.Dequeue();
         }
 
-        if (correosClasificados >= 15)
+        if (correosClasificados >= ObtenerObjetivoCorreosDia())
         {
             activo = false;
             if (textoRemitente != null) textoRemitente.text = string.Empty;
             if (textoAsunto != null) textoAsunto.text = string.Empty;
             if (textoCorreo != null) textoCorreo.text = string.Empty;
             if (textoResultado != null) textoResultado.text = string.Empty;
+            ActualizarCajaFeedback(false);
 
             Invoke(nameof(MostrarPantallaFinDia), 1f);
             return;
@@ -244,8 +990,38 @@ public class ControlCorreo : MonoBehaviour
         }
         else
         {
-            CargarCorreos();
+            CargarCorreos(false);
         }
+    }
+
+    private int ObtenerObjetivoCorreosDia()
+    {
+        int objetivo;
+
+        switch (dificultadEntryFilter)
+        {
+            case DificultadEntryFilter.Facil:
+                objetivo = 8;
+                break;
+            case DificultadEntryFilter.Dificil:
+                objetivo = 15;
+                break;
+            default:
+                objetivo = 12;
+                break;
+        }
+
+        if (tieneCafe)
+        {
+            objetivo += 1;
+        }
+
+        if (tieneTeclado)
+        {
+            objetivo += 1;
+        }
+
+        return objetivo;
     }
 
     private void MostrarPantallaFinDia()
@@ -286,6 +1062,11 @@ public class ControlCorreo : MonoBehaviour
                 "Correos clasificados: " + correosClasificados +
                 "\nCorreos correctos: " + correctos +
                 "\nCorreos incorrectos: " + errores +
+                "\nCasos abiertos: " + casosAbiertosDia +
+                "\nEvidencias encontradas: " + evidenciasEncontradasDia +
+                "\nBienestar estudiantil: " + bienestarEstudiantil +
+                "\nConfianza escolar: " + confianzaEscolar +
+                "\nPrecisión: " + precision + "%" +
                 "\nSueldo base: $" + sueldoBase +
                 "\nSueldo final: $" + sueldoFinal +
                 "\n" + mensajeSueldo +
@@ -332,7 +1113,7 @@ public class ControlCorreo : MonoBehaviour
         }
 
         ActualizarErrores();
-        CargarCorreos();
+        CargarCorreos(true);
     }
 
     public void ContinuarDespuesDelResumen()
@@ -357,7 +1138,7 @@ public class ControlCorreo : MonoBehaviour
         }
 
         ActualizarErrores();
-        CargarCorreos();
+        CargarCorreos(true);
         GuardarProgresoActual();
     }
 
@@ -387,6 +1168,22 @@ public class ControlCorreo : MonoBehaviour
         {
             textoResultado.text = mensaje;
             textoResultado.color = color;
+            ActualizarCajaFeedback(!string.IsNullOrWhiteSpace(mensaje));
+        }
+    }
+
+    private void ActualizarCajaFeedback(bool visible)
+    {
+        Transform caja = transform.Find("CajaFeedbackCorreo");
+
+        if (caja != null)
+        {
+            caja.gameObject.SetActive(visible);
+        }
+
+        if (textoResultado != null)
+        {
+            textoResultado.transform.SetAsLastSibling();
         }
     }
 
@@ -461,7 +1258,16 @@ public class ControlCorreo : MonoBehaviour
                     new Color(0.78f, 0.22f, 0.24f, 1f),
                     new Color(0.96f, 0.34f, 0.34f, 1f)
                 );
-                AcomodarBotonAccion(boton, -100f);
+                AcomodarBotonAccion(boton, -210f);
+            }
+            else if (etiqueta.Contains("Revisar"))
+            {
+                EstiloUIJuego.AplicarBoton(
+                    boton,
+                    new Color(0.16f, 0.3f, 0.58f, 1f),
+                    EstiloUIJuego.AcentoCalido
+                );
+                AcomodarBotonAccion(boton, 0f);
             }
             else if (etiqueta.Contains("Aceptar"))
             {
@@ -470,7 +1276,7 @@ public class ControlCorreo : MonoBehaviour
                     new Color(0.14f, 0.58f, 0.32f, 1f),
                     new Color(0.24f, 0.78f, 0.42f, 1f)
                 );
-                AcomodarBotonAccion(boton, 100f);
+                AcomodarBotonAccion(boton, 210f);
             }
         }
     }
@@ -484,6 +1290,7 @@ public class ControlCorreo : MonoBehaviour
 
         AjustarVentanaCorreo();
         AsegurarDecoracionCorreo();
+        PrepararBotonRevisarCaso();
         AplicarEstiloCorreo();
         AcomodarTextosCorreo();
         PrepararBotonCerrarCorreo();
@@ -546,6 +1353,21 @@ public class ControlCorreo : MonoBehaviour
                 new Color(0.06f, 0.09f, 0.17f, 1f)
             ).transform.SetSiblingIndex(1);
         }
+
+        Transform feedbackExistente = transform.Find("CajaFeedbackCorreo");
+
+        if (feedbackExistente == null)
+        {
+            Image caja = EstiloUIJuego.CrearImagen(
+                transform,
+                "CajaFeedbackCorreo",
+                new Vector2(0f, -98f),
+                new Vector2(620f, 50f),
+                new Color(0.02f, 0.02f, 0.06f, 0.88f)
+            );
+            caja.raycastTarget = false;
+            caja.gameObject.SetActive(false);
+        }
     }
 
     private void AcomodarTextosCorreo()
@@ -555,7 +1377,13 @@ public class ControlCorreo : MonoBehaviour
         AcomodarTexto(textoRemitente, new Vector2(-116f, 112f), new Vector2(410f, 28f));
         AcomodarTexto(textoAsunto, new Vector2(-116f, 78f), new Vector2(410f, 30f));
         AcomodarTexto(textoCorreo, new Vector2(0f, -8f), new Vector2(572f, 156f));
-        AcomodarTexto(textoResultado, new Vector2(0f, -142f), new Vector2(220f, 28f));
+        AcomodarTexto(textoResultado, new Vector2(0f, -98f), new Vector2(590f, 44f));
+
+        if (textoResultado != null)
+        {
+            textoResultado.alignment = TextAnchor.MiddleCenter;
+            textoResultado.transform.SetAsLastSibling();
+        }
     }
 
     private void AcomodarTexto(Text texto, Vector2 posicion, Vector2 tamano)
@@ -577,6 +1405,61 @@ public class ControlCorreo : MonoBehaviour
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = posicion;
         rect.sizeDelta = tamano;
+    }
+
+    private void PrepararBotonRevisarCaso()
+    {
+        if (botonRevisarCaso == null)
+        {
+            Transform existente = transform.Find("BotonRevisarCaso");
+
+            if (existente != null)
+            {
+                botonRevisarCaso = existente.GetComponent<Button>();
+            }
+        }
+
+        if (botonRevisarCaso == null)
+        {
+            GameObject objeto = new GameObject(
+                "BotonRevisarCaso",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(Button)
+            );
+            objeto.transform.SetParent(transform, false);
+
+            EstiloUIJuego.CrearTextoTMP(
+                objeto.transform,
+                "Texto",
+                "Revisar contexto",
+                17f,
+                Vector2.zero,
+                new Vector2(170f, 42f),
+                TextAlignmentOptions.Center
+            );
+
+            botonRevisarCaso = objeto.GetComponent<Button>();
+        }
+
+        botonRevisarCaso.onClick.RemoveAllListeners();
+        botonRevisarCaso.onClick.AddListener(EvaluarRevisarCaso);
+
+        TextMeshProUGUI textoBoton = botonRevisarCaso.GetComponentInChildren<TextMeshProUGUI>(true);
+
+        if (textoBoton != null)
+        {
+            textoBoton.text = "Revisar contexto";
+            textoBoton.fontSize = 16f;
+        }
+
+        EstiloUIJuego.AplicarBoton(
+            botonRevisarCaso,
+            new Color(0.16f, 0.3f, 0.58f, 1f),
+            EstiloUIJuego.AcentoCalido
+        );
+        AcomodarBotonAccion(botonRevisarCaso, 0f);
     }
 
     private void PrepararBotonCerrarCorreo()
@@ -789,6 +1672,25 @@ public class ControlCorreo : MonoBehaviour
         tieneFiltroSpam = datos.tieneFiltroSpam;
         tieneTeclado = datos.tieneTeclado;
         modoLecturaActivado = datos.lecturaFacilActiva;
+        bienestarEstudiantil = datos.bienestarEstudiantil > 0 ? datos.bienestarEstudiantil : 70;
+        confianzaEscolar = datos.confianzaEscolar > 0 ? datos.confianzaEscolar : 70;
+        precision = datos.precision;
+
+        if (!string.IsNullOrWhiteSpace(datos.dificultadEntryFilter) &&
+            System.Enum.TryParse(datos.dificultadEntryFilter, out DificultadEntryFilter dificultadGuardada))
+        {
+            dificultadEntryFilter = dificultadGuardada;
+        }
+
+        if (gestorCasos == null)
+        {
+            gestorCasos = FindAnyObjectByType<GestorCasos>();
+        }
+
+        if (gestorCasos != null)
+        {
+            gestorCasos.CargarRegistrosGuardado(datos.casos);
+        }
 
         ConfiguracionAccesibilidadJuego.Guardar(
             datos.accesibilidadTextoGrande,
@@ -819,7 +1721,14 @@ public class ControlCorreo : MonoBehaviour
             accesibilidadTextoGrande = ConfiguracionAccesibilidadJuego.TextoGrandeActivo,
             accesibilidadAltoContraste = ConfiguracionAccesibilidadJuego.AltoContrasteActivo,
             accesibilidadTipoDaltonismo = (int)ConfiguracionAccesibilidadJuego.TipoDaltonismoActual,
-            accesibilidadReducirEfectos = false
+            accesibilidadReducirEfectos = false,
+            dificultadEntryFilter = dificultadEntryFilter.ToString(),
+            bienestarEstudiantil = bienestarEstudiantil,
+            confianzaEscolar = confianzaEscolar,
+            precision = precision,
+            casos = gestorCasos != null
+                ? gestorCasos.CrearRegistrosGuardado()
+                : new List<RegistroCasoGuardado>()
         };
     }
 }

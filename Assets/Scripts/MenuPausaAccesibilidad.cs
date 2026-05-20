@@ -8,6 +8,12 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 {
     public static bool EstaPausado { get; private set; }
 
+    public static void ResetearEstadoGlobalPausa()
+    {
+        EstaPausado = false;
+        Time.timeScale = 1f;
+    }
+
     [Header("Paneles")]
     public GameObject panelPausa;
     public GameObject panelOpciones;
@@ -64,7 +70,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     public Image[] imagenesUI;
 
     [Header("Escena menu")]
-    public string nombreEscenaMenu = "Inicio";
+    public string nombreEscenaMenu = "inicio";
 
     private Behaviour scriptCamara;
 
@@ -76,45 +82,53 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     private int slotSeleccionado = 1;
     private bool confirmandoBorradoSlot;
 
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += AlCargarEscena;
+    }
+
+    private void AlCargarEscena(Scene escena, LoadSceneMode modo)
+    {
+        ReinicializarTrasCargaEscena();
+    }
+
     private void Start()
     {
-        EstaPausado = false;
-        Time.timeScale = 1f;
+        ReinicializarTrasCargaEscena();
+    }
 
+    public void ReinicializarTrasCargaEscena()
+    {
+        ResetearEstadoGlobalPausa();
         NormalizarArreglosSerializados();
+        ResolverReferenciasEscena();
 
-        if (camaraPrincipal != null)
-        {
-            scriptCamara = camaraPrincipal.GetComponent("ControlCamara3D") as Behaviour;
-        }
+        scriptCamara = camaraPrincipal != null
+            ? camaraPrincipal.GetComponent("ControlCamara3D") as Behaviour
+            : null;
 
         GuardarValoresOriginales();
         CargarOpciones();
         ConectarBotones();
-
-        if (panelPausa != null)
-        {
-            panelPausa.SetActive(false);
-        }
-
-        if (panelOpciones != null)
-        {
-            panelOpciones.SetActive(false);
-        }
-
-        if (panelDetalleSlot != null)
-        {
-            panelDetalleSlot.SetActive(false);
-        }
-
+        CerrarPaneles();
         BloquearJugadorYCamara(false);
-        OcultarCursorGameplay();
+
+        if (SceneManager.GetActiveScene().name == "Juego" && !PCRealmenteAbierta())
+        {
+            OcultarCursorGameplay();
+        }
+
         AplicarAccesibilidad();
     }
 
     private void Update()
     {
-        if (!Input.GetKeyDown(KeyCode.Escape))
+        if (EstaPausado && !HayPanelDePausaVisible())
+        {
+            ResetearEstadoGlobalPausa();
+        }
+
+        if (!GestorEntradaGlobal.PausaPresionada())
         {
             return;
         }
@@ -131,7 +145,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             return;
         }
 
-        if (InteraccionPC.PCAbierta)
+        if (PCRealmenteAbierta())
         {
             return;
         }
@@ -257,7 +271,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     public void Pausar()
     {
-        if (InteraccionPC.PCAbierta)
+        if (PCRealmenteAbierta())
         {
             return;
         }
@@ -301,7 +315,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         Time.timeScale = 1f;
 
-        if (!InteraccionPC.PCAbierta)
+        if (!PCRealmenteAbierta())
         {
             BloquearJugadorYCamara(false);
             OcultarCursorGameplay();
@@ -360,9 +374,10 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     public void ReiniciarEscena()
     {
-        EstaPausado = false;
-        Time.timeScale = 1f;
-
+        CancelInvoke();
+        CerrarPaneles();
+        InteraccionPC.ResetearEstadoGlobalPC();
+        ResetearEstadoGlobalPausa();
         BloquearJugadorYCamara(false);
         OcultarCursorGameplay();
 
@@ -377,7 +392,10 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         BloquearJugadorYCamara(false);
         MostrarCursorMenu();
 
-        SceneManager.LoadScene(nombreEscenaMenu);
+        string escenaMenu = string.IsNullOrWhiteSpace(nombreEscenaMenu) || nombreEscenaMenu == "Inicio"
+            ? "inicio"
+            : nombreEscenaMenu;
+        SceneManager.LoadScene(escenaMenu);
     }
 
     private bool MenuAbierto()
@@ -387,6 +405,117 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         bool detalleSlotAbierto = panelDetalleSlot != null && panelDetalleSlot.activeSelf;
 
         return EstaPausado || pausaAbierta || opcionesAbiertas || detalleSlotAbierto;
+    }
+
+    private bool HayPanelDePausaVisible()
+    {
+        return PanelActivo(panelPausa)
+            || PanelActivo(panelOpciones)
+            || PanelActivo(panelDetalleSlot);
+    }
+
+    private bool PanelActivo(GameObject panel)
+    {
+        return panel != null && panel.activeInHierarchy;
+    }
+
+    private void CerrarPaneles()
+    {
+        if (panelPausa != null)
+        {
+            panelPausa.SetActive(false);
+        }
+
+        if (panelOpciones != null)
+        {
+            panelOpciones.SetActive(false);
+        }
+
+        if (panelDetalleSlot != null)
+        {
+            panelDetalleSlot.SetActive(false);
+        }
+
+        confirmandoBorradoSlot = false;
+    }
+
+    private void ResolverReferenciasEscena()
+    {
+        InteraccionPC interaccionPC = FindAnyObjectByType<InteraccionPC>(FindObjectsInactive.Include);
+
+        if (interaccionPC != null)
+        {
+            if (interaccionPC.scriptMovimientoJugador != null)
+            {
+                scriptMovimientoJugador = interaccionPC.scriptMovimientoJugador;
+            }
+
+            if (interaccionPC.camaraPrincipal != null)
+            {
+                camaraPrincipal = interaccionPC.camaraPrincipal;
+            }
+
+            if (interaccionPC.canvasPC != null)
+            {
+                pantallasQueBloqueanPausa = new[] { interaccionPC.canvasPC };
+            }
+        }
+
+        if (scriptMovimientoJugador == null)
+        {
+            MovimientoJugador movimientoBasico = FindAnyObjectByType<MovimientoJugador>(FindObjectsInactive.Include);
+            if (movimientoBasico != null)
+            {
+                scriptMovimientoJugador = movimientoBasico;
+            }
+        }
+
+        if (scriptMovimientoJugador == null)
+        {
+            MovimientoJugadorConCamara movimientoConCamara = FindAnyObjectByType<MovimientoJugadorConCamara>(FindObjectsInactive.Include);
+            if (movimientoConCamara != null)
+            {
+                scriptMovimientoJugador = movimientoConCamara;
+            }
+        }
+
+        if (camaraPrincipal == null)
+        {
+            Camera camara = Camera.main;
+            if (camara != null)
+            {
+                camaraPrincipal = camara.gameObject;
+            }
+        }
+
+        if (camaraPrincipal == null)
+        {
+            GameObject camara = GameObject.Find("Main Camera");
+            if (camara != null)
+            {
+                camaraPrincipal = camara;
+            }
+        }
+    }
+
+    private bool PCRealmenteAbierta()
+    {
+        if (!InteraccionPC.PCAbierta)
+        {
+            return false;
+        }
+
+        InteraccionPC[] pcs = FindObjectsByType<InteraccionPC>(FindObjectsInactive.Include);
+
+        for (int i = 0; i < pcs.Length; i++)
+        {
+            if (pcs[i] != null && pcs[i].canvasPC != null && pcs[i].canvasPC.activeInHierarchy)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void BloquearJugadorYCamara(bool bloquear)
@@ -661,6 +790,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         ActualizarBotonesDaltonismo();
         AplicarAccesibilidad();
+        AplicadorAccesibilidadGlobal.AplicarEscenaActual();
     }
 
     public void AbrirDetalleSlot(int slot)
@@ -888,6 +1018,8 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
     private void OnDisable()
     {
+        SceneManager.sceneLoaded -= AlCargarEscena;
+
         if (EstaPausado)
         {
             EstaPausado = false;

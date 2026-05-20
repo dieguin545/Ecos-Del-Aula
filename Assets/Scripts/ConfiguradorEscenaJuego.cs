@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -17,18 +18,71 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
 
         if (FindAnyObjectByType<ConfiguradorEscenaJuego>() != null)
         {
+            FindAnyObjectByType<ConfiguradorEscenaJuego>().ConfigurarEscenaActual();
             return;
         }
 
         GameObject configurador = new GameObject("ConfiguradorEscenaJuego");
-        configurador.AddComponent<ConfiguradorEscenaJuego>();
+        configurador.AddComponent<ConfiguradorEscenaJuego>().ConfigurarEscenaActual();
     }
 
     private void Start()
     {
+        ConfigurarEscenaActual();
+    }
+
+    public void ConfigurarEscenaActual()
+    {
         Time.timeScale = 1f;
+        AsegurarEntradaGlobal();
+        AsegurarEventSystemUnico();
         AsegurarColisionCama();
         AsegurarMenuPausaGlobal();
+        AsegurarSistemaCasosPC();
+        AsegurarDecoracionHabitacion();
+    }
+
+    private void AsegurarEntradaGlobal()
+    {
+        if (FindAnyObjectByType<GestorEntradaGlobal>() != null)
+        {
+            return;
+        }
+
+        GameObject entrada = new GameObject("GestorEntradaGlobal");
+        DontDestroyOnLoad(entrada);
+        entrada.AddComponent<GestorEntradaGlobal>();
+    }
+
+    private void AsegurarEventSystemUnico()
+    {
+        EventSystem[] sistemas = FindObjectsByType<EventSystem>(FindObjectsInactive.Include);
+        EventSystem conservar = EventSystem.current;
+
+        if (conservar == null)
+        {
+            for (int i = 0; i < sistemas.Length; i++)
+            {
+                if (sistemas[i] != null && sistemas[i].gameObject.activeInHierarchy)
+                {
+                    conservar = sistemas[i];
+                    break;
+                }
+            }
+        }
+
+        if (conservar == null && sistemas.Length > 0)
+        {
+            conservar = sistemas[0];
+        }
+
+        for (int i = 0; i < sistemas.Length; i++)
+        {
+            if (sistemas[i] != null && sistemas[i] != conservar)
+            {
+                Destroy(sistemas[i].gameObject);
+            }
+        }
     }
 
     private void AsegurarColisionCama()
@@ -68,8 +122,23 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
 
     private void AsegurarMenuPausaGlobal()
     {
-        if (FindAnyObjectByType<MenuPausaAccesibilidad>() != null)
+        MenuPausaAccesibilidad[] menus = FindObjectsByType<MenuPausaAccesibilidad>(FindObjectsInactive.Include);
+
+        if (menus.Length > 0)
         {
+            MenuPausaAccesibilidad menuExistente = menus[0];
+
+            for (int i = 1; i < menus.Length; i++)
+            {
+                if (menus[i] != null && menus[i] != menuExistente)
+                {
+                    Destroy(menus[i].gameObject);
+                }
+            }
+
+            RepararPanelesMenuExistente(menuExistente);
+            ActualizarReferenciasMenuPausa(menuExistente);
+            menuExistente.ReinicializarTrasCargaEscena();
             return;
         }
 
@@ -88,18 +157,7 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         rectRaiz.offsetMax = Vector2.zero;
 
         MenuPausaAccesibilidad menu = raiz.AddComponent<MenuPausaAccesibilidad>();
-        InteraccionPC interaccionPc = FindAnyObjectByType<InteraccionPC>();
-
-        if (interaccionPc != null)
-        {
-            menu.scriptMovimientoJugador = interaccionPc.scriptMovimientoJugador;
-            menu.camaraPrincipal = interaccionPc.camaraPrincipal;
-
-            if (interaccionPc.canvasPC != null)
-            {
-                menu.pantallasQueBloqueanPausa = new[] { interaccionPc.canvasPC };
-            }
-        }
+        ActualizarReferenciasMenuPausa(menu);
 
         GameObject panelPausa = CrearPanel("PanelPausa", raiz.transform, new Vector2(520f, 430f));
         GameObject panelOpciones = CrearPanel("PanelOpciones", raiz.transform, new Vector2(720f, 520f));
@@ -119,6 +177,494 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         panelPausa.SetActive(false);
         panelOpciones.SetActive(false);
         panelDetalleSlot.SetActive(false);
+        menu.ReinicializarTrasCargaEscena();
+    }
+
+    private void RepararPanelesMenuExistente(MenuPausaAccesibilidad menu)
+    {
+        if (menu == null)
+        {
+            return;
+        }
+
+        if (menu.panelPausa == null)
+        {
+            menu.panelPausa = BuscarDescendiente(menu.transform, "PanelPausa");
+        }
+
+        if (menu.panelOpciones == null)
+        {
+            menu.panelOpciones = BuscarDescendiente(menu.transform, "PanelOpciones");
+        }
+
+        if (menu.panelDetalleSlot == null)
+        {
+            menu.panelDetalleSlot = BuscarDescendiente(menu.transform, "PanelDetalleSlot");
+        }
+
+        if (menu.panelPausa == null)
+        {
+            menu.panelPausa = CrearPanel("PanelPausa", menu.transform, new Vector2(520f, 430f));
+            PrepararPanelPausa(menu, menu.panelPausa.transform);
+        }
+
+        if (menu.panelOpciones == null)
+        {
+            menu.panelOpciones = CrearPanel("PanelOpciones", menu.transform, new Vector2(720f, 520f));
+            PrepararPanelOpciones(menu, menu.panelOpciones.transform);
+        }
+
+        if (menu.panelDetalleSlot == null)
+        {
+            menu.panelDetalleSlot = CrearPanel("PanelDetalleSlot", menu.transform, new Vector2(680f, 440f));
+            PrepararPanelDetalleSlot(menu, menu.panelDetalleSlot.transform);
+        }
+    }
+
+    private void ActualizarReferenciasMenuPausa(MenuPausaAccesibilidad menu)
+    {
+        if (menu == null)
+        {
+            return;
+        }
+
+        InteraccionPC interaccionPc = FindAnyObjectByType<InteraccionPC>(FindObjectsInactive.Include);
+
+        if (interaccionPc != null)
+        {
+            menu.scriptMovimientoJugador = interaccionPc.scriptMovimientoJugador;
+            menu.camaraPrincipal = interaccionPc.camaraPrincipal;
+
+            if (interaccionPc.canvasPC != null)
+            {
+                menu.pantallasQueBloqueanPausa = new[] { interaccionPc.canvasPC };
+            }
+        }
+
+        menu.textosTMP = menu.GetComponentsInChildren<TextMeshProUGUI>(true);
+        menu.textosNormales = menu.GetComponentsInChildren<Text>(true);
+        menu.imagenesUI = menu.GetComponentsInChildren<Image>(true);
+    }
+
+    private void AsegurarSistemaCasosPC()
+    {
+        InteraccionPC interaccionPc = FindAnyObjectByType<InteraccionPC>(FindObjectsInactive.Include);
+
+        if (interaccionPc == null || interaccionPc.canvasPC == null)
+        {
+            return;
+        }
+
+        GameObject canvasPc = interaccionPc.canvasPC;
+        GestorCasos gestorCasos = canvasPc.GetComponent<GestorCasos>();
+
+        if (gestorCasos == null)
+        {
+            gestorCasos = canvasPc.AddComponent<GestorCasos>();
+        }
+
+        gestorCasos.InicializarSiHaceFalta();
+
+        Sprite iconoCasos = RecursosVisualesEntryFilter.CargarSpriteEditor("Casos_Icon.png");
+        GameObject ventanaCasos = BuscarDescendiente(canvasPc.transform, "VentanaCasos");
+
+        if (ventanaCasos == null)
+        {
+            ventanaCasos = CrearObjetoUI("VentanaCasos", canvasPc.transform);
+            ventanaCasos.AddComponent<Image>();
+            AppCasos appCasosNueva = ventanaCasos.AddComponent<AppCasos>();
+            appCasosNueva.Inicializar(gestorCasos, iconoCasos);
+            ventanaCasos.SetActive(false);
+        }
+        else
+        {
+            AppCasos appCasos = ventanaCasos.GetComponent<AppCasos>();
+
+            if (appCasos == null)
+            {
+                appCasos = ventanaCasos.AddComponent<AppCasos>();
+            }
+
+            appCasos.Inicializar(gestorCasos, iconoCasos);
+        }
+
+        GestorVentanasPC gestorVentanas = canvasPc.GetComponent<GestorVentanasPC>();
+
+        if (gestorVentanas != null)
+        {
+            gestorVentanas.RegistrarVentana(ventanaCasos);
+        }
+
+        CrearOActualizarIconoCasos(canvasPc.transform, ventanaCasos, iconoCasos);
+    }
+
+    private void CrearOActualizarIconoCasos(Transform canvasPc, GameObject ventanaCasos, Sprite iconoCasos)
+    {
+        Transform iconoExistente = BuscarDescendiente(canvasPc, "IconoCasos")?.transform;
+        GameObject icono = iconoExistente != null
+            ? iconoExistente.gameObject
+            : CrearObjetoUI("IconoCasos", canvasPc);
+
+        Image imagen = icono.GetComponent<Image>();
+
+        if (imagen == null)
+        {
+            imagen = icono.AddComponent<Image>();
+        }
+
+        Button boton = icono.GetComponent<Button>();
+
+        if (boton == null)
+        {
+            boton = icono.AddComponent<Button>();
+        }
+
+        RectTransform rect = icono.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(-345f, -40f);
+        rect.sizeDelta = new Vector2(44f, 44f);
+
+        imagen.sprite = iconoCasos;
+        imagen.color = iconoCasos != null ? Color.white : EstiloUIJuego.FondoTarjeta;
+        imagen.preserveAspect = iconoCasos != null;
+        imagen.raycastTarget = true;
+
+        Transform etiquetaExistente = icono.transform.Find("EtiquetaCasos");
+
+        if (etiquetaExistente == null)
+        {
+            TextMeshProUGUI etiqueta = EstiloUIJuego.CrearTextoTMP(
+                icono.transform,
+                "EtiquetaCasos",
+                "Casos",
+                13f,
+                new Vector2(0f, -36f),
+                new Vector2(92f, 24f),
+                TextAlignmentOptions.Center
+            );
+            etiqueta.color = EstiloUIJuego.TextoPrincipal;
+        }
+
+        boton.onClick.RemoveAllListeners();
+        boton.onClick.AddListener(
+            () =>
+            {
+                GestorVentanasPC gestor = canvasPc.GetComponent<GestorVentanasPC>();
+
+                if (gestor != null)
+                {
+                    gestor.AbrirVentana(ventanaCasos);
+                }
+                else if (ventanaCasos != null)
+                {
+                    ventanaCasos.SetActive(true);
+                    ventanaCasos.transform.SetAsLastSibling();
+                }
+            }
+        );
+    }
+
+    private GameObject BuscarDescendiente(Transform raiz, string nombre)
+    {
+        if (raiz == null)
+        {
+            return null;
+        }
+
+        Transform[] descendientes = raiz.GetComponentsInChildren<Transform>(true);
+
+        for (int i = 0; i < descendientes.Length; i++)
+        {
+            if (descendientes[i] != null && descendientes[i].name == nombre)
+            {
+                return descendientes[i].gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private void AsegurarDecoracionHabitacion()
+    {
+        GameObject piso = GameObject.Find("Piso");
+        Renderer pisoRenderer = piso != null ? piso.GetComponentInChildren<Renderer>() : null;
+
+        if (pisoRenderer == null)
+        {
+            return;
+        }
+
+        Bounds bounds = pisoRenderer.bounds;
+        GameObject raiz = GameObject.Find("Decoracion_Habitacion");
+
+        if (raiz == null)
+        {
+            raiz = new GameObject("Decoracion_Habitacion");
+        }
+
+        LimpiarDecoracionGeneradaGlobal();
+        LimpiarDecoracionGenerada(raiz.transform);
+        CrearTecho(bounds, raiz.transform);
+        CrearTapete(bounds, raiz.transform);
+        CrearCuadro(bounds, raiz.transform);
+    }
+
+    private void LimpiarDecoracionGeneradaGlobal()
+    {
+        string[] nombresGenerados =
+        {
+            "Techo_Habitacion",
+            "Poster_EcosDelAula",
+            "Panel_Recordatorio_Ayuda",
+            "Alfombra_Estudio",
+            "Cuadro_Pared_Decorativo",
+            "Tapete_Decorativo",
+            "Decoracion_books",
+            "Decoracion_ceilingFan"
+        };
+
+        Transform[] objetos = FindObjectsByType<Transform>(FindObjectsInactive.Include);
+
+        for (int i = objetos.Length - 1; i >= 0; i--)
+        {
+            Transform transformObjetivo = objetos[i];
+
+            if (transformObjetivo == null || transformObjetivo.name == "Decoracion_Habitacion")
+            {
+                continue;
+            }
+
+            for (int j = 0; j < nombresGenerados.Length; j++)
+            {
+                if (transformObjetivo.name.StartsWith(nombresGenerados[j]))
+                {
+                    DestruirSeguro(transformObjetivo.gameObject);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void LimpiarDecoracionGenerada(Transform padre)
+    {
+        if (padre == null)
+        {
+            return;
+        }
+
+        string[] nombresGenerados =
+        {
+            "Techo_Habitacion",
+            "Poster_EcosDelAula",
+            "Panel_Recordatorio_Ayuda",
+            "Alfombra_Estudio",
+            "Cuadro_Pared_Decorativo",
+            "Tapete_Decorativo",
+            "Decoracion_books",
+            "Decoracion_ceilingFan"
+        };
+
+        for (int i = padre.childCount - 1; i >= 0; i--)
+        {
+            GameObject hijo = padre.GetChild(i).gameObject;
+
+            for (int j = 0; j < nombresGenerados.Length; j++)
+            {
+                if (hijo.name.StartsWith(nombresGenerados[j]))
+                {
+                    DestruirSeguro(hijo);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void DestruirSeguro(GameObject objeto)
+    {
+        if (objeto == null)
+        {
+            return;
+        }
+
+        if (Application.isPlaying)
+        {
+            Destroy(objeto);
+        }
+        else
+        {
+            DestroyImmediate(objeto);
+        }
+    }
+
+    private void CrearTecho(Bounds bounds, Transform padre)
+    {
+        GameObject techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        techo.name = "Techo_Habitacion";
+        techo.transform.SetParent(padre, false);
+        techo.transform.position = new Vector3(bounds.center.x, bounds.center.y + 3.25f, bounds.center.z);
+        techo.transform.localScale = new Vector3(bounds.size.x, 0.16f, bounds.size.z);
+        Renderer renderer = techo.GetComponent<Renderer>();
+
+        if (renderer != null)
+        {
+            AplicarTextura(renderer, "Assets/Texturas/Apartamento/pared_apartamento.png", new Color(0.70f, 0.59f, 0.44f, 1f));
+        }
+
+        Collider collider = techo.GetComponent<Collider>();
+
+        if (collider != null)
+        {
+            Destroy(collider);
+        }
+    }
+
+    private void CrearTapete(Bounds bounds, Transform padre)
+    {
+        GameObject tapete = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        tapete.name = "Tapete_Decorativo";
+        tapete.transform.SetParent(padre, false);
+        tapete.transform.position = new Vector3(bounds.center.x + 0.55f, bounds.center.y + 0.035f, bounds.center.z - 0.85f);
+        tapete.transform.localScale = new Vector3(2.1f, 0.025f, 1.3f);
+
+        Renderer renderer = tapete.GetComponent<Renderer>();
+
+        if (renderer != null)
+        {
+            AplicarTextura(renderer, "Assets/Texturas/Apartamento/Tapete_Apartamento.png", new Color(0.28f, 0.16f, 0.35f, 1f));
+        }
+
+        Collider collider = tapete.GetComponent<Collider>();
+
+        if (collider != null)
+        {
+            Destroy(collider);
+        }
+    }
+
+    private void CrearCuadro(Bounds bounds, Transform padre)
+    {
+        GameObject cuadro = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cuadro.name = "Cuadro_Pared_Decorativo";
+        cuadro.transform.SetParent(padre, false);
+        cuadro.transform.position = new Vector3(bounds.center.x + 0.15f, bounds.center.y + 2.08f, bounds.center.z + bounds.extents.z - 0.08f);
+        cuadro.transform.localScale = new Vector3(1.9f, 1.05f, 0.035f);
+
+        Renderer renderer = cuadro.GetComponent<Renderer>();
+
+        if (renderer != null)
+        {
+            AplicarTextura(renderer, "Assets/Texturas/Apartamento/Cuadro_Pared_Apartamento.png", Color.white);
+        }
+
+        Collider collider = cuadro.GetComponent<Collider>();
+
+        if (collider != null)
+        {
+            Destroy(collider);
+        }
+    }
+
+    private void AplicarTextura(Renderer renderer, string ruta, Color colorFallback)
+    {
+        if (renderer == null)
+        {
+            return;
+        }
+
+        Texture2D textura = CargarTexturaEditor(ruta);
+        Shader shader = Shader.Find("Standard");
+
+        if (shader == null)
+        {
+            shader = Shader.Find("Universal Render Pipeline/Lit");
+        }
+
+        Material material = shader != null
+            ? new Material(shader)
+            : renderer.sharedMaterial != null
+                ? new Material(renderer.sharedMaterial)
+                : null;
+
+        if (material == null)
+        {
+            return;
+        }
+
+        material.color = colorFallback;
+
+        if (textura != null)
+        {
+            material.mainTexture = textura;
+        }
+
+        renderer.sharedMaterial = material;
+    }
+
+    private Material CargarMaterialEditor(string ruta)
+    {
+#if UNITY_EDITOR
+        return UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(ruta);
+#else
+        return null;
+#endif
+    }
+
+    private Texture2D CargarTexturaEditor(string ruta)
+    {
+#if UNITY_EDITOR
+        return UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(ruta);
+#else
+        return null;
+#endif
+    }
+
+    private void CrearPanelDecorativo(string nombre, Transform padre, Vector3 posicion, Vector3 escala, Color color)
+    {
+        GameObject panel = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        panel.name = nombre;
+        panel.transform.SetParent(padre, false);
+        panel.transform.position = posicion;
+        panel.transform.localScale = escala;
+
+        Renderer renderer = panel.GetComponent<Renderer>();
+
+        if (renderer != null)
+        {
+            renderer.material.color = color;
+        }
+
+        Collider collider = panel.GetComponent<Collider>();
+
+        if (collider != null)
+        {
+            Destroy(collider);
+        }
+    }
+
+    private void InstanciarKenneyEditor(string nombreArchivo, Transform padre, Vector3 posicion, Vector3 escala)
+    {
+#if UNITY_EDITOR
+        string ruta =
+            "Assets/Modelos/Kenney_Furniture/Models/FBX format/" + nombreArchivo;
+        GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(ruta);
+
+        if (prefab == null)
+        {
+            return;
+        }
+
+        GameObject instancia = Instantiate(prefab, posicion, Quaternion.identity, padre);
+        instancia.name = "Decoracion_" + nombreArchivo.Replace(".fbx", string.Empty);
+        instancia.transform.localScale = escala;
+        Collider[] colliders = instancia.GetComponentsInChildren<Collider>(true);
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Destroy(colliders[i]);
+        }
+#endif
     }
 
     private void PrepararPanelPausa(MenuPausaAccesibilidad menu, Transform padre)
