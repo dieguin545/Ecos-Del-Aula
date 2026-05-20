@@ -161,7 +161,7 @@ public class GestorCasos : MonoBehaviour
 
         if (decision == TipoResolucionCaso.ObservarMas)
         {
-            resultado = "Se mantiene el caso en investigacion para buscar mas contexto.";
+            resultado = "Se mantiene el caso en investigación para buscar más contexto.";
             bienestar = 0;
             confianza = 1;
             precision = 1;
@@ -169,7 +169,7 @@ public class GestorCasos : MonoBehaviour
         }
         else if (correcta)
         {
-            resultado = "Decision proporcional: la evidencia respalda la accion tomada.";
+            resultado = "Decisión proporcional: la evidencia respalda la acción tomada.";
             bienestar = 8;
             confianza = 6;
             precision = 8;
@@ -177,7 +177,7 @@ public class GestorCasos : MonoBehaviour
         }
         else if (!caso.TieneEvidenciaSuficiente)
         {
-            resultado = "Decision riesgosa: faltaba evidencia para resolver con seguridad.";
+            resultado = "Decisión riesgosa: faltaba evidencia para resolver con seguridad.";
             bienestar = -2;
             confianza = -7;
             precision = -5;
@@ -185,7 +185,7 @@ public class GestorCasos : MonoBehaviour
         }
         else
         {
-            resultado = "La accion no corresponde al nivel de riesgo del caso.";
+            resultado = "La acción no corresponde al nivel de riesgo del caso.";
             bienestar = -5;
             confianza = -4;
             precision = -6;
@@ -224,12 +224,47 @@ public class GestorCasos : MonoBehaviour
                 {
                     idCaso = caso.idCaso,
                     estado = caso.estado,
-                    evidenciasDescubiertas = caso.EvidenciasDescubiertas
+                    evidenciasDescubiertas = caso.EvidenciasDescubiertas,
+                    evidencias = CrearEvidenciasGuardadas(caso)
                 }
             );
         }
 
         return registros;
+    }
+
+    private List<EvidenciaCaso> CrearEvidenciasGuardadas(CasoBullying caso)
+    {
+        List<EvidenciaCaso> evidenciasGuardadas = new List<EvidenciaCaso>();
+
+        if (caso == null || caso.evidencias == null)
+        {
+            return evidenciasGuardadas;
+        }
+
+        for (int i = 0; i < caso.evidencias.Count; i++)
+        {
+            EvidenciaCaso evidencia = caso.evidencias[i];
+
+            if (evidencia == null || !evidencia.descubierta)
+            {
+                continue;
+            }
+
+            evidenciasGuardadas.Add(
+                new EvidenciaCaso(
+                    evidencia.idEvidencia,
+                    evidencia.idCaso,
+                    evidencia.descripcion,
+                    evidencia.tipo,
+                    evidencia.peso,
+                    evidencia.origen,
+                    true
+                )
+            );
+        }
+
+        return evidenciasGuardadas;
     }
 
     public void CargarRegistrosGuardado(List<RegistroCasoGuardado> registros)
@@ -257,6 +292,46 @@ public class GestorCasos : MonoBehaviour
 
             caso.desbloqueado = true;
             caso.estado = registro.estado;
+
+            if (registro.evidencias != null && registro.evidencias.Count > 0)
+            {
+                for (int j = 0; j < registro.evidencias.Count; j++)
+                {
+                    EvidenciaCaso evidenciaGuardada = registro.evidencias[j];
+
+                    if (evidenciaGuardada == null || string.IsNullOrWhiteSpace(evidenciaGuardada.idEvidencia))
+                    {
+                        continue;
+                    }
+
+                    EvidenciaCaso evidenciaActual = BuscarEvidencia(caso, evidenciaGuardada.idEvidencia);
+
+                    if (evidenciaActual == null)
+                    {
+                        caso.evidencias.Add(
+                            new EvidenciaCaso(
+                                evidenciaGuardada.idEvidencia,
+                                string.IsNullOrWhiteSpace(evidenciaGuardada.idCaso) ? caso.idCaso : evidenciaGuardada.idCaso,
+                                evidenciaGuardada.descripcion,
+                                evidenciaGuardada.tipo,
+                                evidenciaGuardada.peso,
+                                evidenciaGuardada.origen,
+                                true
+                            )
+                        );
+                    }
+                    else
+                    {
+                        evidenciaActual.descripcion = evidenciaGuardada.descripcion;
+                        evidenciaActual.tipo = evidenciaGuardada.tipo;
+                        evidenciaActual.peso = evidenciaGuardada.peso;
+                        evidenciaActual.origen = evidenciaGuardada.origen;
+                        evidenciaActual.descubierta = true;
+                    }
+                }
+
+                continue;
+            }
 
             for (int j = 0; j < caso.evidencias.Count && j < registro.evidenciasDescubiertas; j++)
             {
@@ -323,7 +398,7 @@ public class GestorCasos : MonoBehaviour
             return "rumor_curso";
         }
 
-        if (texto.Contains("reunion") || texto.Contains("grupo"))
+        if (texto.Contains("reunion") || texto.Contains("reunión") || texto.Contains("grupo"))
         {
             return "grupo_ciencias";
         }
@@ -343,24 +418,36 @@ public class GestorCasos : MonoBehaviour
 
     private string CrearDescripcionEvidencia(Correo correo, int dia)
     {
-        return "Dia "
+        string detalle = string.Empty;
+
+        if (correo.pistas != null && correo.pistas.Length > 0)
+        {
+            detalle = correo.pistas[0];
+        }
+
+        if (string.IsNullOrWhiteSpace(detalle))
+        {
+            detalle = string.IsNullOrWhiteSpace(correo.explicacionEducativa)
+                ? "Correo guardado para revisar contexto."
+                : correo.explicacionEducativa;
+        }
+
+        return "Día "
             + dia
             + " - "
             + correo.asunto
             + ": "
-            + (string.IsNullOrWhiteSpace(correo.explicacionEducativa)
-                ? "Correo guardado para revisar contexto."
-                : correo.explicacionEducativa);
+            + detalle;
     }
 
     private void CrearPersonajesBase()
     {
         personajes.Add(new PersonajeCaso("laura", "Laura", "afectada", "Estudiante aplicada del grupo de ciencias."));
-        personajes.Add(new PersonajeCaso("mateo", "Mateo", "testigo", "Companero que aporta contexto del chat."));
+        personajes.Add(new PersonajeCaso("mateo", "Mateo", "testigo", "Compañero que aporta contexto del chat."));
         personajes.Add(new PersonajeCaso("valeria", "Valeria", "involucrada", "Participa en el grupo y puede mediar."));
         personajes.Add(new PersonajeCaso("samuel", "Samuel", "involucrado", "Estudiante nuevo que intenta integrarse."));
         personajes.Add(new PersonajeCaso("camila", "Camila", "reportada", "Su rol depende de la evidencia, no de su apariencia."));
-        personajes.Add(new PersonajeCaso("nicolas", "Nicolas", "testigo", "Observa patrones repetidos en el curso."));
+        personajes.Add(new PersonajeCaso("nicolas", "Nicolás", "testigo", "Observa patrones repetidos en el curso."));
     }
 
     private void CrearCasosBase()
@@ -369,7 +456,7 @@ public class GestorCasos : MonoBehaviour
             CrearCaso(
                 "grupo_ciencias",
                 "Grupo de ciencias",
-                "Exclusion en un trabajo grupal. El objetivo es distinguir una queja academica de un patron de aislamiento.",
+                "Exclusión en un trabajo grupal. El objetivo es distinguir una queja académica de un patrón de aislamiento.",
                 DificultadEntryFilter.Normal,
                 NivelRiesgoCaso.Medio,
                 TipoResolucionCaso.MediarConversacion,
@@ -382,7 +469,7 @@ public class GestorCasos : MonoBehaviour
             CrearCaso(
                 "capturas_chat",
                 "Capturas del chat",
-                "Difusion de conversaciones privadas para humillar a una persona.",
+                "Difusión de conversaciones privadas para humillar a una persona.",
                 DificultadEntryFilter.Normal,
                 NivelRiesgoCaso.Alto,
                 TipoResolucionCaso.ReportarOrientacion,
@@ -394,7 +481,7 @@ public class GestorCasos : MonoBehaviour
             CrearCaso(
                 "el_apodo",
                 "El apodo",
-                "Burlas repetidas por gustos personales. La repeticion y el impacto importan.",
+                "Burlas repetidas por gustos personales. La repetición y el impacto importan.",
                 DificultadEntryFilter.Normal,
                 NivelRiesgoCaso.Medio,
                 TipoResolucionCaso.MediarConversacion,
@@ -419,7 +506,7 @@ public class GestorCasos : MonoBehaviour
             CrearCaso(
                 "comentario_discriminatorio",
                 "Comentario discriminatorio",
-                "Situacion sensible que debe tratarse sin normalizar insultos ni estereotipos.",
+                "Situación sensible que debe tratarse sin normalizar insultos ni estereotipos.",
                 DificultadEntryFilter.Dificil,
                 NivelRiesgoCaso.Critico,
                 TipoResolucionCaso.ActivarProtocoloGrave,
@@ -431,7 +518,7 @@ public class GestorCasos : MonoBehaviour
             CrearCaso(
                 "estudiante_aplicado",
                 "El estudiante aplicado",
-                "Burlas por rendimiento academico. El juego no castiga estudiar: analiza el dano social.",
+                "Burlas por rendimiento académico. El juego no castiga estudiar: analiza el daño social.",
                 DificultadEntryFilter.Normal,
                 NivelRiesgoCaso.Medio,
                 TipoResolucionCaso.MediarConversacion,
@@ -454,7 +541,7 @@ public class GestorCasos : MonoBehaviour
         casos.Add(
             CrearCaso(
                 "presion_para_callar",
-                "Presion para callar",
+                "Presión para callar",
                 "Mensajes indirectos que buscan impedir que alguien pida ayuda.",
                 DificultadEntryFilter.Dificil,
                 NivelRiesgoCaso.Alto,
@@ -492,7 +579,7 @@ public class GestorCasos : MonoBehaviour
             new EvidenciaCaso(
                 id + "_base",
                 id,
-                "Evidencia pendiente. Usa Revisar caso desde Correo para agregar contexto.",
+                "Evidencia pendiente. Usa Revisar contexto desde Correo para agregar contexto.",
                 "Pendiente",
                 1,
                 "Sistema",

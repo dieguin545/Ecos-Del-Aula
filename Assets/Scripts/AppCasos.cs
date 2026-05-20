@@ -141,7 +141,7 @@ public class AppCasos : MonoBehaviour
             EstiloUIJuego.CrearTextoTMP(
                 transform,
                 "AyudaCasos",
-                "Revisa contexto antes de decidir correos ambiguos. Cada evidencia ayuda a tomar una decision justa.",
+                "Revisa contexto antes de decidir correos ambiguos. Cada evidencia ayuda a tomar una decisión justa.",
                 14f,
                 new Vector2(0f, 160f),
                 new Vector2(700f, 34f),
@@ -449,7 +449,7 @@ public class AppCasos : MonoBehaviour
             EstiloUIJuego.CrearTextoTMP(
                 listaCasos,
                 "SinCasos",
-                "Sin expedientes activos.\nUsa Revisar caso desde Correo.",
+                "Sin expedientes activos.\nUsa Revisar contexto desde Correo.",
                 16f,
                 Vector2.zero,
                 new Vector2(220f, 120f),
@@ -537,7 +537,7 @@ public class AppCasos : MonoBehaviour
             textoTituloDetalle.text = "Sin casos activos";
             textoDetalle.text =
                 "Algunos correos necesitan contexto.\n\n"
-                + "Usa Revisar contexto cuando veas una situacion ambigua. "
+                + "Usa Revisar contexto cuando veas una situación ambigua. "
                 + "Aqui se guardan evidencias, personas involucradas y estado del expediente.";
             AjustarScrollDetalle();
             return;
@@ -639,13 +639,13 @@ public class AppCasos : MonoBehaviour
 
             MostrarDetalle(casoSeleccionado);
             textoDetalle.text +=
-                "\n\nResultado de decision:\n"
+                "\n\nResultado de decisión:\n"
                 + resultado.resultado
                 + "\nImpacto bienestar: "
                 + resultado.impactoBienestar
                 + " | confianza: "
                 + resultado.impactoConfianza
-                + " | precision: "
+                + " | precisión: "
                 + resultado.impactoPrecision;
         }
     }

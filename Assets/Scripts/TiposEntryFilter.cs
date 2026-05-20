@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public enum TipoDecisionCorreo
 {
@@ -48,4 +49,5 @@ public class RegistroCasoGuardado
     public string idCaso;
     public EstadoCasoBullying estado;
     public int evidenciasDescubiertas;
+    public List<EvidenciaCaso> evidencias = new List<EvidenciaCaso>();
 }

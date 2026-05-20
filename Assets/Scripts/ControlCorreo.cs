@@ -66,6 +66,7 @@ public class ControlCorreo : MonoBehaviour
     private bool activo = true;
     private bool modoLecturaActivado;
     private bool resumenFinDiaAbierto;
+    private readonly HashSet<string> correosConContextoRevisado = new HashSet<string>();
     private GestorGuardadoJuego gestorGuardado;
     private GestorCasos gestorCasos;
 
@@ -147,18 +148,7 @@ public class ControlCorreo : MonoBehaviour
 
     private void CargarCorreos(bool reiniciarContadoresDia)
     {
-        if (dia == 1)
-        {
-            correosActuales = new List<Correo>(correosFaciles);
-        }
-        else if (dia == 2)
-        {
-            correosActuales = new List<Correo>(correosMedios);
-        }
-        else
-        {
-            correosActuales = new List<Correo>(correosDificiles);
-        }
+        correosActuales = ObtenerCorreosParaDia();
 
         MezclarCorreos();
         EnriquecerCorreosSiHaceFalta();
@@ -174,13 +164,14 @@ public class ControlCorreo : MonoBehaviour
             correosClasificados = 0;
             evidenciasEncontradasDia = 0;
             casosAbiertosDia = 0;
+            correosConContextoRevisado.Clear();
         }
 
         activo = true;
 
         if (textoDia != null)
         {
-            textoDia.text = "Dia " + dia;
+            textoDia.text = "Día " + dia;
         }
 
         if (colaCorreos.Count > 0)
@@ -204,6 +195,283 @@ public class ControlCorreo : MonoBehaviour
             correosActuales[i] = correosActuales[random];
             correosActuales[random] = temporal;
         }
+    }
+
+    private List<Correo> ObtenerCorreosParaDia()
+    {
+        List<Correo> correosSerializados;
+
+        if (dia == 1)
+        {
+            correosSerializados = correosFaciles;
+        }
+        else if (dia == 2)
+        {
+            correosSerializados = correosMedios;
+        }
+        else
+        {
+            correosSerializados = correosDificiles;
+        }
+
+        if (ListaCorreosActualizada(correosSerializados))
+        {
+            return new List<Correo>(correosSerializados);
+        }
+
+        return CrearCorreosAcademicos(dia);
+    }
+
+    private bool ListaCorreosActualizada(List<Correo> correos)
+    {
+        if (correos == null || correos.Count < 6)
+        {
+            return false;
+        }
+
+        int normales = 0;
+        int claros = 0;
+        int ambiguos = 0;
+        bool versionAcademica = false;
+
+        for (int i = 0; i < correos.Count; i++)
+        {
+            Correo correo = correos[i];
+
+            if (correo == null)
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(correo.idCorreo) && correo.idCorreo.StartsWith("ef_", System.StringComparison.Ordinal))
+            {
+                versionAcademica = true;
+            }
+
+            if (correo.esAmbiguo)
+            {
+                ambiguos++;
+            }
+            else if (correo.esBullying)
+            {
+                claros++;
+            }
+            else
+            {
+                normales++;
+            }
+        }
+
+        return versionAcademica && normales > 0 && claros > 0 && ambiguos > 0;
+    }
+
+    private List<Correo> CrearCorreosAcademicos(int diaObjetivo)
+    {
+        if (diaObjetivo == 1)
+        {
+            return CrearCorreosDiaUno();
+        }
+
+        if (diaObjetivo == 2)
+        {
+            return CrearCorreosDiaDos();
+        }
+
+        return CrearCorreosDiaTresEnAdelante();
+    }
+
+    private List<Correo> CrearCorreosDiaUno()
+    {
+        return new List<Correo>
+        {
+            CrearCorreo(
+                "ef_d1_normal_monitoria",
+                "monitoria.sistemas@uninorte.edu.co",
+                "Cambio de salón",
+                "La monitoría de hoy será en el salón B-204. Recuerden llevar sus apuntes.",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: era un aviso académico normal.",
+                "aviso institucional sin daño"
+            ),
+            CrearCorreo(
+                "ef_d1_normal_trabajo",
+                "laura.mendez@uninorte.edu.co",
+                "Trabajo de grupo",
+                "Puedes enviarme tu parte antes de las 6 para unirla al documento final?",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: era una solicitud académica normal.",
+                "solicitud directa sin humillación"
+            ),
+            CrearCorreo(
+                "ef_d1_normal_tablero",
+                "andres.rojas@uninorte.edu.co",
+                "Foto del tablero",
+                "No alcancé a copiar el ejercicio. ¿Me mandas la foto del tablero?",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: pedir apuntes no es acoso.",
+                "no hay señales de daño"
+            ),
+            CrearCorreo(
+                "ef_d1_normal_exposicion",
+                "profesor.martinez@uninorte.edu.co",
+                "Orden de exposiciones",
+                "El orden de exposiciones se publicará mañana en el aula virtual.",
+                false,
+                TipoDecisionCorreo.Aceptar,
+                false,
+                string.Empty,
+                string.Empty,
+                1,
+                "Correcto: era información institucional.",
+                "mensaje formal de profesor"
+            ),
+            CrearCorreo(
+                "ef_d1_claro_reunion",
+                "grupo7.proyecto@uninorte.edu.co",
+                "Reunión",
+                "No vengas a la reunión. Nadie quiere trabajar contigo.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                false,
+                "grupo_ciencias",
+                "ef_ev_d1_reunion_exclusion",
+                2,
+                "Correcto: hay exclusión explícita y daño social.",
+                "exclusión directa"
+            ),
+            CrearCorreo(
+                "ef_d1_claro_exposicion",
+                "estudiante.grupo7@uninorte.edu.co",
+                "Exposición",
+                "Si hablas mañana, todos se van a burlar otra vez.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                false,
+                "presion_para_callar",
+                "ef_ev_d1_burla_anunciada",
+                2,
+                "Correcto: anticipa humillación pública y presiona a callar.",
+                "humillación anunciada"
+            ),
+            CrearCorreo(
+                "ef_d1_claro_grupo",
+                "marcos.grupo3@uninorte.edu.co",
+                "Chat del grupo",
+                "Te sacamos del chat porque siempre arruinas todo.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                false,
+                "grupo_ciencias",
+                "ef_ev_d1_expulsion_chat",
+                2,
+                "Correcto: expulsa y humilla a una persona del grupo.",
+                "exclusión con ataque personal"
+            ),
+            CrearCorreo(
+                "ef_d1_ambiguo_presentacion",
+                "grupo.ciencias@uninorte.edu.co",
+                "Presentación",
+                "Mejor esta vez presentamos nosotros para avanzar más rápido.",
+                true,
+                TipoDecisionCorreo.Reportar,
+                true,
+                "grupo_ciencias",
+                "ef_ev_d1_presentacion_repetida",
+                2,
+                "Error: el contexto mostraba exclusión repetida dentro del grupo.",
+                "historial: ya la dejaron por fuera de dos reuniones"
+            )
+        };
+    }
+
+    private List<Correo> CrearCorreosDiaDos()
+    {
+        return new List<Correo>
+        {
+            CrearCorreo("ef_d2_normal_orientacion", "orientacion@uninorte.edu.co", "Taller de convivencia", "El viernes habrá un taller voluntario sobre trabajo colaborativo.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era una invitación institucional.", "mensaje institucional"),
+            CrearCorreo("ef_d2_normal_apuntes", "camila.torres@uninorte.edu.co", "Apuntes", "No entendí tu punto en clase. ¿Me lo explicas después?", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: pedir aclaración no es acoso.", "pregunta académica respetuosa"),
+            CrearCorreo("ef_d2_normal_laboratorio", "laboratorios@uninorte.edu.co", "Reserva de sala", "La sala de cómputo queda reservada de 2 a 4 p.m. para el parcial práctico.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era información académica.", "aviso institucional"),
+            CrearCorreo("ef_d2_normal_documento", "valeria.paz@uninorte.edu.co", "Documento final", "Revisé el documento y dejé comentarios para corregir citas antes de entregarlo.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era retroalimentación de trabajo.", "comentarios académicos"),
+            CrearCorreo("ef_d2_claro_no_vengas", "equipo.proyecto4@uninorte.edu.co", "Reunión de hoy", "No le digan la hora a Laura. Así terminamos sin que estorbe.", true, TipoDecisionCorreo.Reportar, false, "grupo_ciencias", "ef_ev_d2_ocultar_hora", 3, "Correcto: hay exclusión intencional y organizada.", "exclusión planificada"),
+            CrearCorreo("ef_d2_claro_captura", "nicolas.chat@uninorte.edu.co", "Captura", "Mandemos otra captura al grupo para que se rían como ayer.", true, TipoDecisionCorreo.Reportar, false, "capturas_chat", "ef_ev_d2_captura_humillar", 3, "Correcto: difundir capturas para humillar es ciberacoso.", "difusión de capturas"),
+            CrearCorreo("ef_d2_claro_callar", "mateo.rivera@uninorte.edu.co", "No digas nada", "Si cuentas lo del chat, todos se van a molestar contigo.", true, TipoDecisionCorreo.Reportar, false, "presion_para_callar", "ef_ev_d2_presion_silencio", 3, "Correcto: hay presión social para impedir pedir ayuda.", "presión para callar"),
+            CrearCorreo("ef_d2_claro_apodo", "grupo.seccion2@uninorte.edu.co", "Apodo", "Sigamos llamándole así en clase para ver si por fin deja de hablar.", true, TipoDecisionCorreo.Reportar, false, "el_apodo", "ef_ev_d2_apodo_clase", 2, "Correcto: el apodo se usa para humillar y silenciar.", "burla repetida"),
+            CrearCorreo("ef_d2_ambiguo_broma", "daniela.mora@uninorte.edu.co", "Broma de ayer", "Era solo una broma, no te lo tomes tan serio.", true, TipoDecisionCorreo.Reportar, true, "el_apodo", "ef_ev_d2_broma_repetida", 2, "Error: el caso mostraba que la broma era parte de un patrón repetido.", "historial: mismo comentario apareció tres veces esta semana"),
+            CrearCorreo("ef_d2_ambiguo_grupo", "grupo.ciencias@uninorte.edu.co", "Avance", "El grupo decidió hacerlo sin ti para avanzar más rápido.", true, TipoDecisionCorreo.Reportar, true, "grupo_ciencias", "ef_ev_d2_avance_sin_ti", 2, "Error: el contexto mostraba aislamiento repetido, no solo organización.", "historial: no le avisaron reuniones anteriores"),
+            CrearCorreo("ef_d2_ambiguo_malentendido", "sara.lopez@uninorte.edu.co", "Meme", "Te envié el meme porque dijiste que también veías esa serie.", false, TipoDecisionCorreo.Aceptar, true, "malentendido", "ef_ev_d2_meme_consentido", 1, "Error: el contexto mostraba una conversación amistosa, no burla.", "contexto: ambos hablaron de la serie antes"),
+            CrearCorreo("ef_d2_ambiguo_preguntas", "julian.reyes@uninorte.edu.co", "Clase de hoy", "¿Otra vez vas a preguntar eso en clase?", true, TipoDecisionCorreo.Reportar, true, "estudiante_aplicado", "ef_ev_d2_preguntas_repetidas", 2, "Error: el contexto mostraba burlas repetidas por participar.", "historial: comentarios similares después de cada clase")
+        };
+    }
+
+    private List<Correo> CrearCorreosDiaTresEnAdelante()
+    {
+        return new List<Correo>
+        {
+            CrearCorreo("ef_d3_normal_biblioteca", "biblioteca@uninorte.edu.co", "Préstamo de libros", "Recuerda devolver los libros de consulta antes del lunes.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era un recordatorio institucional.", "recordatorio normal"),
+            CrearCorreo("ef_d3_normal_cita", "profesor.martinez@uninorte.edu.co", "Revisión de avance", "Puedes pasar mañana por mi oficina para revisar el avance del proyecto.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era una cita académica.", "mensaje formal"),
+            CrearCorreo("ef_d3_normal_equipo", "ana.garcia@uninorte.edu.co", "División de tareas", "Yo hago la introducción y tú revisas las referencias. ¿Te parece?", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era coordinación de tareas.", "acuerdo de trabajo"),
+            CrearCorreo("ef_d3_normal_monitoria", "monitoria.calculo@uninorte.edu.co", "Ejercicios resueltos", "Ya están disponibles los ejercicios de práctica para el parcial.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era material de apoyo académico.", "aviso académico"),
+            CrearCorreo("ef_d3_normal_convivencia", "convivencia@uninorte.edu.co", "Canal de apoyo", "Si necesitas orientación sobre conflictos de grupo, puedes solicitar cita confidencial.", false, TipoDecisionCorreo.Aceptar, false, string.Empty, string.Empty, 1, "Correcto: era información de apoyo.", "canal institucional"),
+            CrearCorreo("ef_d3_claro_rumor", "grupo.seccion5@uninorte.edu.co", "Rumor", "Digamos que hizo trampa para que nadie quiera trabajar con él.", true, TipoDecisionCorreo.Reportar, false, "rumor_curso", "ef_ev_d3_rumor_trampa", 3, "Correcto: crear un rumor para aislar causa daño.", "rumor intencional"),
+            CrearCorreo("ef_d3_claro_discriminatorio", "estudiante.seccion6@uninorte.edu.co", "Comentario", "No lo inviten; siempre hacen quedar mal al grupo por su forma de hablar.", true, TipoDecisionCorreo.Reportar, false, "comentario_discriminatorio", "ef_ev_d3_forma_hablar", 3, "Correcto: discrimina y excluye por una característica personal.", "comentario discriminatorio"),
+            CrearCorreo("ef_d3_claro_silencio", "mateo.rivera@uninorte.edu.co", "Mejor callado", "Mejor quédate callado en la exposición, das vergüenza.", true, TipoDecisionCorreo.Reportar, false, "presion_para_callar", "ef_ev_d3_verguenza_exposicion", 3, "Correcto: humilla y busca silenciar.", "humillación directa"),
+            CrearCorreo("ef_d3_claro_capturas", "chat.parcial@uninorte.edu.co", "Capturas", "Subamos sus audios al grupo para que todos vean lo ridículo que suena.", true, TipoDecisionCorreo.Reportar, false, "capturas_chat", "ef_ev_d3_audios_humillar", 3, "Correcto: exponer audios para ridiculizar es ciberacoso.", "difusión para humillar"),
+            CrearCorreo("ef_d3_claro_aplicado", "grupo.laboratorio@uninorte.edu.co", "El aplicado", "No le pasen el enlace. Siempre se cree mejor que todos.", true, TipoDecisionCorreo.Reportar, false, "estudiante_aplicado", "ef_ev_d3_no_enlace", 2, "Correcto: hay exclusión por rendimiento académico.", "exclusión del enlace"),
+            CrearCorreo("ef_d3_ambiguo_presentar", "grupo.ciencias@uninorte.edu.co", "Presentación final", "Mejor esta vez no presentas tú.", true, TipoDecisionCorreo.Reportar, true, "grupo_ciencias", "ef_ev_d3_no_presenta", 2, "Error: el caso mostraba patrón de apartarla de decisiones del grupo.", "historial: ya fue excluida de ensayo y reunión"),
+            CrearCorreo("ef_d3_ambiguo_rumor", "nicolas.observador@uninorte.edu.co", "Lo que dicen", "Dicen que no conviene juntarse con Samuel para el proyecto.", true, TipoDecisionCorreo.Reportar, true, "rumor_curso", "ef_ev_d3_no_juntarse", 2, "Error: el contexto mostraba rumor usado para aislar.", "historial: varias personas repitieron el mismo rumor"),
+            CrearCorreo("ef_d3_ambiguo_conflicto", "valeria.paz@uninorte.edu.co", "Discusión del grupo", "No lo dije de mala forma, pero todos se incomodaron con el comentario.", false, TipoDecisionCorreo.Aceptar, true, "malentendido", "ef_ev_d3_conflicto_normal", 1, "Error: el contexto mostraba conflicto puntual, no acoso repetido.", "contexto: hubo disculpa y no se repitió"),
+            CrearCorreo("ef_d3_ambiguo_discriminacion", "camila.torres@uninorte.edu.co", "Comentario incómodo", "Otra vez hicieron el chiste sobre su acento en el chat.", true, TipoDecisionCorreo.Reportar, true, "comentario_discriminatorio", "ef_ev_d3_chiste_acento", 3, "Error: el contexto mostraba repetición de comentarios discriminatorios.", "historial: mismo chiste apareció en dos clases"),
+            CrearCorreo("ef_d3_ambiguo_falso", "marcos.grupo3@uninorte.edu.co", "Entrega del trabajo", "Laura no subió su parte y necesitamos saber cómo seguimos.", false, TipoDecisionCorreo.Aceptar, true, "malentendido", "ef_ev_d3_entrega_faltante", 1, "Error: el contexto mostraba una coordinación académica, no ataque personal.", "contexto: el grupo pidió ayuda sin excluir ni insultar")
+        };
+    }
+
+    private Correo CrearCorreo(
+        string id,
+        string remitente,
+        string asunto,
+        string texto,
+        bool esBullying,
+        TipoDecisionCorreo decision,
+        bool ambiguo,
+        string idCaso,
+        string idEvidencia,
+        int severidad,
+        string explicacion,
+        params string[] pistas
+    )
+    {
+        return new Correo
+        {
+            idCorreo = id,
+            remitente = remitente,
+            asunto = asunto,
+            texto = texto,
+            esBullying = esBullying,
+            dia = dia,
+            dificultad = Mathf.Clamp(dia, 1, 3),
+            idCasoRelacionado = idCaso,
+            decisionCorrecta = decision,
+            evidenciaQueDesbloquea = idEvidencia,
+            esAmbiguo = ambiguo,
+            severidad = severidad,
+            explicacionEducativa = explicacion,
+            pistas = pistas
+        };
     }
 
     private void EnriquecerCorreosSiHaceFalta()
@@ -238,20 +506,20 @@ public class ControlCorreo : MonoBehaviour
 
             bool requiereContexto =
                 texto.Contains("reunion")
+                || texto.Contains("reunión")
                 || texto.Contains("captura")
                 || texto.Contains("rumor")
                 || texto.Contains("no digas")
                 || texto.Contains("grupo")
                 || texto.Contains("meme");
 
-            if (requiereContexto && dificultadEntryFilter != DificultadEntryFilter.Facil)
+            bool correoCuradoAcademico =
+                !string.IsNullOrWhiteSpace(correo.idCorreo) &&
+                correo.idCorreo.StartsWith("ef_", System.StringComparison.Ordinal);
+
+            if (requiereContexto && dificultadEntryFilter != DificultadEntryFilter.Facil && !correoCuradoAcademico)
             {
                 correo.esAmbiguo = true;
-
-                if (correo.decisionCorrecta == TipoDecisionCorreo.Reportar && dificultadEntryFilter == DificultadEntryFilter.Dificil)
-                {
-                    correo.decisionCorrecta = TipoDecisionCorreo.RevisarCaso;
-                }
             }
 
             if (correo.severidad <= 0)
@@ -290,7 +558,7 @@ public class ControlCorreo : MonoBehaviour
             return "rumor_curso";
         }
 
-        if (texto.Contains("reunion") || texto.Contains("grupo"))
+        if (texto.Contains("reunion") || texto.Contains("reunión") || texto.Contains("grupo"))
         {
             return "grupo_ciencias";
         }
@@ -315,17 +583,17 @@ public class ControlCorreo : MonoBehaviour
 
         if (texto.Contains("no digas") || texto.Contains("callar"))
         {
-            pistas.Add("posible presion para guardar silencio");
+            pistas.Add("posible presión para guardar silencio");
         }
 
         if (texto.Contains("captura") || texto.Contains("chat"))
         {
-            pistas.Add("posible difusion de informacion privada");
+            pistas.Add("posible difusión de información privada");
         }
 
-        if (texto.Contains("reunion") || texto.Contains("grupo"))
+        if (texto.Contains("reunion") || texto.Contains("reunión") || texto.Contains("grupo"))
         {
-            pistas.Add("revisar si hay exclusion repetida");
+            pistas.Add("revisar si hay exclusión repetida");
         }
 
         if (texto.Contains("meme") || texto.Contains("apodo"))
@@ -335,7 +603,7 @@ public class ControlCorreo : MonoBehaviour
 
         if (pistas.Count == 0)
         {
-            pistas.Add(correo.esAmbiguo ? "falta contexto" : "no hay senales claras");
+            pistas.Add(correo.esAmbiguo ? "falta contexto" : "no hay señales claras");
         }
 
         return pistas.ToArray();
@@ -345,15 +613,15 @@ public class ControlCorreo : MonoBehaviour
     {
         if (correo.decisionCorrecta == TipoDecisionCorreo.RevisarCaso)
         {
-            return "La decision recomendada es revisar contexto antes de acusar o ignorar.";
+            return "La decisión recomendada es revisar contexto antes de acusar o ignorar.";
         }
 
         if (correo.decisionCorrecta == TipoDecisionCorreo.Reportar)
         {
-            return "Hay senales suficientes de dano, presion o acoso que deben reportarse.";
+            return "Hay señales suficientes de daño, presión o acoso que deben reportarse.";
         }
 
-        return "El correo parece comunicacion normal o conflicto sin evidencia suficiente de acoso.";
+        return "El correo parece comunicación normal o conflicto sin evidencia suficiente de acoso.";
     }
 
     private void MostrarCorreo()
@@ -378,6 +646,11 @@ public class ControlCorreo : MonoBehaviour
             cuerpo += "\n\nPISTA DEL FILTRO: " + ObtenerPistaFiltro(correoActual);
         }
 
+        if (correoActual.esAmbiguo && ContextoRevisado(correoActual))
+        {
+            cuerpo += "\n\nCONTEXTO: evidencia registrada en Casos. Decide con cuidado.";
+        }
+
         if (textoRemitente != null) textoRemitente.text = remitente;
         if (textoAsunto != null) textoAsunto.text = correoActual.asunto;
         if (textoCorreo != null) textoCorreo.text = cuerpo;
@@ -389,7 +662,7 @@ public class ControlCorreo : MonoBehaviour
     {
         if (correo == null || correo.pistas == null || correo.pistas.Length == 0)
         {
-            return "No se detectaron senales claras. Puede requerir contexto.";
+            return "No se detectaron señales claras. Puede requerir contexto.";
         }
 
         return correo.pistas[0];
@@ -408,25 +681,41 @@ public class ControlCorreo : MonoBehaviour
         }
 
         Correo correoActual = colaCorreos.Peek();
+
+        if (decisionJugador == TipoDecisionCorreo.RevisarCaso)
+        {
+            ProcesarRevisionContexto(correoActual);
+            return;
+        }
+
+        if (DebeRevisarContextoAntesDeClasificar(correoActual))
+        {
+            MostrarResultado(
+                "Incorrecto - faltaba revisar contexto antes de clasificar este correo.",
+                EstiloUIJuego.Peligro
+            );
+            errores++;
+            confianzaEscolar = Mathf.Max(0, confianzaEscolar - 2);
+            precision = Mathf.Max(0, precision - 3);
+            ActualizarErrores();
+            OnStatsChanged?.Invoke();
+            correosClasificados++;
+            ActualizarPrecision();
+            InvocarSiguienteCorreo(false);
+            GuardarProgresoActual();
+            return;
+        }
+
         TipoDecisionCorreo decisionEsperada = ObtenerDecisionEsperada(correoActual);
 
         bool decisionCorrecta = decisionJugador == decisionEsperada;
-        string mensajeRevision = string.Empty;
-
-        if (decisionCorrecta && decisionJugador == TipoDecisionCorreo.RevisarCaso)
-        {
-            mensajeRevision = RegistrarRevisionCaso(correoActual);
-        }
 
         if (decisionCorrecta)
         {
-            string mensajeCorrecto = "Correcto - " + ObtenerTextoDecision(decisionJugador);
-
-            if (!string.IsNullOrWhiteSpace(mensajeRevision))
-            {
-                mensajeCorrecto += ". " + mensajeRevision;
-            }
-
+            string mensajeCorrecto = "Correcto - "
+                + ObtenerTextoDecision(decisionJugador)
+                + ". "
+                + ObtenerFeedbackCorrecto(correoActual, decisionJugador);
             MostrarResultado(mensajeCorrecto, EstiloUIJuego.Acento);
             correctos++;
             bienestarEstudiantil = Mathf.Min(100, bienestarEstudiantil + (decisionJugador == TipoDecisionCorreo.Reportar ? 2 : 1));
@@ -437,7 +726,7 @@ public class ControlCorreo : MonoBehaviour
             if (tieneSeguro && !seguroUsado)
             {
                 seguroUsado = true;
-                MostrarResultado("Seguro usado: evitaste la penalizacion", EstiloUIJuego.Acento);
+                MostrarResultado("Seguro usado: evitaste la penalización", EstiloUIJuego.Acento);
                 correctos++;
                 correosClasificados++;
                 ActualizarPrecision();
@@ -474,6 +763,43 @@ public class ControlCorreo : MonoBehaviour
         EvaluarDecision(TipoDecisionCorreo.RevisarCaso);
     }
 
+    private void ProcesarRevisionContexto(Correo correoActual)
+    {
+        if (correoActual == null)
+        {
+            return;
+        }
+
+        if (ContextoRevisado(correoActual))
+        {
+            MostrarResultado(
+                "Contexto ya revisado. Decide ahora con Aceptar o Reportar.",
+                EstiloUIJuego.Acento
+            );
+            return;
+        }
+
+        string mensajeRevision = RegistrarRevisionCaso(correoActual);
+
+        if (string.IsNullOrWhiteSpace(mensajeRevision) ||
+            mensajeRevision.Contains("no requiere expediente"))
+        {
+            MostrarResultado(
+                "Este correo no necesita expediente. Clasifícalo con Aceptar o Reportar.",
+                EstiloUIJuego.TextoPrincipal
+            );
+            return;
+        }
+
+        correosConContextoRevisado.Add(ClaveCorreo(correoActual));
+        MostrarResultado(
+            mensajeRevision + ". Ahora decide con Aceptar o Reportar.",
+            EstiloUIJuego.Acento
+        );
+        OnStatsChanged?.Invoke();
+        GuardarProgresoActual();
+    }
+
     public void AplicarImpactoDecisionCaso(DecisionCaso decision)
     {
         if (decision == null)
@@ -497,7 +823,9 @@ public class ControlCorreo : MonoBehaviour
 
     private TipoDecisionCorreo ObtenerDecisionEsperada(Correo correo)
     {
-        if (correo != null && correo.decisionCorrecta != TipoDecisionCorreo.SinDefinir)
+        if (correo != null &&
+            correo.decisionCorrecta != TipoDecisionCorreo.SinDefinir &&
+            correo.decisionCorrecta != TipoDecisionCorreo.RevisarCaso)
         {
             return correo.decisionCorrecta;
         }
@@ -505,6 +833,46 @@ public class ControlCorreo : MonoBehaviour
         return correo != null && correo.esBullying
             ? TipoDecisionCorreo.Reportar
             : TipoDecisionCorreo.Aceptar;
+    }
+
+    private bool DebeRevisarContextoAntesDeClasificar(Correo correo)
+    {
+        return correo != null && correo.esAmbiguo && !ContextoRevisado(correo);
+    }
+
+    private bool ContextoRevisado(Correo correo)
+    {
+        return correo != null && correosConContextoRevisado.Contains(ClaveCorreo(correo));
+    }
+
+    private string ClaveCorreo(Correo correo)
+    {
+        if (correo == null)
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(correo.idCorreo))
+        {
+            return correo.idCorreo;
+        }
+
+        return dia + "_" + correo.remitente + "_" + correo.asunto;
+    }
+
+    private string ObtenerFeedbackCorrecto(Correo correo, TipoDecisionCorreo decision)
+    {
+        if (correo != null && correo.esAmbiguo && ContextoRevisado(correo))
+        {
+            return "El contexto del caso aclaró la decisión.";
+        }
+
+        if (decision == TipoDecisionCorreo.Reportar)
+        {
+            return "Había señales suficientes de acoso, exclusión o daño.";
+        }
+
+        return "Era comunicación académica normal o no había evidencia de acoso.";
     }
 
     private string ObtenerTextoDecision(TipoDecisionCorreo decision)
@@ -526,8 +894,8 @@ public class ControlCorreo : MonoBehaviour
 
         if (gestorCasos == null)
         {
-            MostrarResultado("No se encontro la app Casos.", EstiloUIJuego.Peligro);
-            return "No se encontro la app Casos.";
+            MostrarResultado("No se encontró la app Casos.", EstiloUIJuego.Peligro);
+            return "No se encontró la app Casos.";
         }
 
         bool agregado = gestorCasos.RegistrarRevisionCorreo(correoActual, dia, out string mensaje);
@@ -698,7 +1066,7 @@ public class ControlCorreo : MonoBehaviour
                 "\nEvidencias encontradas: " + evidenciasEncontradasDia +
                 "\nBienestar estudiantil: " + bienestarEstudiantil +
                 "\nConfianza escolar: " + confianzaEscolar +
-                "\nPrecision: " + precision + "%" +
+                "\nPrecisión: " + precision + "%" +
                 "\nSueldo base: $" + sueldoBase +
                 "\nSueldo final: $" + sueldoFinal +
                 "\n" + mensajeSueldo +
