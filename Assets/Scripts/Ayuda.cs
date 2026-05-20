@@ -18,6 +18,7 @@ public class PanelAyuda : MonoBehaviour
 
     private void OnEnable()
     {
+        PrepararMensajesPorDefecto();
         paginaActual = 0;
         MostrarPagina();
     }
@@ -25,6 +26,7 @@ public class PanelAyuda : MonoBehaviour
     void Start()
     {
         gestorVentanas = FindAnyObjectByType<GestorVentanasPC>();
+        PrepararMensajesPorDefecto();
         AplicarEstilo();
         MostrarPagina();
     }
@@ -88,6 +90,23 @@ public class PanelAyuda : MonoBehaviour
         {
             botonSiguiente.interactable = paginaActual < mensajes.Length - 1;
         }
+    }
+
+    private void PrepararMensajesPorDefecto()
+    {
+        if (mensajes != null && mensajes.Length >= 5 && mensajes[1].Contains("Casos"))
+        {
+            return;
+        }
+
+        mensajes = new[]
+        {
+            "Bienvenido a Ecos del Aula.\nAbre Correo para clasificar mensajes y proteger la convivencia digital.",
+            "Correo tiene tres acciones: Aceptar, Reportar y Revisar caso.\nUsa Revisar caso cuando falte contexto o haya senales ambiguas.",
+            "La app Casos guarda expedientes, evidencias y personajes involucrados.\nNo acuses por apariencia: decide por evidencia y patrones.",
+            "La tienda ayuda de verdad: Cafe da energia extra, Seguro evita una penalizacion, Filtro muestra pistas y Teclado mejora eficiencia.",
+            "Puedes jugar con teclado/mouse o control Xbox.\nE usa la PC, Esc pausa. En control usa [X] para interactuar, [A] confirmar y [B] cerrar."
+        };
     }
 
     private bool PuedeProcesarClickPagina()

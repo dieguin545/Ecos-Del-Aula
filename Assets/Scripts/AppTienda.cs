@@ -90,7 +90,7 @@ public class AppTienda : MonoBehaviour
         controlCorreo.dineroTotal -= producto.precio;
         AplicarEfecto(tipo);
         controlCorreo.GuardarProgresoActual();
-        MostrarMensaje("Compraste " + producto.nombre + ".");
+        MostrarMensaje(ObtenerFeedbackCompra(tipo, producto.nombre));
         ActualizarUI();
     }
 
@@ -111,6 +111,23 @@ public class AppTienda : MonoBehaviour
             case TipoProductoTienda.Teclado:
                 controlCorreo.tieneTeclado = true;
                 break;
+        }
+    }
+
+    private string ObtenerFeedbackCompra(TipoProductoTienda tipo, string nombre)
+    {
+        switch (tipo)
+        {
+            case TipoProductoTienda.Cafe:
+                return "Cafe usado: tendras energia para un correo extra.";
+            case TipoProductoTienda.Seguro:
+                return "Seguro activo: evita la penalizacion del primer error.";
+            case TipoProductoTienda.Filtro:
+                return "Filtro activo: resalta senales sospechosas.";
+            case TipoProductoTienda.Teclado:
+                return "Teclado activo: mejoras tu eficiencia diaria.";
+            default:
+                return "Compraste " + nombre + ".";
         }
     }
 
@@ -240,7 +257,7 @@ public class AppTienda : MonoBehaviour
             TipoProductoTienda.Cafe,
             "Cafe",
             250,
-            "Aumenta tu energia temporalmente.",
+            "Recupera energia para revisar un correo extra.",
             CategoriaProductoTienda.Temporal,
             spriteCafe
         );
@@ -248,7 +265,7 @@ public class AppTienda : MonoBehaviour
             TipoProductoTienda.Seguro,
             "Seguro",
             300,
-            "Te protege de un error.",
+            "Evita la penalizacion del primer error del dia.",
             CategoriaProductoTienda.Temporal,
             spriteSeguro
         );
@@ -256,7 +273,7 @@ public class AppTienda : MonoBehaviour
             TipoProductoTienda.Filtro,
             "Filtro",
             400,
-            "Mejora la deteccion de correos sospechosos.",
+            "Resalta senales sospechosas sin darte la respuesta.",
             CategoriaProductoTienda.Permanente,
             spriteFiltro
         );
@@ -264,7 +281,7 @@ public class AppTienda : MonoBehaviour
             TipoProductoTienda.Teclado,
             "Teclado",
             350,
-            "Aumenta tu eficiencia al responder.",
+            "Mejora tu eficiencia: procesas un correo extra.",
             CategoriaProductoTienda.Permanente,
             spriteTeclado
         );

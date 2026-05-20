@@ -25,6 +25,11 @@ public class DatosGuardadoJuego
     public int accesibilidadTipoDaltonismo;
     public bool accesibilidadReducirEfectos;
     public string ultimaPartidaIso;
+    public string dificultadEntryFilter = "Normal";
+    public int bienestarEstudiantil = 70;
+    public int confianzaEscolar = 70;
+    public int precision;
+    public List<RegistroCasoGuardado> casos = new List<RegistroCasoGuardado>();
 }
 
 [Serializable]

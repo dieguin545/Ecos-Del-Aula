@@ -208,12 +208,12 @@ public class NaveController : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(teclaEsquivarIzquierda))
+        if (Input.GetKeyDown(teclaEsquivarIzquierda) || GestorEntradaGlobal.DashIzquierdaPresionado())
         {
             EjecutarEsquive(ObtenerDireccionDash(-camara.transform.right.normalized));
         }
 
-        if (Input.GetKeyDown(teclaEsquivarDerecha))
+        if (Input.GetKeyDown(teclaEsquivarDerecha) || GestorEntradaGlobal.DashDerechaPresionado())
         {
             EjecutarEsquive(ObtenerDireccionDash(camara.transform.right.normalized));
         }
@@ -260,7 +260,7 @@ public class NaveController : MonoBehaviour
 
     private void LeerDisparo()
     {
-        if (Input.GetMouseButton(0) && Time.time >= siguienteDisparo)
+        if (GestorEntradaGlobal.DisparoActivo() && Time.time >= siguienteDisparo)
         {
             Disparar();
             siguienteDisparo = Time.time + ObtenerCooldownActual();
@@ -476,7 +476,7 @@ public class NaveController : MonoBehaviour
 
     private bool EstaUsandoTurbo()
     {
-        return Input.GetKey(teclaTurbo)
+        return (Input.GetKey(teclaTurbo) || GestorEntradaGlobal.TurboActivo())
             && energiaTurboActual > 0f
             && Time.time >= turboBloqueadoHasta
             && direccionMovimiento.sqrMagnitude > 0.01f;

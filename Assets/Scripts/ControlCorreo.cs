@@ -9,6 +9,7 @@ using UnityEngine.Events;
 [System.Serializable]
 public class Correo
 {
+    public string idCorreo;
     public string remitente;
     public string asunto;
 
@@ -16,6 +17,17 @@ public class Correo
     public string texto;
 
     public bool esBullying;
+    public int dia;
+    public int dificultad;
+    public string idCasoRelacionado;
+    public TipoDecisionCorreo decisionCorrecta;
+    public string evidenciaQueDesbloquea;
+    public bool esAmbiguo;
+    public int severidad = 1;
+    public string[] pistas;
+
+    [TextArea(2, 4)]
+    public string explicacionEducativa;
 }
 
 public class ControlCorreo : MonoBehaviour
@@ -29,6 +41,7 @@ public class ControlCorreo : MonoBehaviour
 
     public GameObject panelAviso;
     public Text textoAviso;
+    public Button botonRevisarCaso;
 
     public GameObject panelFinDia;
     public CanvasGroup canvasFinDia;
@@ -54,6 +67,7 @@ public class ControlCorreo : MonoBehaviour
     private bool modoLecturaActivado;
     private bool resumenFinDiaAbierto;
     private GestorGuardadoJuego gestorGuardado;
+    private GestorCasos gestorCasos;
 
     private int tamRemitenteNormal;
     private int tamAsuntoNormal;
@@ -73,6 +87,13 @@ public class ControlCorreo : MonoBehaviour
     public bool tieneFiltroSpam;
     public bool tieneTeclado;
 
+    public DificultadEntryFilter dificultadEntryFilter = DificultadEntryFilter.Normal;
+    public int bienestarEstudiantil = 70;
+    public int confianzaEscolar = 70;
+    public int precision = 0;
+    private int evidenciasEncontradasDia;
+    private int casosAbiertosDia;
+
     public int DiaActual => dia;
     public int Errores => errores;
     public int Correctos => correctos;
@@ -88,17 +109,43 @@ public class ControlCorreo : MonoBehaviour
         gestorGuardado = new GestorGuardadoJuego(
             Path.Combine(Application.persistentDataPath, "partida_bullying.json")
         );
+        AsegurarGestorCasos();
 
         CargarProgreso();
         PrepararUiSiHaceFalta();
         PrepararPanelFinDiaSiHaceFalta();
         GuardarTamanosNormales();
-        CargarCorreos();
+        CargarCorreos(true);
         ActualizarErrores();
         AplicarModoLectura();
     }
 
-    private void CargarCorreos()
+    private void AsegurarGestorCasos()
+    {
+        if (gestorCasos != null)
+        {
+            gestorCasos.InicializarSiHaceFalta();
+            return;
+        }
+
+        gestorCasos = FindAnyObjectByType<GestorCasos>(FindObjectsInactive.Include);
+
+        if (gestorCasos == null)
+        {
+            Canvas canvas = GetComponentInParent<Canvas>(true);
+            GameObject contenedor = canvas != null ? canvas.gameObject : gameObject;
+            gestorCasos = contenedor.GetComponent<GestorCasos>();
+
+            if (gestorCasos == null)
+            {
+                gestorCasos = contenedor.AddComponent<GestorCasos>();
+            }
+        }
+
+        gestorCasos.InicializarSiHaceFalta();
+    }
+
+    private void CargarCorreos(bool reiniciarContadoresDia)
     {
         if (dia == 1)
         {
@@ -114,6 +161,7 @@ public class ControlCorreo : MonoBehaviour
         }
 
         MezclarCorreos();
+        EnriquecerCorreosSiHaceFalta();
         colaCorreos.Clear();
 
         foreach (Correo c in correosActuales)
@@ -121,7 +169,13 @@ public class ControlCorreo : MonoBehaviour
             colaCorreos.Enqueue(c);
         }
 
-        correosClasificados = 0;
+        if (reiniciarContadoresDia)
+        {
+            correosClasificados = 0;
+            evidenciasEncontradasDia = 0;
+            casosAbiertosDia = 0;
+        }
+
         activo = true;
 
         if (textoDia != null)
@@ -129,7 +183,15 @@ public class ControlCorreo : MonoBehaviour
             textoDia.text = "Dia " + dia;
         }
 
-        MostrarCorreo();
+        if (colaCorreos.Count > 0)
+        {
+            MostrarCorreo();
+        }
+        else
+        {
+            activo = false;
+            Invoke(nameof(MostrarPantallaFinDia), 0.2f);
+        }
     }
 
     private void MezclarCorreos()
@@ -142,6 +204,156 @@ public class ControlCorreo : MonoBehaviour
             correosActuales[i] = correosActuales[random];
             correosActuales[random] = temporal;
         }
+    }
+
+    private void EnriquecerCorreosSiHaceFalta()
+    {
+        for (int i = 0; i < correosActuales.Count; i++)
+        {
+            Correo correo = correosActuales[i];
+
+            if (correo == null)
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(correo.idCorreo))
+            {
+                correo.idCorreo = "correo_" + dia + "_" + i;
+            }
+
+            if (correo.dia <= 0)
+            {
+                correo.dia = dia;
+            }
+
+            if (correo.decisionCorrecta == TipoDecisionCorreo.SinDefinir)
+            {
+                correo.decisionCorrecta = correo.esBullying
+                    ? TipoDecisionCorreo.Reportar
+                    : TipoDecisionCorreo.Aceptar;
+            }
+
+            string texto = ((correo.asunto ?? string.Empty) + " " + (correo.texto ?? string.Empty)).ToLowerInvariant();
+
+            bool requiereContexto =
+                texto.Contains("reunion")
+                || texto.Contains("captura")
+                || texto.Contains("rumor")
+                || texto.Contains("no digas")
+                || texto.Contains("grupo")
+                || texto.Contains("meme");
+
+            if (requiereContexto && dificultadEntryFilter != DificultadEntryFilter.Facil)
+            {
+                correo.esAmbiguo = true;
+
+                if (correo.decisionCorrecta == TipoDecisionCorreo.Reportar && dificultadEntryFilter == DificultadEntryFilter.Dificil)
+                {
+                    correo.decisionCorrecta = TipoDecisionCorreo.RevisarCaso;
+                }
+            }
+
+            if (correo.severidad <= 0)
+            {
+                correo.severidad = correo.esBullying ? 2 : 1;
+            }
+
+            if (string.IsNullOrWhiteSpace(correo.idCasoRelacionado) && (correo.esAmbiguo || correo.esBullying))
+            {
+                correo.idCasoRelacionado = InferirCasoCorreo(correo);
+            }
+
+            if (correo.pistas == null || correo.pistas.Length == 0)
+            {
+                correo.pistas = CrearPistasCorreo(correo);
+            }
+
+            if (string.IsNullOrWhiteSpace(correo.explicacionEducativa))
+            {
+                correo.explicacionEducativa = CrearExplicacionCorreo(correo);
+            }
+        }
+    }
+
+    private string InferirCasoCorreo(Correo correo)
+    {
+        string texto = ((correo.asunto ?? string.Empty) + " " + (correo.texto ?? string.Empty)).ToLowerInvariant();
+
+        if (texto.Contains("captura") || texto.Contains("chat"))
+        {
+            return "capturas_chat";
+        }
+
+        if (texto.Contains("rumor") || texto.Contains("dicen"))
+        {
+            return "rumor_curso";
+        }
+
+        if (texto.Contains("reunion") || texto.Contains("grupo"))
+        {
+            return "grupo_ciencias";
+        }
+
+        if (texto.Contains("meme") || texto.Contains("apodo") || texto.Contains("serie"))
+        {
+            return "el_apodo";
+        }
+
+        if (texto.Contains("no digas") || texto.Contains("callar"))
+        {
+            return "presion_para_callar";
+        }
+
+        return correo.esBullying ? "presion_para_callar" : string.Empty;
+    }
+
+    private string[] CrearPistasCorreo(Correo correo)
+    {
+        List<string> pistas = new List<string>();
+        string texto = ((correo.asunto ?? string.Empty) + " " + (correo.texto ?? string.Empty)).ToLowerInvariant();
+
+        if (texto.Contains("no digas") || texto.Contains("callar"))
+        {
+            pistas.Add("posible presion para guardar silencio");
+        }
+
+        if (texto.Contains("captura") || texto.Contains("chat"))
+        {
+            pistas.Add("posible difusion de informacion privada");
+        }
+
+        if (texto.Contains("reunion") || texto.Contains("grupo"))
+        {
+            pistas.Add("revisar si hay exclusion repetida");
+        }
+
+        if (texto.Contains("meme") || texto.Contains("apodo"))
+        {
+            pistas.Add("distinguir broma aislada de burla repetida");
+        }
+
+        if (pistas.Count == 0)
+        {
+            pistas.Add(correo.esAmbiguo ? "falta contexto" : "no hay senales claras");
+        }
+
+        return pistas.ToArray();
+    }
+
+    private string CrearExplicacionCorreo(Correo correo)
+    {
+        if (correo.decisionCorrecta == TipoDecisionCorreo.RevisarCaso)
+        {
+            return "La decision recomendada es revisar contexto antes de acusar o ignorar.";
+        }
+
+        if (correo.decisionCorrecta == TipoDecisionCorreo.Reportar)
+        {
+            return "Hay senales suficientes de dano, presion o acoso que deben reportarse.";
+        }
+
+        return "El correo parece comunicacion normal o conflicto sin evidencia suficiente de acoso.";
     }
 
     private void MostrarCorreo()
@@ -159,13 +371,36 @@ public class ControlCorreo : MonoBehaviour
             remitente += " [SOSPECHOSO]";
         }
 
+        string cuerpo = correoActual.texto;
+
+        if (tieneFiltroSpam)
+        {
+            cuerpo += "\n\nPISTA DEL FILTRO: " + ObtenerPistaFiltro(correoActual);
+        }
+
         if (textoRemitente != null) textoRemitente.text = remitente;
         if (textoAsunto != null) textoAsunto.text = correoActual.asunto;
-        if (textoCorreo != null) textoCorreo.text = correoActual.texto;
+        if (textoCorreo != null) textoCorreo.text = cuerpo;
         if (textoResultado != null) textoResultado.text = string.Empty;
+        ActualizarCajaFeedback(false);
+    }
+
+    private string ObtenerPistaFiltro(Correo correo)
+    {
+        if (correo == null || correo.pistas == null || correo.pistas.Length == 0)
+        {
+            return "No se detectaron senales claras. Puede requerir contexto.";
+        }
+
+        return correo.pistas[0];
     }
 
     public void Evaluar(bool decisionJugador)
+    {
+        EvaluarDecision(decisionJugador ? TipoDecisionCorreo.Reportar : TipoDecisionCorreo.Aceptar);
+    }
+
+    public void EvaluarDecision(TipoDecisionCorreo decisionJugador)
     {
         if (!activo || colaCorreos.Count == 0)
         {
@@ -173,33 +408,54 @@ public class ControlCorreo : MonoBehaviour
         }
 
         Correo correoActual = colaCorreos.Peek();
+        TipoDecisionCorreo decisionEsperada = ObtenerDecisionEsperada(correoActual);
 
-        if (decisionJugador == correoActual.esBullying)
+        bool decisionCorrecta = decisionJugador == decisionEsperada;
+        string mensajeRevision = string.Empty;
+
+        if (decisionCorrecta && decisionJugador == TipoDecisionCorreo.RevisarCaso)
         {
-            MostrarResultado("Correcto", EstiloUIJuego.Acento);
+            mensajeRevision = RegistrarRevisionCaso(correoActual);
+        }
+
+        if (decisionCorrecta)
+        {
+            string mensajeCorrecto = "Correcto - " + ObtenerTextoDecision(decisionJugador);
+
+            if (!string.IsNullOrWhiteSpace(mensajeRevision))
+            {
+                mensajeCorrecto += ". " + mensajeRevision;
+            }
+
+            MostrarResultado(mensajeCorrecto, EstiloUIJuego.Acento);
             correctos++;
+            bienestarEstudiantil = Mathf.Min(100, bienestarEstudiantil + (decisionJugador == TipoDecisionCorreo.Reportar ? 2 : 1));
+            confianzaEscolar = Mathf.Min(100, confianzaEscolar + 1);
         }
         else
         {
             if (tieneSeguro && !seguroUsado)
             {
                 seguroUsado = true;
-                MostrarResultado("Seguro utilizado", EstiloUIJuego.Acento);
+                MostrarResultado("Seguro usado: evitaste la penalizacion", EstiloUIJuego.Acento);
                 correctos++;
                 correosClasificados++;
-                InvocarSiguienteCorreo();
+                ActualizarPrecision();
+                InvocarSiguienteCorreo(false);
                 GuardarProgresoActual();
                 return;
             }
 
-            MostrarResultado("Incorrecto", EstiloUIJuego.Peligro);
+            MostrarResultado("Incorrecto - " + correoActual.explicacionEducativa, EstiloUIJuego.Peligro);
             errores++;
+            AplicarConsecuenciaError(decisionJugador, correoActual);
             ActualizarErrores();
             OnStatsChanged?.Invoke();
         }
 
         correosClasificados++;
-        InvocarSiguienteCorreo();
+        ActualizarPrecision();
+        InvocarSiguienteCorreo(decisionCorrecta);
         GuardarProgresoActual();
     }
 
@@ -213,9 +469,130 @@ public class ControlCorreo : MonoBehaviour
         Evaluar(false);
     }
 
-    private void InvocarSiguienteCorreo()
+    public void EvaluarRevisarCaso()
     {
-        float tiempoEspera = tieneTeclado ? 0.2f : 0.5f;
+        EvaluarDecision(TipoDecisionCorreo.RevisarCaso);
+    }
+
+    public void AplicarImpactoDecisionCaso(DecisionCaso decision)
+    {
+        if (decision == null)
+        {
+            return;
+        }
+
+        bienestarEstudiantil = Mathf.Clamp(
+            bienestarEstudiantil + decision.impactoBienestar,
+            0,
+            100
+        );
+        confianzaEscolar = Mathf.Clamp(
+            confianzaEscolar + decision.impactoConfianza,
+            0,
+            100
+        );
+        precision = Mathf.Clamp(precision + decision.impactoPrecision, 0, 100);
+        GuardarProgresoActual();
+    }
+
+    private TipoDecisionCorreo ObtenerDecisionEsperada(Correo correo)
+    {
+        if (correo != null && correo.decisionCorrecta != TipoDecisionCorreo.SinDefinir)
+        {
+            return correo.decisionCorrecta;
+        }
+
+        return correo != null && correo.esBullying
+            ? TipoDecisionCorreo.Reportar
+            : TipoDecisionCorreo.Aceptar;
+    }
+
+    private string ObtenerTextoDecision(TipoDecisionCorreo decision)
+    {
+        switch (decision)
+        {
+            case TipoDecisionCorreo.Reportar:
+                return "Reportar";
+            case TipoDecisionCorreo.RevisarCaso:
+                return "Revisar contexto";
+            default:
+                return "Aceptar";
+        }
+    }
+
+    private string RegistrarRevisionCaso(Correo correoActual)
+    {
+        AsegurarGestorCasos();
+
+        if (gestorCasos == null)
+        {
+            MostrarResultado("No se encontro la app Casos.", EstiloUIJuego.Peligro);
+            return "No se encontro la app Casos.";
+        }
+
+        bool agregado = gestorCasos.RegistrarRevisionCorreo(correoActual, dia, out string mensaje);
+
+        if (agregado)
+        {
+            evidenciasEncontradasDia++;
+            casosAbiertosDia = Mathf.Max(casosAbiertosDia, ContarCasosActivos());
+        }
+
+        return mensaje;
+    }
+
+    private int ContarCasosActivos()
+    {
+        if (gestorCasos == null)
+        {
+            return 0;
+        }
+
+        int total = 0;
+        IReadOnlyList<CasoBullying> casos = gestorCasos.Casos;
+
+        for (int i = 0; i < casos.Count; i++)
+        {
+            if (casos[i] != null && casos[i].desbloqueado)
+            {
+                total++;
+            }
+        }
+
+        return total;
+    }
+
+    private void AplicarConsecuenciaError(TipoDecisionCorreo decisionJugador, Correo correo)
+    {
+        if (correo != null && correo.esBullying && decisionJugador == TipoDecisionCorreo.Aceptar)
+        {
+            bienestarEstudiantil = Mathf.Max(0, bienestarEstudiantil - 8);
+            confianzaEscolar = Mathf.Max(0, confianzaEscolar - 2);
+            return;
+        }
+
+        if (correo != null && !correo.esBullying && decisionJugador == TipoDecisionCorreo.Reportar)
+        {
+            confianzaEscolar = Mathf.Max(0, confianzaEscolar - 7);
+            bienestarEstudiantil = Mathf.Max(0, bienestarEstudiantil - 1);
+            return;
+        }
+
+        precision = Mathf.Max(0, precision - 3);
+    }
+
+    private void ActualizarPrecision()
+    {
+        precision = correosClasificados <= 0
+            ? 0
+            : Mathf.RoundToInt((float)correctos / Mathf.Max(1, correosClasificados) * 100f);
+    }
+
+    private void InvocarSiguienteCorreo(bool decisionCorrecta)
+    {
+        float tiempoEspera = decisionCorrecta
+            ? (tieneTeclado ? 1.1f : 1.4f)
+            : 3.8f;
         Invoke(nameof(SiguienteCorreo), tiempoEspera);
     }
 
@@ -226,13 +603,14 @@ public class ControlCorreo : MonoBehaviour
             colaCorreos.Dequeue();
         }
 
-        if (correosClasificados >= 15)
+        if (correosClasificados >= ObtenerObjetivoCorreosDia())
         {
             activo = false;
             if (textoRemitente != null) textoRemitente.text = string.Empty;
             if (textoAsunto != null) textoAsunto.text = string.Empty;
             if (textoCorreo != null) textoCorreo.text = string.Empty;
             if (textoResultado != null) textoResultado.text = string.Empty;
+            ActualizarCajaFeedback(false);
 
             Invoke(nameof(MostrarPantallaFinDia), 1f);
             return;
@@ -244,8 +622,38 @@ public class ControlCorreo : MonoBehaviour
         }
         else
         {
-            CargarCorreos();
+            CargarCorreos(false);
         }
+    }
+
+    private int ObtenerObjetivoCorreosDia()
+    {
+        int objetivo;
+
+        switch (dificultadEntryFilter)
+        {
+            case DificultadEntryFilter.Facil:
+                objetivo = 8;
+                break;
+            case DificultadEntryFilter.Dificil:
+                objetivo = 15;
+                break;
+            default:
+                objetivo = 12;
+                break;
+        }
+
+        if (tieneCafe)
+        {
+            objetivo += 1;
+        }
+
+        if (tieneTeclado)
+        {
+            objetivo += 1;
+        }
+
+        return objetivo;
     }
 
     private void MostrarPantallaFinDia()
@@ -286,6 +694,11 @@ public class ControlCorreo : MonoBehaviour
                 "Correos clasificados: " + correosClasificados +
                 "\nCorreos correctos: " + correctos +
                 "\nCorreos incorrectos: " + errores +
+                "\nCasos abiertos: " + casosAbiertosDia +
+                "\nEvidencias encontradas: " + evidenciasEncontradasDia +
+                "\nBienestar estudiantil: " + bienestarEstudiantil +
+                "\nConfianza escolar: " + confianzaEscolar +
+                "\nPrecision: " + precision + "%" +
                 "\nSueldo base: $" + sueldoBase +
                 "\nSueldo final: $" + sueldoFinal +
                 "\n" + mensajeSueldo +
@@ -332,7 +745,7 @@ public class ControlCorreo : MonoBehaviour
         }
 
         ActualizarErrores();
-        CargarCorreos();
+        CargarCorreos(true);
     }
 
     public void ContinuarDespuesDelResumen()
@@ -357,7 +770,7 @@ public class ControlCorreo : MonoBehaviour
         }
 
         ActualizarErrores();
-        CargarCorreos();
+        CargarCorreos(true);
         GuardarProgresoActual();
     }
 
@@ -387,6 +800,22 @@ public class ControlCorreo : MonoBehaviour
         {
             textoResultado.text = mensaje;
             textoResultado.color = color;
+            ActualizarCajaFeedback(!string.IsNullOrWhiteSpace(mensaje));
+        }
+    }
+
+    private void ActualizarCajaFeedback(bool visible)
+    {
+        Transform caja = transform.Find("CajaFeedbackCorreo");
+
+        if (caja != null)
+        {
+            caja.gameObject.SetActive(visible);
+        }
+
+        if (textoResultado != null)
+        {
+            textoResultado.transform.SetAsLastSibling();
         }
     }
 
@@ -461,7 +890,16 @@ public class ControlCorreo : MonoBehaviour
                     new Color(0.78f, 0.22f, 0.24f, 1f),
                     new Color(0.96f, 0.34f, 0.34f, 1f)
                 );
-                AcomodarBotonAccion(boton, -100f);
+                AcomodarBotonAccion(boton, -210f);
+            }
+            else if (etiqueta.Contains("Revisar"))
+            {
+                EstiloUIJuego.AplicarBoton(
+                    boton,
+                    new Color(0.16f, 0.3f, 0.58f, 1f),
+                    EstiloUIJuego.AcentoCalido
+                );
+                AcomodarBotonAccion(boton, 0f);
             }
             else if (etiqueta.Contains("Aceptar"))
             {
@@ -470,7 +908,7 @@ public class ControlCorreo : MonoBehaviour
                     new Color(0.14f, 0.58f, 0.32f, 1f),
                     new Color(0.24f, 0.78f, 0.42f, 1f)
                 );
-                AcomodarBotonAccion(boton, 100f);
+                AcomodarBotonAccion(boton, 210f);
             }
         }
     }
@@ -484,6 +922,7 @@ public class ControlCorreo : MonoBehaviour
 
         AjustarVentanaCorreo();
         AsegurarDecoracionCorreo();
+        PrepararBotonRevisarCaso();
         AplicarEstiloCorreo();
         AcomodarTextosCorreo();
         PrepararBotonCerrarCorreo();
@@ -546,6 +985,21 @@ public class ControlCorreo : MonoBehaviour
                 new Color(0.06f, 0.09f, 0.17f, 1f)
             ).transform.SetSiblingIndex(1);
         }
+
+        Transform feedbackExistente = transform.Find("CajaFeedbackCorreo");
+
+        if (feedbackExistente == null)
+        {
+            Image caja = EstiloUIJuego.CrearImagen(
+                transform,
+                "CajaFeedbackCorreo",
+                new Vector2(0f, -98f),
+                new Vector2(620f, 50f),
+                new Color(0.02f, 0.02f, 0.06f, 0.88f)
+            );
+            caja.raycastTarget = false;
+            caja.gameObject.SetActive(false);
+        }
     }
 
     private void AcomodarTextosCorreo()
@@ -555,7 +1009,13 @@ public class ControlCorreo : MonoBehaviour
         AcomodarTexto(textoRemitente, new Vector2(-116f, 112f), new Vector2(410f, 28f));
         AcomodarTexto(textoAsunto, new Vector2(-116f, 78f), new Vector2(410f, 30f));
         AcomodarTexto(textoCorreo, new Vector2(0f, -8f), new Vector2(572f, 156f));
-        AcomodarTexto(textoResultado, new Vector2(0f, -142f), new Vector2(220f, 28f));
+        AcomodarTexto(textoResultado, new Vector2(0f, -98f), new Vector2(590f, 44f));
+
+        if (textoResultado != null)
+        {
+            textoResultado.alignment = TextAnchor.MiddleCenter;
+            textoResultado.transform.SetAsLastSibling();
+        }
     }
 
     private void AcomodarTexto(Text texto, Vector2 posicion, Vector2 tamano)
@@ -577,6 +1037,61 @@ public class ControlCorreo : MonoBehaviour
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = posicion;
         rect.sizeDelta = tamano;
+    }
+
+    private void PrepararBotonRevisarCaso()
+    {
+        if (botonRevisarCaso == null)
+        {
+            Transform existente = transform.Find("BotonRevisarCaso");
+
+            if (existente != null)
+            {
+                botonRevisarCaso = existente.GetComponent<Button>();
+            }
+        }
+
+        if (botonRevisarCaso == null)
+        {
+            GameObject objeto = new GameObject(
+                "BotonRevisarCaso",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(Button)
+            );
+            objeto.transform.SetParent(transform, false);
+
+            EstiloUIJuego.CrearTextoTMP(
+                objeto.transform,
+                "Texto",
+                "Revisar contexto",
+                17f,
+                Vector2.zero,
+                new Vector2(170f, 42f),
+                TextAlignmentOptions.Center
+            );
+
+            botonRevisarCaso = objeto.GetComponent<Button>();
+        }
+
+        botonRevisarCaso.onClick.RemoveAllListeners();
+        botonRevisarCaso.onClick.AddListener(EvaluarRevisarCaso);
+
+        TextMeshProUGUI textoBoton = botonRevisarCaso.GetComponentInChildren<TextMeshProUGUI>(true);
+
+        if (textoBoton != null)
+        {
+            textoBoton.text = "Revisar contexto";
+            textoBoton.fontSize = 16f;
+        }
+
+        EstiloUIJuego.AplicarBoton(
+            botonRevisarCaso,
+            new Color(0.16f, 0.3f, 0.58f, 1f),
+            EstiloUIJuego.AcentoCalido
+        );
+        AcomodarBotonAccion(botonRevisarCaso, 0f);
     }
 
     private void PrepararBotonCerrarCorreo()
@@ -789,6 +1304,25 @@ public class ControlCorreo : MonoBehaviour
         tieneFiltroSpam = datos.tieneFiltroSpam;
         tieneTeclado = datos.tieneTeclado;
         modoLecturaActivado = datos.lecturaFacilActiva;
+        bienestarEstudiantil = datos.bienestarEstudiantil > 0 ? datos.bienestarEstudiantil : 70;
+        confianzaEscolar = datos.confianzaEscolar > 0 ? datos.confianzaEscolar : 70;
+        precision = datos.precision;
+
+        if (!string.IsNullOrWhiteSpace(datos.dificultadEntryFilter) &&
+            System.Enum.TryParse(datos.dificultadEntryFilter, out DificultadEntryFilter dificultadGuardada))
+        {
+            dificultadEntryFilter = dificultadGuardada;
+        }
+
+        if (gestorCasos == null)
+        {
+            gestorCasos = FindAnyObjectByType<GestorCasos>();
+        }
+
+        if (gestorCasos != null)
+        {
+            gestorCasos.CargarRegistrosGuardado(datos.casos);
+        }
 
         ConfiguracionAccesibilidadJuego.Guardar(
             datos.accesibilidadTextoGrande,
@@ -819,7 +1353,14 @@ public class ControlCorreo : MonoBehaviour
             accesibilidadTextoGrande = ConfiguracionAccesibilidadJuego.TextoGrandeActivo,
             accesibilidadAltoContraste = ConfiguracionAccesibilidadJuego.AltoContrasteActivo,
             accesibilidadTipoDaltonismo = (int)ConfiguracionAccesibilidadJuego.TipoDaltonismoActual,
-            accesibilidadReducirEfectos = false
+            accesibilidadReducirEfectos = false,
+            dificultadEntryFilter = dificultadEntryFilter.ToString(),
+            bienestarEstudiantil = bienestarEstudiantil,
+            confianzaEscolar = confianzaEscolar,
+            precision = precision,
+            casos = gestorCasos != null
+                ? gestorCasos.CrearRegistrosGuardado()
+                : new List<RegistroCasoGuardado>()
         };
     }
 }
