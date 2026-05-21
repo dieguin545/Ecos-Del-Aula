@@ -128,6 +128,24 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             ResetearEstadoGlobalPausa();
         }
 
+        if (MenuAbierto() && Input.GetKeyDown(KeyCode.JoystickButton1))
+        {
+            if (panelDetalleSlot != null && panelDetalleSlot.activeSelf)
+            {
+                CerrarDetalleSlot();
+                return;
+            }
+
+            if (panelOpciones != null && panelOpciones.activeSelf)
+            {
+                VolverAPausa();
+                return;
+            }
+
+            Continuar();
+            return;
+        }
+
         if (!GestorEntradaGlobal.PausaPresionada())
         {
             return;
@@ -297,6 +315,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         BloquearJugadorYCamara(true);
         MostrarCursorMenu();
+        FocalizarPanel(panelPausa);
     }
 
     public void Continuar()
@@ -345,6 +364,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         BloquearJugadorYCamara(true);
         MostrarCursorMenu();
+        FocalizarPanel(panelOpciones);
     }
 
     public void VolverAPausa()
@@ -370,6 +390,30 @@ public class MenuPausaAccesibilidad : MonoBehaviour
 
         BloquearJugadorYCamara(true);
         MostrarCursorMenu();
+        FocalizarPanel(panelPausa);
+    }
+
+    private void FocalizarPanel(GameObject panel)
+    {
+        if (panel == null || UnityEngine.EventSystems.EventSystem.current == null) return;
+        Selectable[] selectables = panel.GetComponentsInChildren<Selectable>(true);
+        foreach (var s in selectables)
+        {
+            if (s != null)
+            {
+                Navigation nav = s.navigation;
+                nav.mode = Navigation.Mode.Automatic;
+                s.navigation = nav;
+            }
+        }
+        foreach (var s in selectables)
+        {
+            if (s != null && s.gameObject.activeInHierarchy && s.interactable && s.navigation.mode != Navigation.Mode.None)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(s.gameObject);
+                break;
+            }
+        }
     }
 
     public void ReiniciarEscena()
@@ -809,6 +853,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         }
 
         ActualizarDetalleSlot();
+        FocalizarPanel(panelDetalleSlot);
     }
 
     public void EntrarSlotSeleccionado()
@@ -838,6 +883,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
     {
         confirmandoBorradoSlot = true;
         ActualizarDetalleSlot();
+        FocalizarPanel(panelDetalleSlot);
     }
 
     public void ConfirmarBorrarSlot()
@@ -850,6 +896,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         confirmandoBorradoSlot = false;
         ActualizarTextoSlotActivo();
         ActualizarDetalleSlot();
+        FocalizarPanel(panelDetalleSlot);
     }
 
     public void CerrarDetalleSlot()
@@ -867,6 +914,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
         }
 
         ActualizarTextoSlotActivo();
+        FocalizarPanel(panelOpciones);
     }
 
     private void ActualizarDetalleSlot()

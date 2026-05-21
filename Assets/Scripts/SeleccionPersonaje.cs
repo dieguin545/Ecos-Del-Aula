@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SeleccionPersonaje : MonoBehaviour
 {
@@ -41,5 +42,6 @@ public class SeleccionPersonaje : MonoBehaviour
         PlayerPrefs.SetInt("PersonajeSeleccionado", indiceActual);
         PlayerPrefs.Save();
         Debug.Log("Personaje seleccionado: " + indiceActual);
+        SceneManager.LoadScene("SeleccionJuego");
     }
 }

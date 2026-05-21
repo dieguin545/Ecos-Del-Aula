@@ -52,6 +52,10 @@ public class InteraccionPC : MonoBehaviour
             PrepararGestorVentanas();
             AplicarFondoEscritorio();
             AplicarIconosEscritorio();
+            if (canvasPC.GetComponent<EcosAulaNavegacionEscritorioPC>() == null)
+            {
+                canvasPC.AddComponent<EcosAulaNavegacionEscritorioPC>();
+            }
             canvasPC.SetActive(false);
         }
 
@@ -505,20 +509,9 @@ public class InteraccionPC : MonoBehaviour
             return;
         }
 
-        string prompt = GestorEntradaGlobal.ObtenerPromptInteractuarPC();
-        TextMeshProUGUI textoTmp = textoInteractuar.GetComponentInChildren<TextMeshProUGUI>(true);
-
-        if (textoTmp != null)
+        if (textoInteractuar.GetComponent<EcosAulaPromptUI>() == null)
         {
-            textoTmp.text = prompt;
-            return;
-        }
-
-        Text textoLegacy = textoInteractuar.GetComponentInChildren<Text>(true);
-
-        if (textoLegacy != null)
-        {
-            textoLegacy.text = prompt;
+            EcosAulaPromptUI.InyectarEn(textoInteractuar, AccionLogica.Interactuar, "para usar PC");
         }
     }
 
