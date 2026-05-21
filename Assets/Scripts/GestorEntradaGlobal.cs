@@ -30,6 +30,7 @@ public class GestorEntradaGlobal : MonoBehaviour
         GameObject objeto = new GameObject("GestorEntradaGlobal");
         DontDestroyOnLoad(objeto);
         objeto.AddComponent<GestorEntradaGlobal>();
+        objeto.AddComponent<EcosAulaNavegacionUI>();
     }
 
     private void OnEnable()
@@ -49,7 +50,12 @@ public class GestorEntradaGlobal : MonoBehaviour
 
     public static bool InteractuarPresionado(KeyCode teclaTeclado)
     {
-        return Input.GetKeyDown(teclaTeclado) || Input.GetKeyDown(KeyCode.JoystickButton2);
+        return Input.GetKeyDown(teclaTeclado) || Input.GetKeyDown(KeyCode.JoystickButton0);
+    }
+
+    public static bool RevisarContextoPresionado()
+    {
+        return Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.JoystickButton2);
     }
 
     public static bool ConfirmarPresionado()
@@ -94,7 +100,7 @@ public class GestorEntradaGlobal : MonoBehaviour
     public static string ObtenerPromptInteractuarPC()
     {
         return UsandoControl && HayJoystickConectado()
-            ? "Boton X para usar PC"
+            ? "Botón A para usar PC"
             : "Presiona E para usar PC";
     }
 
@@ -105,7 +111,7 @@ public class GestorEntradaGlobal : MonoBehaviour
 
     public static string ObtenerPromptCerrar()
     {
-        return UsandoControl ? "[B] Cerrar" : "Esc / X cerrar";
+        return UsandoControl ? "Botón B para cerrar" : "Esc / X cerrar";
     }
 
     private static void CambiarDispositivo(TipoDispositivoEntrada nuevo)
@@ -121,20 +127,40 @@ public class GestorEntradaGlobal : MonoBehaviour
 
     private static void DetectarDispositivo()
     {
-        if (
-            HayJoystickConectado()
-            && (
-            Input.GetKeyDown(KeyCode.JoystickButton0)
-            || Input.GetKeyDown(KeyCode.JoystickButton1)
-            || Input.GetKeyDown(KeyCode.JoystickButton2)
-            || Input.GetKeyDown(KeyCode.JoystickButton3)
-            || Input.GetKeyDown(KeyCode.JoystickButton4)
-            || Input.GetKeyDown(KeyCode.JoystickButton5)
-            || Input.GetKeyDown(KeyCode.JoystickButton7)
-            || Input.GetKeyDown(KeyCode.JoystickButton8)
-            || Input.GetKeyDown(KeyCode.JoystickButton9)
+        bool hayActividadJoystick = false;
+        if (HayJoystickConectado())
+        {
+            if (
+                Input.GetKeyDown(KeyCode.JoystickButton0)
+                || Input.GetKeyDown(KeyCode.JoystickButton1)
+                || Input.GetKeyDown(KeyCode.JoystickButton2)
+                || Input.GetKeyDown(KeyCode.JoystickButton3)
+                || Input.GetKeyDown(KeyCode.JoystickButton4)
+                || Input.GetKeyDown(KeyCode.JoystickButton5)
+                || Input.GetKeyDown(KeyCode.JoystickButton7)
+                || Input.GetKeyDown(KeyCode.JoystickButton8)
+                || Input.GetKeyDown(KeyCode.JoystickButton9)
             )
-        )
+            {
+                hayActividadJoystick = true;
+            }
+            else
+            {
+                // También detectar movimiento de stick/D-Pad
+                float h = Input.GetAxisRaw("Horizontal");
+                float v = Input.GetAxisRaw("Vertical");
+                if ((Mathf.Abs(h) > 0.4f || Mathf.Abs(v) > 0.4f) && 
+                    !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && 
+                    !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D) &&
+                    !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) &&
+                    !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+                {
+                    hayActividadJoystick = true;
+                }
+            }
+        }
+
+        if (hayActividadJoystick)
         {
             CambiarDispositivo(TipoDispositivoEntrada.ControlXbox);
             return;

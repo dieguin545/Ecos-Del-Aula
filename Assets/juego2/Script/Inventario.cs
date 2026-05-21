@@ -40,12 +40,16 @@ public class Inventario : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
+        if (Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.JoystickButton3)) // Tecla I o Botón Y de Xbox
         {
             if (abierto)
                 CerrarInventario();
             else
                 AbrirInventario();
+        }
+        else if (abierto && (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.JoystickButton1))) // Escape o Botón B de Xbox
+        {
+            CerrarInventario();
         }
     }
 
@@ -94,6 +98,9 @@ public class Inventario : MonoBehaviour
         Time.timeScale = 0f;
         panelInventario.SetActive(true);
         ActualizarUI();
+
+        EcosAulaPromptUI.CrearBarraPrompts(panelInventario.transform,
+            (AccionLogica.Cancelar, "Cerrar"));
     }
 
     private void CerrarInventario()

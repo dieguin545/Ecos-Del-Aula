@@ -57,6 +57,24 @@ public class ConfrontacionManager : MonoBehaviour
         // Configura botones
         botonPelear.onClick.AddListener(ElegirPelear);
         botonReportar.onClick.AddListener(ElegirReportar);
+
+        // Configurar navegación
+        Navigation navPelear = botonPelear.navigation;
+        navPelear.mode = Navigation.Mode.Automatic;
+        botonPelear.navigation = navPelear;
+
+        Navigation navReportar = botonReportar.navigation;
+        navReportar.mode = Navigation.Mode.Automatic;
+        botonReportar.navigation = navReportar;
+
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(botonPelear.gameObject);
+        }
+
+        EcosAulaPromptUI.CrearBarraPrompts(panelConfrontacion.transform,
+            (AccionLogica.Navegar, "Navegar"),
+            (AccionLogica.Confirmar, "Seleccionar"));
     }
 
     private void ElegirPelear()
@@ -93,6 +111,18 @@ public class ConfrontacionManager : MonoBehaviour
         }
 
         botonVolverAJugar.onClick.AddListener(VolverAJugar);
+
+        Navigation navVolver = botonVolverAJugar.navigation;
+        navVolver.mode = Navigation.Mode.Automatic;
+        botonVolverAJugar.navigation = navVolver;
+
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(botonVolverAJugar.gameObject);
+        }
+
+        EcosAulaPromptUI.CrearBarraPrompts(panelResultado.transform,
+            (AccionLogica.Confirmar, "Volver a jugar"));
     }
 
     private void MostrarResultadoSinEvidencia()
@@ -100,6 +130,18 @@ public class ConfrontacionManager : MonoBehaviour
         panelResultado.SetActive(true);
         textoResultado.text = "Llamaste a un profesor pero no tenías evidencia suficiente.\nEl acosador no recibió consecuencias.\n\nLa próxima vez guarda evidencia.\n\n⚠️ Final Neutro";
         botonVolverAJugar.onClick.AddListener(VolverAJugar);
+
+        Navigation navVolver = botonVolverAJugar.navigation;
+        navVolver.mode = Navigation.Mode.Automatic;
+        botonVolverAJugar.navigation = navVolver;
+
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(botonVolverAJugar.gameObject);
+        }
+
+        EcosAulaPromptUI.CrearBarraPrompts(panelResultado.transform,
+            (AccionLogica.Confirmar, "Volver a jugar"));
     }
 
     private void VolverAJugar()

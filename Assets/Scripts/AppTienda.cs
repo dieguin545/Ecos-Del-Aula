@@ -119,11 +119,11 @@ public class AppTienda : MonoBehaviour
         switch (tipo)
         {
             case TipoProductoTienda.Cafe:
-                return "Cafe usado: tendras energia para un correo extra.";
+                return "Café usado: tendrás energía para un correo extra.";
             case TipoProductoTienda.Seguro:
-                return "Seguro activo: evita la penalizacion del primer error.";
+                return "Seguro activo: evita la penalización del primer error.";
             case TipoProductoTienda.Filtro:
-                return "Filtro activo: resalta senales sospechosas.";
+                return "Filtro activo: resalta señales sospechosas.";
             case TipoProductoTienda.Teclado:
                 return "Teclado activo: mejoras tu eficiencia diaria.";
             default:
@@ -255,9 +255,9 @@ public class AppTienda : MonoBehaviour
     {
         ReemplazarOAgregarProducto(
             TipoProductoTienda.Cafe,
-            "Cafe",
+            "Café",
             250,
-            "Recupera energia para revisar un correo extra.",
+            "Recupera energía para revisar un correo extra.",
             CategoriaProductoTienda.Temporal,
             spriteCafe
         );
@@ -265,7 +265,7 @@ public class AppTienda : MonoBehaviour
             TipoProductoTienda.Seguro,
             "Seguro",
             300,
-            "Evita la penalizacion del primer error del dia.",
+            "Evita la penalización del primer error del día.",
             CategoriaProductoTienda.Temporal,
             spriteSeguro
         );
@@ -273,7 +273,7 @@ public class AppTienda : MonoBehaviour
             TipoProductoTienda.Filtro,
             "Filtro",
             400,
-            "Resalta senales sospechosas sin darte la respuesta.",
+            "Resalta señales sospechosas sin darte la respuesta.",
             CategoriaProductoTienda.Permanente,
             spriteFiltro
         );

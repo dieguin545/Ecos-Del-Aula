@@ -162,6 +162,13 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
         );
 
         panel.SetActive(false);
+
+        // Prompts en el panel de pausa
+        EcosAulaPromptUI.CrearBarraPrompts(panel.transform,
+            (AccionLogica.Navegar, "Navegar"),
+            (AccionLogica.Confirmar, "Confirmar"),
+            (AccionLogica.Cancelar, "Reanudar"));
+
         return panel;
     }
 

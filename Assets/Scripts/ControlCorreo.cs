@@ -121,6 +121,28 @@ public class ControlCorreo : MonoBehaviour
         AplicarModoLectura();
     }
 
+    private void Update()
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        if (resumenFinDiaAbierto)
+        {
+            if (GestorEntradaGlobal.ConfirmarPresionado())
+            {
+                ContinuarDespuesDelResumen();
+            }
+            return;
+        }
+
+        if (activo && GestorEntradaGlobal.RevisarContextoPresionado())
+        {
+            EvaluarRevisarCaso();
+        }
+    }
+
     private void AsegurarGestorCasos()
     {
         if (gestorCasos != null)

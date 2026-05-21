@@ -53,7 +53,7 @@ public class ZonaConfort : MonoBehaviour
             }
         }
 
-        if (jugadorDentro && Input.GetKeyDown(KeyCode.F) && !enCooldown && !realizandoAccion)
+        if (jugadorDentro && GestorEntradaGlobal.InteractuarPresionado(KeyCode.F) && !enCooldown && !realizandoAccion)
         {
             UsarZonaConfort();
         }
@@ -89,14 +89,29 @@ public class ZonaConfort : MonoBehaviour
         if (personajeActivo == personajeCompatible)
         {
             if (vecesUsada >= vecesMaximas)
-                textoIndicador.text = "Ya estás aburrido de esta actividad";
+                DesactivarPromptYMostrarTexto("Ya estás aburrido de esta actividad");
             else
-                textoIndicador.text = "Presiona F para " + mensajeConfort;
+                EcosAulaPromptUI.InyectarEn(textoIndicador.gameObject, AccionLogica.InteractuarF, mensajeConfort);
         }
         else
         {
-            textoIndicador.text = mensajeIncompatible;
+            DesactivarPromptYMostrarTexto(mensajeIncompatible);
         }
+    }
+
+    private void DesactivarPromptYMostrarTexto(string texto)
+    {
+        EcosAulaPromptUI prompt = textoIndicador.GetComponent<EcosAulaPromptUI>();
+        if (prompt != null)
+        {
+            prompt.enabled = false;
+            Transform img = textoIndicador.transform.Find("_IconoPrincipal");
+            if (img != null) img.gameObject.SetActive(false);
+            Transform txt = textoIndicador.transform.Find("_TextoVerbo");
+            if (txt != null) txt.gameObject.SetActive(false);
+        }
+        textoIndicador.enabled = true;
+        textoIndicador.text = texto;
     }
 
     private void UsarZonaConfort()
@@ -106,7 +121,7 @@ public class ZonaConfort : MonoBehaviour
             if (vecesUsada >= vecesMaximas)
             {
                 if (panelIndicador != null)
-                    textoIndicador.text = "Te estás aburriendo de esta actividad";
+                    DesactivarPromptYMostrarTexto("Te estás aburriendo de esta actividad");
                 return;
             }
 
@@ -135,7 +150,7 @@ public class ZonaConfort : MonoBehaviour
         else
         {
             if (panelIndicador != null)
-                textoIndicador.text = mensajeIncompatible;
+                DesactivarPromptYMostrarTexto(mensajeIncompatible);
             Invoke("OcultarIndicador", 2f);
         }
     }

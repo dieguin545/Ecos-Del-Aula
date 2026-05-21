@@ -102,10 +102,10 @@ public class PanelAyuda : MonoBehaviour
         mensajes = new[]
         {
             "Bienvenido a Ecos del Aula.\nAbre Correo para clasificar mensajes y proteger la convivencia digital.",
-            "Correo tiene tres acciones: Aceptar, Reportar y Revisar caso.\nUsa Revisar caso cuando falte contexto o haya senales ambiguas.",
+            "Correo tiene tres acciones: Aceptar, Reportar y Revisar contexto.\nUsa Revisar contexto cuando falte contexto o haya señales ambiguas.",
             "La app Casos guarda expedientes, evidencias y personajes involucrados.\nNo acuses por apariencia: decide por evidencia y patrones.",
-            "La tienda ayuda de verdad: Cafe da energia extra, Seguro evita una penalizacion, Filtro muestra pistas y Teclado mejora eficiencia.",
-            "Puedes jugar con teclado/mouse o control Xbox.\nE usa la PC, Esc pausa. En control usa [X] para interactuar, [A] confirmar y [B] cerrar."
+            "La tienda ayuda de verdad: Café da energía extra, Seguro evita una penalización, Filtro muestra pistas y Teclado mejora eficiencia.",
+            "Puedes jugar con teclado/mouse o control Xbox.\nE usa la PC y Esc pausa. En control, A interactúa, A confirma y B cierra."
         };
     }
 

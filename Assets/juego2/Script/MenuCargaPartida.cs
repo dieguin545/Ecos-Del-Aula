@@ -16,6 +16,25 @@ public class MenuCargaPartida : MonoBehaviour
             panelMenu.SetActive(true);
             textoInfo.text = "¿Deseas continuar tu partida anterior?";
             botonCargarPartida.gameObject.SetActive(true);
+
+            // Configurar navegación
+            Navigation navNueva = botonNuevaPartida.navigation;
+            navNueva.mode = Navigation.Mode.Automatic;
+            botonNuevaPartida.navigation = navNueva;
+
+            Navigation navCargar = botonCargarPartida.navigation;
+            navCargar.mode = Navigation.Mode.Automatic;
+            botonCargarPartida.navigation = navCargar;
+
+            // Auto-seleccionar
+            if (UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(botonCargarPartida.gameObject);
+            }
+
+            EcosAulaPromptUI.CrearBarraPrompts(panelMenu.transform,
+                (AccionLogica.Navegar, "Navegar"),
+                (AccionLogica.Confirmar, "Seleccionar"));
         }
         else
         {

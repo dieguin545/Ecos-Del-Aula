@@ -17,6 +17,7 @@ public class AppCasos : MonoBehaviour
     private readonly List<Button> botonesCasos = new List<Button>();
     private bool uiPreparada;
     private CasoBullying casoSeleccionado;
+    private const float VelocidadScrollControl = 0.72f;
 
     private void Awake()
     {
@@ -39,6 +40,37 @@ public class AppCasos : MonoBehaviour
         PrepararUiSiHaceFalta();
         ReconstruirLista();
         SeleccionarPrimerCasoVisible();
+    }
+
+    private void Update()
+    {
+        if (!isActiveAndEnabled || scrollDetalle == null || !scrollDetalle.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        float delta = 0f;
+        float rueda = Input.mouseScrollDelta.y;
+
+        if (Mathf.Abs(rueda) > 0.01f)
+        {
+            delta += rueda * 0.08f;
+        }
+
+        if (Input.GetKey(KeyCode.PageDown) || Input.GetKey(KeyCode.JoystickButton5))
+        {
+            delta -= VelocidadScrollControl * Time.unscaledDeltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.PageUp) || Input.GetKey(KeyCode.JoystickButton4))
+        {
+            delta += VelocidadScrollControl * Time.unscaledDeltaTime;
+        }
+
+        if (Mathf.Abs(delta) > 0.001f)
+        {
+            scrollDetalle.verticalNormalizedPosition = Mathf.Clamp01(scrollDetalle.verticalNormalizedPosition + delta);
+        }
     }
 
     public void Inicializar(GestorCasos gestor, Sprite icono)

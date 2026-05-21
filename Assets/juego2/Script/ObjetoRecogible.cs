@@ -20,7 +20,7 @@ public class ObjetoRecogible : MonoBehaviour
 
     void Update()
     {
-        if (!recogerAlContacto && jugadorCerca && Input.GetKeyDown(KeyCode.E))
+        if (!recogerAlContacto && jugadorCerca && GestorEntradaGlobal.InteractuarPresionado(KeyCode.E))
         {
             Recoger();
         }

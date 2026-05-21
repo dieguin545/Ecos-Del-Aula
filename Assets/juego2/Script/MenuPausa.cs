@@ -37,6 +37,12 @@ public class MenuPausa : MonoBehaviour
 
     private void Update()
     {
+        if (pausado && Input.GetKeyDown(KeyCode.JoystickButton1))
+        {
+            Reanudar();
+            return;
+        }
+
         if (!GestorEntradaGlobal.PausaPresionada())
         {
             return;
@@ -66,6 +72,39 @@ public class MenuPausa : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         ConectarBotones();
+
+        // Configurar navegación
+        if (botonReanudar != null)
+        {
+            Navigation nav = botonReanudar.navigation;
+            nav.mode = Navigation.Mode.Automatic;
+            botonReanudar.navigation = nav;
+        }
+        if (botonGuardar != null)
+        {
+            Navigation nav = botonGuardar.navigation;
+            nav.mode = Navigation.Mode.Automatic;
+            botonGuardar.navigation = nav;
+        }
+        if (botonMenuPrincipal != null)
+        {
+            Navigation nav = botonMenuPrincipal.navigation;
+            nav.mode = Navigation.Mode.Automatic;
+            botonMenuPrincipal.navigation = nav;
+        }
+
+        if (UnityEngine.EventSystems.EventSystem.current != null && botonReanudar != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(botonReanudar.gameObject);
+        }
+
+        if (panelPausa != null)
+        {
+            EcosAulaPromptUI.CrearBarraPrompts(panelPausa.transform,
+                (AccionLogica.Navegar, "Navegar"),
+                (AccionLogica.Confirmar, "Confirmar"),
+                (AccionLogica.Cancelar, "Continuar"));
+        }
     }
 
     public void Reanudar()

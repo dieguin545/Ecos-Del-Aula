@@ -330,6 +330,10 @@ public class MenuSpaceShooter : MonoBehaviour
         Button boton = objeto.GetComponent<Button>();
         boton.onClick.AddListener(accion);
 
+        Navigation nav = boton.navigation;
+        nav.mode = Navigation.Mode.Automatic;
+        boton.navigation = nav;
+
         TextMeshProUGUI textoBoton = CrearTexto(
             objeto.transform,
             "Texto",
@@ -732,6 +736,55 @@ public class MenuSpaceShooter : MonoBehaviour
         if (panelTutorial != null) panelTutorial.SetActive(objetivo == panelTutorial);
         if (panelLeaderboard != null) panelLeaderboard.SetActive(objetivo == panelLeaderboard);
         if (panelOpciones != null) panelOpciones.SetActive(objetivo == panelOpciones);
+
+        if (objetivo != null)
+        {
+            if (objetivo == panelMenu)
+            {
+                EcosAulaPromptUI.CrearBarraPrompts(panelMenu.transform,
+                    (AccionLogica.Navegar, "Navegar"),
+                    (AccionLogica.Confirmar, "Confirmar"),
+                    (AccionLogica.Cancelar, "Volver"));
+            }
+            else if (objetivo == panelTutorial)
+            {
+                EcosAulaPromptUI.CrearBarraPrompts(panelTutorial.transform,
+                    (AccionLogica.AnteriorPestana, "Anterior"),
+                    (AccionLogica.SiguientePestana, "Siguiente"),
+                    (AccionLogica.Cancelar, "Volver"));
+            }
+            else if (objetivo == panelLeaderboard)
+            {
+                EcosAulaPromptUI.CrearBarraPrompts(panelLeaderboard.transform,
+                    (AccionLogica.Cancelar, "Volver"));
+            }
+            else if (objetivo == panelOpciones)
+            {
+                EcosAulaPromptUI.CrearBarraPrompts(panelOpciones.transform,
+                    (AccionLogica.Navegar, "Navegar"),
+                    (AccionLogica.Confirmar, "Confirmar / Cambiar"),
+                    (AccionLogica.Cancelar, "Volver"));
+            }
+
+            Selectable first = EncontrarPrimerSelectableEnPanel(objetivo);
+            if (first != null && UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(first.gameObject);
+            }
+        }
+    }
+
+    private Selectable EncontrarPrimerSelectableEnPanel(GameObject panel)
+    {
+        Selectable[] components = panel.GetComponentsInChildren<Selectable>(true);
+        foreach (var c in components)
+        {
+            if (c.gameObject.activeInHierarchy && c.interactable && c.navigation.mode != Navigation.Mode.None)
+            {
+                return c;
+            }
+        }
+        return null;
     }
 
     private void CambiarTipoDaltonismo(int delta)

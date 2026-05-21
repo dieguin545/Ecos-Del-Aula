@@ -452,6 +452,15 @@ public class GameManager : MonoBehaviour
         if (panelGameOver != null)
         {
             panelGameOver.SetActive(true);
+            EcosAulaPromptUI.CrearBarraPrompts(panelGameOver.transform,
+                (AccionLogica.Navegar, "Navegar"),
+                (AccionLogica.Confirmar, "Confirmar"));
+            
+            Selectable first = EncontrarPrimerSelectableEnPanel(panelGameOver);
+            if (first != null && UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(first.gameObject);
+            }
         }
 
         ActualizarResumenFinal(textoGameOverResumen);
@@ -474,6 +483,15 @@ public class GameManager : MonoBehaviour
         if (panelVictoria != null)
         {
             panelVictoria.SetActive(true);
+            EcosAulaPromptUI.CrearBarraPrompts(panelVictoria.transform,
+                (AccionLogica.Navegar, "Navegar"),
+                (AccionLogica.Confirmar, "Confirmar"));
+            
+            Selectable first = EncontrarPrimerSelectableEnPanel(panelVictoria);
+            if (first != null && UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(first.gameObject);
+            }
         }
 
         ActualizarResumenFinal(textoVictoriaResumen);
@@ -1036,6 +1054,27 @@ public class GameManager : MonoBehaviour
             texto.fontSize = 24f;
             texto.color = Color.white;
         }
+
+        if (boton != null)
+        {
+            Navigation nav = boton.navigation;
+            nav.mode = Navigation.Mode.Automatic;
+            boton.navigation = nav;
+        }
+    }
+
+    private Selectable EncontrarPrimerSelectableEnPanel(GameObject panel)
+    {
+        if (panel == null) return null;
+        Selectable[] components = panel.GetComponentsInChildren<Selectable>(true);
+        foreach (var c in components)
+        {
+            if (c.gameObject.activeInHierarchy && c.interactable && c.navigation.mode != Navigation.Mode.None)
+            {
+                return c;
+            }
+        }
+        return null;
     }
 
     private void ActualizarResumenFinal(TextMeshProUGUI destino)

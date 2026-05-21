@@ -303,7 +303,7 @@ public static class EcosAulaUIRediseno
         }
 
         // ── Reposicionar todos los personajes en el espacio 3D/Mundo a la derecha ──
-        float targetX = 597f;
+        float targetX = 632f;
         Camera mainCam = Camera.main;
         if (mainCam == null)
         {
@@ -311,13 +311,18 @@ public static class EcosAulaUIRediseno
         }
         if (mainCam != null)
         {
-            targetX = mainCam.transform.position.x + 210f;
+            targetX = mainCam.transform.position.x + 245f;
         }
 
         foreach (GameObject rootGo in SceneManager.GetActiveScene().GetRootGameObjects())
         {
             MoverPersonajesRecursivo(rootGo.transform, targetX);
         }
+
+        // Prompts en el menú lateral izquierdo
+        EcosAulaPromptUI.CrearBarraPrompts(leftPanelTr, 
+            (AccionLogica.Confirmar, "Seleccionar"), 
+            (AccionLogica.Navegar, "Navegar"));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -410,7 +415,7 @@ public static class EcosAulaUIRediseno
             }
             else if (nombre.Contains("atras") || nombre == "button")
             {
-                EstilizarBoton(b, BtnMorado, BtnMoradoH, "ATRAS", 20f, Blanco);
+                EstilizarBoton(b, BtnMorado, BtnMoradoH, "ATRÁS", 20f, Blanco);
             }
         }
 
@@ -424,6 +429,12 @@ public static class EcosAulaUIRediseno
                 img.preserveAspect = true;
             }
         }
+
+        // Prompts para seleccionar tarjeta de juego
+        EcosAulaPromptUI.CrearBarraPrompts(canvas.transform,
+            (AccionLogica.Navegar, "Cambiar juego"),
+            (AccionLogica.Confirmar, "Jugar"),
+            (AccionLogica.Cancelar, "Atrás"));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -489,12 +500,24 @@ public static class EcosAulaUIRediseno
             }
             else if (nombre.Contains("atras") || nombre.Contains("back"))
             {
-                EstilizarBoton(b, BtnMorado, BtnMoradoH, "ATRAS", 20f, Blanco);
+                EstilizarBoton(b, BtnMorado, BtnMoradoH, "ATRÁS", 20f, Blanco);
             }
             else
             {
                 EstilizarBoton(b, BtnMorado, BtnMoradoH, null, 20f, Blanco);
             }
+        }
+
+        // Prompts para selección de personaje
+        EcosAulaPromptUI.CrearBarraPrompts(canvas.transform,
+            (AccionLogica.AnteriorPestana, "Anterior"),
+            (AccionLogica.SiguientePestana, "Siguiente"),
+            (AccionLogica.Confirmar, "Seleccionar"),
+            (AccionLogica.Cancelar, "Atrás"));
+
+        if (canvas.gameObject.GetComponent<EcosAulaNavegacionPersonajes>() == null)
+        {
+            canvas.gameObject.AddComponent<EcosAulaNavegacionPersonajes>();
         }
     }
 
@@ -569,6 +592,27 @@ public static class EcosAulaUIRediseno
                 if (t.gameObject.name.StartsWith("_")) continue;
                 t.color = Blanco;
             }
+
+            EcosAulaPromptUI.CrearBarraPrompts(pausa.panelPausa.transform,
+                (AccionLogica.Navegar, "Navegar"),
+                (AccionLogica.Confirmar, "Confirmar"),
+                (AccionLogica.Cancelar, "Continuar"));
+        }
+
+        if (pausa.panelOpciones != null)
+        {
+            EcosAulaPromptUI.CrearBarraPrompts(pausa.panelOpciones.transform,
+                (AccionLogica.Navegar, "Navegar"),
+                (AccionLogica.Confirmar, "Confirmar / Cambiar"),
+                (AccionLogica.Cancelar, "Volver"));
+        }
+
+        if (pausa.panelDetalleSlot != null)
+        {
+            EcosAulaPromptUI.CrearBarraPrompts(pausa.panelDetalleSlot.transform,
+                (AccionLogica.Navegar, "Navegar"),
+                (AccionLogica.Confirmar, "Confirmar"),
+                (AccionLogica.Cancelar, "Cancelar"));
         }
     }
 
@@ -617,11 +661,18 @@ public static class EcosAulaUIRediseno
         cb.disabledColor    = new Color(normal.r, normal.g, normal.b, 0.35f);
         cb.colorMultiplier  = 1f;
         boton.colors = cb;
+
+        Navigation nav = boton.navigation;
+        nav.mode = Navigation.Mode.Automatic;
+        boton.navigation = nav;
+
+        MarcarSucio(boton);
     }
 
     /// <summary>Aplica fondo a un panel existente.</summary>
     private static void AplicarFondoPanel(GameObject panel, Color color)
     {
+        if (panel == null) return;
         Image img = panel.GetComponent<Image>();
         if (img != null)
         {
@@ -632,6 +683,7 @@ public static class EcosAulaUIRediseno
             img = panel.AddComponent<Image>();
             img.color = color;
         }
+        MarcarSucio(panel);
     }
 
     /// <summary>Cambia el color de fondo de la cámara (sin crear UI overlay).</summary>
@@ -646,6 +698,7 @@ public static class EcosAulaUIRediseno
         {
             cam.backgroundColor = color;
             cam.clearFlags = CameraClearFlags.SolidColor;
+            MarcarSucio(cam);
         }
     }
 
@@ -672,6 +725,8 @@ public static class EcosAulaUIRediseno
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontStyle = FontStyles.Italic;
         tmp.raycastTarget = false;
+
+        MarcarSucio(go);
     }
 
     /// <summary>Mueve recursivamente cualquier objeto que empiece por 'Personaje' a targetX.</summary>
@@ -682,12 +737,23 @@ public static class EcosAulaUIRediseno
             Vector3 pos = t.position;
             pos.x = targetX;
             t.position = pos;
+            MarcarSucio(t);
         }
 
         for (int i = 0; i < t.childCount; i++)
         {
             MoverPersonajesRecursivo(t.GetChild(i), targetX);
         }
+    }
+
+    private static void MarcarSucio(UnityEngine.Object obj)
+    {
+#if UNITY_EDITOR
+        if (!Application.isPlaying && obj != null)
+        {
+            UnityEditor.EditorUtility.SetDirty(obj);
+        }
+#endif
     }
 }
 
@@ -726,6 +792,16 @@ public static class EcosAulaUIEditorHook
         string nombreEscena = SceneManager.GetActiveScene().name;
         if (string.IsNullOrEmpty(nombreEscena)) return;
         EcosAulaUIRediseno.AplicarDirecto(nombreEscena);
+
+        if (!Application.isPlaying)
+        {
+            var activeScene = EditorSceneManager.GetActiveScene();
+            if (activeScene.IsValid())
+            {
+                EditorSceneManager.MarkSceneDirty(activeScene);
+            }
+            SceneView.RepaintAll();
+        }
     }
 }
 #endif

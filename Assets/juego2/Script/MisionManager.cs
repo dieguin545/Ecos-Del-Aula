@@ -25,7 +25,7 @@ public class MisionManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.M))
+        if (Input.GetKeyDown(KeyCode.M) || Input.GetKeyDown(KeyCode.JoystickButton6))
         {
             if (panelMisiones.activeSelf)
                 panelMisiones.SetActive(false);

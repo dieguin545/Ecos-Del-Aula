@@ -30,7 +30,7 @@ public class SistemaEvidencia : MonoBehaviour
 
     void Update()
     {
-        if (puedeGuardar && Input.GetKeyDown(KeyCode.E))
+        if (puedeGuardar && GestorEntradaGlobal.InteractuarPresionado(KeyCode.E))
         {
             GuardarEvidencia();
         }
@@ -49,7 +49,9 @@ public class SistemaEvidencia : MonoBehaviour
     private void MostrarIndicador()
     {
         panelEvidencia.SetActive(true);
-        textoEvidencia.text = $"Presiona E para guardar evidencia\nEvidencias: {evidenciasRecolectadas}/{evidenciasNecesarias}";
+        string verbo = $"Guardar evidencia\nEvidencias: {evidenciasRecolectadas}/{evidenciasNecesarias}";
+        EcosAulaPromptUI.InyectarEn(textoEvidencia.gameObject, AccionLogica.Interactuar, verbo);
+        CancelInvoke("OcultarIndicador");
         Invoke("OcultarIndicador", 3f);
     }
 
