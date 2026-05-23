@@ -51,7 +51,7 @@ public class GameManager : MonoBehaviour
         ConfiguracionDificultad.CrearPredeterminada(DificultadSpaceShooter.Medio);
     private LeaderboardSpaceShooter leaderboard;
     private string aliasJugador = "Jugador";
-    private string nombreNaveSeleccionada = "Nave base";
+    private string nombreNaveSeleccionada = "Escudo digital";
     private bool resultadoRegistrado;
     private Image panelHudVisual;
     private Image barraTurboFondo;
@@ -127,7 +127,7 @@ public class GameManager : MonoBehaviour
         nombreNaveSeleccionada =
             naveSeleccionada != null && !string.IsNullOrWhiteSpace(naveSeleccionada.nombre)
                 ? naveSeleccionada.nombre
-                : "Nave base";
+                : "Escudo digital";
 
         objetivoEnemigos = dificultadActual.objetivoEnemigos;
         vidas = vidasMaximas;
@@ -150,7 +150,7 @@ public class GameManager : MonoBehaviour
 
         if (textoEstado != null)
         {
-            textoEstado.text = "Defiendete de los ataques digitales";
+            textoEstado.text = "Protege la convivencia digital";
         }
 
         if (spawnManager != null)
@@ -164,6 +164,7 @@ public class GameManager : MonoBehaviour
                 dificultadActual.cargasDash,
                 dificultadActual.recargaDashSegundos
             );
+            FirewallDelAulaVisuales.AplicarANave(naveController.gameObject);
         }
 
         ActualizarUI();
@@ -388,7 +389,7 @@ public class GameManager : MonoBehaviour
         if (textoObjetivo != null)
         {
             textoObjetivo.text =
-                "Amenazas neutralizadas: "
+                "Neutralizados: "
                 + datosPartida.EnemigosDestruidos
                 + "/"
                 + objetivoEnemigos;
@@ -399,12 +400,23 @@ public class GameManager : MonoBehaviour
     {
         if (spriteVida == null)
         {
-            spriteVida = RecursosVisualesSpaceShooter.CargarSpriteEditor("integridad_icon.png");
+            spriteVida = FirewallDelAulaVisuales.CargarSprite(
+                "Icons/ffffff/transparent/1x1/lorc/riot-shield"
+            );
         }
 
         if (spriteDash == null)
         {
-            spriteDash = RecursosVisualesSpaceShooter.CargarSpriteEditor("dash_icon.png");
+            spriteDash = FirewallDelAulaVisuales.CargarSprite(
+                "Icons/ffffff/transparent/1x1/delapouite/rule-book"
+            );
+        }
+
+        if (spriteTurbo == null)
+        {
+            spriteTurbo = FirewallDelAulaVisuales.CargarSprite(
+                "UI/PNG/Blue/Default/bar_round_gloss_large"
+            );
         }
     }
 
@@ -416,11 +428,10 @@ public class GameManager : MonoBehaviour
         }
 
         textoDash.text =
-            "DASH "
+            "PROTOCOLO "
             + cargasActuales
             + "/"
-            + cargasMaximas
-            + (cargasActuales < cargasMaximas ? "  recarga " + recargaRestante.ToString("0.0") + "s" : "");
+            + cargasMaximas;
 
         AsegurarIconosDash(cargasMaximas);
 
@@ -467,7 +478,7 @@ public class GameManager : MonoBehaviour
 
         if (textoEstado != null)
         {
-            textoEstado.text = "Vuelve a intentarlo";
+            textoEstado.text = "La convivencia digital fue saturada";
         }
 
         Cursor.lockState = CursorLockMode.None;
@@ -498,7 +509,7 @@ public class GameManager : MonoBehaviour
 
         if (textoEstado != null)
         {
-            textoEstado.text = "Rompe el ciclo";
+            textoEstado.text = "Mensajes dañinos neutralizados";
         }
 
         Cursor.lockState = CursorLockMode.None;
@@ -534,8 +545,8 @@ public class GameManager : MonoBehaviour
             textoObjetivo = CrearTextoHud(
                 canvas.transform,
                 "TextoObjetivo",
-                new Vector2(24f, -24f),
-                28f
+                new Vector2(24f, -22f),
+                24f
             );
         }
 
@@ -544,10 +555,10 @@ public class GameManager : MonoBehaviour
             textoEstado = CrearTextoHud(
                 canvas.transform,
                 "TextoEstado",
-                new Vector2(24f, -58f),
-                20f
+                new Vector2(24f, -52f),
+                16f
             );
-            textoEstado.text = "Defiendete de los ataques digitales";
+            textoEstado.text = "Protege la convivencia digital";
         }
 
         if (textoVidas == null)
@@ -555,10 +566,10 @@ public class GameManager : MonoBehaviour
             textoVidas = CrearTextoHud(
                 canvas.transform,
                 "TextoVidas",
-                new Vector2(24f, -98f),
-                20f
+                new Vector2(24f, -86f),
+                18f
             );
-            textoVidas.text = "INTEGRIDAD";
+            textoVidas.text = "BIENESTAR";
         }
 
         if (textoDash == null)
@@ -566,10 +577,10 @@ public class GameManager : MonoBehaviour
             textoDash = CrearTextoHud(
                 canvas.transform,
                 "TextoDash",
-                new Vector2(24f, -136f),
-                20f
+                new Vector2(24f, -124f),
+                18f
             );
-            textoDash.text = "DASH 0/0";
+            textoDash.text = "PROTOCOLO 0/0";
         }
 
         if (textoTurbo == null)
@@ -577,8 +588,8 @@ public class GameManager : MonoBehaviour
             textoTurbo = CrearTextoHud(
                 canvas.transform,
                 "TextoTurbo",
-                new Vector2(252f, -136f),
-                20f
+                new Vector2(330f, -86f),
+                18f
             );
             textoTurbo.text = "TURBO 100%";
         }
@@ -588,10 +599,22 @@ public class GameManager : MonoBehaviour
             textoAlerta = CrearTextoHud(
                 canvas.transform,
                 "TextoAlerta",
-                new Vector2(24f, -198f),
-                20f
+                new Vector2(24f, -168f),
+                18f
             );
             textoAlerta.text = string.Empty;
+        }
+
+        ConfigurarTextoHud(textoObjetivo, new Vector2(24f, -20f), 22f, new Vector2(590f, 30f));
+        ConfigurarTextoHud(textoEstado, new Vector2(24f, -48f), 15f, new Vector2(560f, 26f));
+        ConfigurarTextoHud(textoVidas, new Vector2(24f, -82f), 17f, new Vector2(210f, 28f));
+        ConfigurarTextoHud(textoDash, new Vector2(24f, -122f), 17f, new Vector2(170f, 28f));
+        ConfigurarTextoHud(textoTurbo, new Vector2(410f, -82f), 17f, new Vector2(190f, 28f));
+        ConfigurarTextoHud(textoAlerta, new Vector2(24f, -168f), 18f, new Vector2(590f, 30f));
+
+        if (textoVidas != null)
+        {
+            textoVidas.text = "BIENESTAR DIGITAL";
         }
 
         PrepararBarraTurboSiHaceFalta(canvas.transform);
@@ -626,7 +649,7 @@ public class GameManager : MonoBehaviour
         rect.anchorMax = new Vector2(0f, 1f);
         rect.pivot = new Vector2(0f, 1f);
         rect.anchoredPosition = posicion;
-        rect.sizeDelta = new Vector2(700f, 40f);
+        rect.sizeDelta = new Vector2(520f, 34f);
 
         TextMeshProUGUI texto = objetoTexto.GetComponent<TextMeshProUGUI>();
         texto.fontSize = tamanoFuente;
@@ -635,6 +658,32 @@ public class GameManager : MonoBehaviour
         texto.raycastTarget = false;
 
         return texto;
+    }
+
+    private void ConfigurarTextoHud(
+        TextMeshProUGUI texto,
+        Vector2 posicion,
+        float tamanoFuente,
+        Vector2 tamanoRect
+    )
+    {
+        if (texto == null)
+        {
+            return;
+        }
+
+        RectTransform rect = texto.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = posicion;
+        rect.sizeDelta = tamanoRect;
+
+        texto.fontSize = tamanoFuente;
+        texto.alignment = TextAlignmentOptions.TopLeft;
+        texto.textWrappingMode = TextWrappingModes.NoWrap;
+        texto.overflowMode = TextOverflowModes.Overflow;
+        texto.raycastTarget = false;
     }
 
     private GameObject CrearPanelVictoria(Transform padre)
@@ -648,8 +697,8 @@ public class GameManager : MonoBehaviour
         MenuSpaceShooter.CrearTexto(
             panel.transform,
             "TextoVictoria",
-            "ROMPE EL CICLO",
-            52f,
+            "MENSAJES DAÑINOS NEUTRALIZADOS",
+            44f,
             new Vector2(0f, 130f),
             new Vector2(900f, 100f),
             TextAlignmentOptions.Center
@@ -657,7 +706,7 @@ public class GameManager : MonoBehaviour
         MenuSpaceShooter.CrearTexto(
             panel.transform,
             "TextoVictoriaSub",
-            "Objetivo cumplido",
+            "La convivencia digital quedó protegida",
             28f,
             new Vector2(0f, 60f),
             new Vector2(700f, 50f),
@@ -733,7 +782,7 @@ public class GameManager : MonoBehaviour
         rect.anchorMax = new Vector2(0f, 1f);
         rect.pivot = new Vector2(0f, 1f);
         rect.anchoredPosition = new Vector2(14f, -14f);
-        rect.sizeDelta = new Vector2(470f, 230f);
+        rect.sizeDelta = new Vector2(650f, 190f);
 
         panelHudVisual = panel.GetComponent<Image>();
         panelHudVisual.color = new Color(0.01f, 0.04f, 0.09f, 0.78f);
@@ -789,7 +838,7 @@ public class GameManager : MonoBehaviour
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
             rect.sizeDelta = new Vector2(22f, 22f);
-            rect.anchoredPosition = new Vector2(132f + i * 30f, -98f);
+            rect.anchoredPosition = new Vector2(218f + i * 30f, -82f);
         }
     }
 
@@ -820,7 +869,7 @@ public class GameManager : MonoBehaviour
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(108f + indice * 28f, -136f);
+            rect.anchoredPosition = new Vector2(186f + indice * 30f, -122f);
             rect.sizeDelta = new Vector2(22f, 22f);
 
             Image imagen = objeto.GetComponent<Image>();
@@ -865,12 +914,13 @@ public class GameManager : MonoBehaviour
         rectFondo.anchorMin = new Vector2(0f, 1f);
         rectFondo.anchorMax = new Vector2(0f, 1f);
         rectFondo.pivot = new Vector2(0f, 1f);
-        rectFondo.anchoredPosition = new Vector2(252f, -168f);
-        rectFondo.sizeDelta = new Vector2(184f, 14f);
+        rectFondo.anchoredPosition = new Vector2(410f, -116f);
+        rectFondo.sizeDelta = new Vector2(190f, 20f);
 
         barraTurboFondo = fondo.GetComponent<Image>();
         barraTurboFondo.sprite = spriteTurbo;
         barraTurboFondo.color = new Color(1f, 1f, 1f, 0.16f);
+        barraTurboFondo.preserveAspect = false;
         barraTurboFondo.raycastTarget = false;
 
         GameObject relleno = new GameObject(
@@ -888,6 +938,9 @@ public class GameManager : MonoBehaviour
         rectRelleno.offsetMax = Vector2.zero;
 
         barraTurboRelleno = relleno.GetComponent<Image>();
+        barraTurboRelleno.sprite = FirewallDelAulaVisuales.CargarSprite(
+            "UI/PNG/Green/Default/bar_round_gloss_large"
+        );
         barraTurboRelleno.color = new Color(0.25f, 0.9f, 1f, 0.95f);
         barraTurboRelleno.type = Image.Type.Filled;
         barraTurboRelleno.fillMethod = Image.FillMethod.Horizontal;
@@ -919,7 +972,7 @@ public class GameManager : MonoBehaviour
 
         if (titulo != null)
         {
-            titulo.text = "Sistema comprometido";
+            titulo.text = "La convivencia digital fue saturada";
             titulo.fontSize = 48f;
             RectTransform rectTitulo = titulo.rectTransform;
             rectTitulo.anchoredPosition = new Vector2(0f, 180f);
@@ -933,7 +986,7 @@ public class GameManager : MonoBehaviour
             MenuSpaceShooter.CrearTexto(
                 panelGameOver.transform,
                 "TextoGameOverSubtitulo",
-                "Las amenazas digitales superaron tu defensa.",
+                "Refuerza el firewall y vuelve a proteger el aula.",
                 24f,
                 new Vector2(0f, 124f),
                 new Vector2(760f, 42f),
@@ -969,7 +1022,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                ConfigurarBotonFinal(botones[i], "Salir a la PC", new Vector2(180f, -138f));
+                ConfigurarBotonFinal(botones[i], "Volver a la PC", new Vector2(180f, -138f));
             }
         }
 
@@ -1097,16 +1150,16 @@ public class GameManager : MonoBehaviour
         }
 
         destino.text =
-            "Amenazas neutralizadas: "
+            "Mensajes neutralizados: "
             + ultimoResultado.EnemigosDestruidos
             + "\nDificultad: "
             + ultimoResultado.Dificultad
             + "  |  Tiempo: "
             + ultimoResultado.TiempoSobrevivido.ToString("0.0")
             + " s"
-            + "\nNave: "
+            + "\nFirewall: "
             + ultimoResultado.NaveUsada
-            + "  |  Puntaje: "
+            + "  |  Convivencia protegida: "
             + ultimoResultado.Puntaje
             + "\nMejor registro: "
             + mejorPuntaje;
@@ -1203,11 +1256,12 @@ public class GameManager : MonoBehaviour
         Color colorTexto =
             AccesibilidadSpaceShooter.AltoContrasteActivo ? Color.white : new Color(0.9f, 0.98f, 1f);
 
-        AplicarTextoHud(textoObjetivo, 28f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoEstado, 22f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoDash, 22f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoTurbo, 22f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoAlerta, 20f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoObjetivo, 22f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoEstado, 15f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoVidas, 17f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoDash, 17f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoTurbo, 17f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoAlerta, 18f * escalaTexto, colorTexto);
 
         if (panelHudVisual != null)
         {

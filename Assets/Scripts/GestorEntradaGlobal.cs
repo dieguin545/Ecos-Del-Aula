@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,6 +14,7 @@ public class GestorEntradaGlobal : MonoBehaviour
     private static TipoDispositivoEntrada dispositivoActual = TipoDispositivoEntrada.TecladoMouse;
     private static float mouseXAnterior;
     private static float mouseYAnterior;
+    private static readonly HashSet<string> ejesNoDisponibles = new HashSet<string>();
 
     public static event Action<TipoDispositivoEntrada> AlCambiarDispositivo;
 
@@ -95,6 +97,16 @@ public class GestorEntradaGlobal : MonoBehaviour
     public static bool DashDerechaPresionado()
     {
         return Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.JoystickButton1);
+    }
+
+    public static float ObtenerCamaraHorizontal()
+    {
+        return LeerEjeSeguro("CameraHorizontal");
+    }
+
+    public static float ObtenerCamaraVertical()
+    {
+        return LeerEjeSeguro("CameraVertical");
     }
 
     public static string ObtenerPromptInteractuarPC()
@@ -215,6 +227,24 @@ public class GestorEntradaGlobal : MonoBehaviour
         }
 
         return false;
+    }
+
+    private static float LeerEjeSeguro(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre) || ejesNoDisponibles.Contains(nombre))
+        {
+            return 0f;
+        }
+
+        try
+        {
+            return Input.GetAxisRaw(nombre);
+        }
+        catch (ArgumentException)
+        {
+            ejesNoDisponibles.Add(nombre);
+            return 0f;
+        }
     }
 
     private void AlCargarEscena(Scene escena, LoadSceneMode modo)

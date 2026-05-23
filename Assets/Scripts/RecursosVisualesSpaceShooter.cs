@@ -4,24 +4,46 @@ public static class RecursosVisualesSpaceShooter
 {
     public static Sprite CargarSpriteEditor(string nombreArchivo)
     {
-#if UNITY_EDITOR
         if (string.IsNullOrWhiteSpace(nombreArchivo))
         {
             return null;
         }
 
-        string rutaTexturas = "Assets/Texturas/SpaceShooter/" + nombreArchivo;
-        Sprite sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(rutaTexturas);
+        string nombreSinExtension = nombreArchivo;
+        if (nombreSinExtension.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase))
+        {
+            nombreSinExtension = nombreSinExtension.Substring(0, nombreSinExtension.Length - 4);
+        }
 
+        // Cargar desde Resources (compatible con Build)
+        Sprite sprite = Resources.Load<Sprite>("SpaceShooter/" + nombreSinExtension);
         if (sprite != null)
         {
             return sprite;
         }
 
-        string rutaTextures = "Assets/Textures/SpaceShooter/" + nombreArchivo;
-        return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(rutaTextures);
-#else
-        return null;
+        Sprite[] sprites = Resources.LoadAll<Sprite>("SpaceShooter/" + nombreSinExtension);
+        if (sprites != null && sprites.Length > 0)
+        {
+            return sprites[0];
+        }
+
+#if UNITY_EDITOR
+        // Fallback para Editor
+        string rutaResources = "Assets/Resources/SpaceShooter/" + nombreArchivo;
+        sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(rutaResources);
+        if (sprite != null)
+        {
+            return sprite;
+        }
+
+        string rutaTexturas = "Assets/Texturas/SpaceShooter/" + nombreArchivo;
+        sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(rutaTexturas);
+        if (sprite != null)
+        {
+            return sprite;
+        }
 #endif
+        return null;
     }
 }

@@ -40,6 +40,7 @@ public class PowerUpSpaceShooter : MonoBehaviour
             Random.Range(-1f, 1f)
         ).normalized;
 
+        FirewallDelAulaVisuales.AplicarPowerUp(gameObject, tipo);
         Destroy(gameObject, tiempoVida);
     }
 
@@ -63,6 +64,7 @@ public class PowerUpSpaceShooter : MonoBehaviour
     {
         tipo = nuevoTipo;
         gameObject.name = "PowerUp_" + nuevoTipo;
+        FirewallDelAulaVisuales.AplicarPowerUp(gameObject, tipo);
     }
 
     public bool IntentarRecoger(NaveController nave)

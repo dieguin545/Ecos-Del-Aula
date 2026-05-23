@@ -146,7 +146,15 @@ public class NaveController : MonoBehaviour
         {
             entradaVertical = 1f;
         }
+        else if (Input.GetKey(KeyCode.JoystickButton3))
+        {
+            entradaVertical = 1f;
+        }
         else if (Input.GetKey(teclaBajar))
+        {
+            entradaVertical = -1f;
+        }
+        else if (Input.GetKey(KeyCode.JoystickButton2))
         {
             entradaVertical = -1f;
         }

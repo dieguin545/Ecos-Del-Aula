@@ -7,6 +7,7 @@ public class ControlCamara3D : MonoBehaviour
 
     [Header("Mouse")]
     public float sensibilidadMouse = 2f;
+    public float sensibilidadControl = 115f;
     public float limiteArriba = -25f;
     public float limiteAbajo = 60f;
 
@@ -30,6 +31,7 @@ public class ControlCamara3D : MonoBehaviour
         {
             rotacionY = transform.eulerAngles.y;
             renderersJugador = jugador.GetComponentsInChildren<Renderer>();
+            AplicarVisibilidadJugador();
         }
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -42,22 +44,17 @@ public class ControlCamara3D : MonoBehaviour
 
         float mouseX = Input.GetAxis("Mouse X") * sensibilidadMouse;
         float mouseY = Input.GetAxis("Mouse Y") * sensibilidadMouse;
+        float stickX = GestorEntradaGlobal.ObtenerCamaraHorizontal() * sensibilidadControl * Time.unscaledDeltaTime;
+        float stickY = GestorEntradaGlobal.ObtenerCamaraVertical() * sensibilidadControl * Time.unscaledDeltaTime;
 
-        rotacionY += mouseX;
-        rotacionX -= mouseY;
+        rotacionY += mouseX + stickX;
+        rotacionX -= mouseY + stickY;
         rotacionX = Mathf.Clamp(rotacionX, limiteArriba, limiteAbajo);
 
         if (Input.GetKeyDown(teclaCambiarVista))
         {
             primeraPersona = !primeraPersona;
-
-            if (renderersJugador != null)
-            {
-                foreach (Renderer r in renderersJugador)
-                {
-                    r.enabled = !primeraPersona;
-                }
-            }
+            AplicarVisibilidadJugador();
         }
 
         
@@ -102,4 +99,31 @@ public class ControlCamara3D : MonoBehaviour
             transform.LookAt(puntoMirada);
         }
     }
-}   
+
+    void AplicarVisibilidadJugador()
+    {
+        if (jugador == null)
+        {
+            return;
+        }
+
+        renderersJugador = jugador.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer r in renderersJugador)
+        {
+            if (r == null)
+            {
+                continue;
+            }
+
+            // El MeshRenderer del objeto Jugador es la cápsula física antigua:
+            // siempre queda oculta; solo los hijos visuales 2.5D se alternan.
+            if (r.transform == jugador)
+            {
+                r.enabled = false;
+                continue;
+            }
+
+            r.enabled = !primeraPersona;
+        }
+    }
+}

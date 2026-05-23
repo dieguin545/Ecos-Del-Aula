@@ -128,6 +128,7 @@ public class SelectorNave : MonoBehaviour
         instanciaVisualActual.transform.localRotation = Quaternion.Euler(seleccionActual.rotacionLocal);
         instanciaVisualActual.transform.localScale = seleccionActual.escalaLocal;
 
+        FirewallDelAulaVisuales.AplicarANave(gameObject);
         AlCambiarSeleccion?.Invoke(seleccionActual);
     }
 

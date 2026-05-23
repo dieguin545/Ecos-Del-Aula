@@ -232,19 +232,30 @@ public class EcosAulaNavegacionUI : MonoBehaviour
 
     private bool EsSelectableValido(Selectable selectable)
     {
-        if (selectable == null)
+        try
+        {
+            if (selectable == null)
+            {
+                return false;
+            }
+
+            GameObject go = selectable.gameObject;
+
+            if (go == null || !go.activeInHierarchy || !selectable.isActiveAndEnabled || !selectable.interactable)
+            {
+                return false;
+            }
+
+            return selectable.transform != null;
+        }
+        catch (MissingReferenceException)
         {
             return false;
         }
-
-        GameObject go = selectable.gameObject;
-
-        if (go == null || !go.activeInHierarchy || !selectable.isActiveAndEnabled || !selectable.interactable)
+        catch (System.NullReferenceException)
         {
             return false;
         }
-
-        return selectable.transform != null;
     }
 
     private int ObtenerPrioridadSelectable(Selectable selectable)

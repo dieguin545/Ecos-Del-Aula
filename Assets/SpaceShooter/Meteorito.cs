@@ -509,6 +509,7 @@ public class Meteorito : MonoBehaviour
             gameObject,
             AccesibilidadSpaceShooter.TipoDaltonismoActual
         );
+        FirewallDelAulaVisuales.AplicarAmenaza(gameObject, tipo);
     }
 
     private void PrepararTablaDropsSiHaceFalta()

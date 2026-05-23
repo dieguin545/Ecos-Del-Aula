@@ -19,6 +19,7 @@ public static class EstiloVisualSpaceShooter
     public static void AplicarANave(GameObject objeto)
     {
         AplicarMaterial(objeto, ObtenerMaterialNave());
+        FirewallDelAulaVisuales.AplicarANave(objeto);
     }
 
     public static void AplicarAEnemigo(GameObject objeto, TipoDaltonismo tipoDaltonismo)
@@ -32,6 +33,7 @@ public static class EstiloVisualSpaceShooter
     public static void AplicarABala(GameObject objeto)
     {
         AplicarMaterial(objeto, ObtenerMaterialBala());
+        FirewallDelAulaVisuales.AplicarProyectilReporte(objeto);
     }
 
     public static void AplicarAProyectilEnemigo(GameObject objeto, TipoDaltonismo tipoDaltonismo)
@@ -40,6 +42,7 @@ public static class EstiloVisualSpaceShooter
             objeto,
             ObtenerMaterialAtaqueEnemigoPorDaltonismo(tipoDaltonismo)
         );
+        FirewallDelAulaVisuales.AplicarProyectilAmenaza(objeto);
     }
 
     public static Material CrearMaterialEstrella(Color color)

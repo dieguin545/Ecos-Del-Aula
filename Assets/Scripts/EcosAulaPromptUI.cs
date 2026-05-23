@@ -89,7 +89,7 @@ public class EcosAulaPromptUI : MonoBehaviour
         rtMain.anchorMax = new Vector2(0f, 0.5f);
         rtMain.pivot = new Vector2(0f, 0.5f);
         rtMain.anchoredPosition = new Vector2(0f, 0f);
-        rtMain.sizeDelta = new Vector2(32f, 32f);
+        rtMain.sizeDelta = new Vector2(40f, 40f);
 
         // 2. Imagen Overlay (para glifos de letras en el teclado, ej. 'E')
         Transform imgOverlayTr = imgPrincipalTr.Find("_IconoOverlay");
@@ -109,7 +109,7 @@ public class EcosAulaPromptUI : MonoBehaviour
         rtOverlay.anchorMax = new Vector2(0.5f, 0.5f);
         rtOverlay.pivot = new Vector2(0.5f, 0.5f);
         rtOverlay.anchoredPosition = new Vector2(0f, 1f); // Un pixel arriba para centrado visual en el keycap
-        rtOverlay.sizeDelta = new Vector2(18f, 18f);
+        rtOverlay.sizeDelta = new Vector2(23f, 23f);
 
         Transform txtFallbackTr = imgPrincipalTr.Find("_TextoFallbackIcono");
         if (txtFallbackTr == null)
@@ -119,7 +119,7 @@ public class EcosAulaPromptUI : MonoBehaviour
             txtFallbackTr = go.transform;
         }
         textoFallbackIcono = txtFallbackTr.GetComponent<TextMeshProUGUI>();
-        textoFallbackIcono.fontSize = 13f;
+        textoFallbackIcono.fontSize = 15f;
         textoFallbackIcono.color = Color.white;
         textoFallbackIcono.alignment = TextAlignmentOptions.Center;
         textoFallbackIcono.fontStyle = FontStyles.Bold;
@@ -140,7 +140,7 @@ public class EcosAulaPromptUI : MonoBehaviour
             txtTr = go.transform;
         }
         componenteTexto = txtTr.GetComponent<TextMeshProUGUI>();
-        componenteTexto.fontSize = 16f;
+        componenteTexto.fontSize = 18f;
         componenteTexto.color = Color.white;
         componenteTexto.alignment = TextAlignmentOptions.MidlineLeft;
         componenteTexto.fontStyle = FontStyles.Bold;
@@ -151,8 +151,8 @@ public class EcosAulaPromptUI : MonoBehaviour
         rtText.anchorMin = new Vector2(0f, 0f);
         rtText.anchorMax = new Vector2(0f, 1f);
         rtText.pivot = new Vector2(0f, 0.5f);
-        rtText.anchoredPosition = new Vector2(38f, 0f);
-        rtText.sizeDelta = new Vector2(134f, 0f);
+        rtText.anchoredPosition = new Vector2(48f, 0f);
+        rtText.sizeDelta = new Vector2(158f, 0f);
     }
 
     private void ActualizarVisual(TipoDispositivoEntrada dispositivo)
@@ -394,7 +394,14 @@ public class EcosAulaPromptUI : MonoBehaviour
             Transform hijo = parent.GetChild(i);
             if (hijo != null && hijo.name == "_BarraPrompts")
             {
-                Destroy(hijo.gameObject);
+                if (Application.isPlaying)
+                {
+                    Destroy(hijo.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(hijo.gameObject);
+                }
             }
         }
 
@@ -406,7 +413,7 @@ public class EcosAulaPromptUI : MonoBehaviour
         rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0f, 0f);
         rt.anchoredPosition = new Vector2(24f, 14f);
-        rt.sizeDelta = new Vector2(0f, 42f);
+        rt.sizeDelta = new Vector2(0f, 54f);
 
         Image fondo = barra.GetComponent<Image>();
         fondo.color = new Color(0.025f, 0.018f, 0.05f, 0.72f);
@@ -419,8 +426,8 @@ public class EcosAulaPromptUI : MonoBehaviour
         layout.childControlHeight = false;
         layout.childForceExpandWidth = false;
         layout.childForceExpandHeight = false;
-        layout.spacing = 14f;
-        layout.padding = new RectOffset(14, 14, 4, 4);
+        layout.spacing = 18f;
+        layout.padding = new RectOffset(16, 16, 6, 6);
 
         ContentSizeFitter fitter = barra.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -432,7 +439,7 @@ public class EcosAulaPromptUI : MonoBehaviour
             promptGo.transform.SetParent(barra.transform, false);
 
             RectTransform rtItem = promptGo.GetComponent<RectTransform>();
-            rtItem.sizeDelta = new Vector2(172f, 34f);
+            rtItem.sizeDelta = new Vector2(214f, 42f);
 
             EcosAulaPromptUI promptComp = promptGo.AddComponent<EcosAulaPromptUI>();
             promptComp.Configurar(p.accion, p.verbo);

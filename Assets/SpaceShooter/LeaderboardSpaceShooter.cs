@@ -75,7 +75,7 @@ public class LeaderboardSpaceShooter
             enemigosDestruidos = resultado.EnemigosDestruidos,
             tiempoSobrevivido = resultado.TiempoSobrevivido,
             dificultad = resultado.Dificultad.ToString(),
-            nave = string.IsNullOrWhiteSpace(resultado.NaveUsada) ? "Nave base" : resultado.NaveUsada,
+            nave = string.IsNullOrWhiteSpace(resultado.NaveUsada) ? "Escudo digital" : resultado.NaveUsada,
             fechaIso = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
             victoria = resultado.Victoria
         };
