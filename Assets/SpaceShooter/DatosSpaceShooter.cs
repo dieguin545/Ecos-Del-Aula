@@ -72,7 +72,7 @@ public class ConfiguracionDificultad
                 return new ConfiguracionDificultad
                 {
                     dificultad = DificultadSpaceShooter.Facil,
-                    nombreVisible = "Facil",
+                    nombreVisible = "Fácil",
                     objetivoEnemigos = 20,
                     maxEnemigosIniciales = 5,
                     maxEnemigosAbsoluto = 7,
@@ -89,7 +89,7 @@ public class ConfiguracionDificultad
                 return new ConfiguracionDificultad
                 {
                     dificultad = DificultadSpaceShooter.Dificil,
-                    nombreVisible = "Dificil",
+                    nombreVisible = "Difícil",
                     objetivoEnemigos = 30,
                     maxEnemigosIniciales = 10,
                     maxEnemigosAbsoluto = 15,

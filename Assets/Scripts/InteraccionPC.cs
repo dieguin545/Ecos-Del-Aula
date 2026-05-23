@@ -246,6 +246,35 @@ public class InteraccionPC : MonoBehaviour
         AplicarIconoEscritorio("IconoSpaceShooter", iconoSpaceShooter);
         AplicarIconoEscritorio("Casos", iconoCasos);
         AplicarIconoEscritorio("IconoCasos", iconoCasos);
+        RenombrarSpaceShooterEnEscritorio();
+    }
+
+    private void RenombrarSpaceShooterEnEscritorio()
+    {
+        if (canvasPC == null)
+        {
+            return;
+        }
+
+        TextMeshProUGUI[] textosTmp = canvasPC.GetComponentsInChildren<TextMeshProUGUI>(true);
+
+        for (int i = 0; i < textosTmp.Length; i++)
+        {
+            if (textosTmp[i] != null && textosTmp[i].text.Trim() == "Space Shooter")
+            {
+                textosTmp[i].text = "Firewall del Aula";
+            }
+        }
+
+        Text[] textosLegacy = canvasPC.GetComponentsInChildren<Text>(true);
+
+        for (int i = 0; i < textosLegacy.Length; i++)
+        {
+            if (textosLegacy[i] != null && textosLegacy[i].text.Trim() == "Space Shooter")
+            {
+                textosLegacy[i].text = "Firewall del Aula";
+            }
+        }
     }
 
     private void AplicarIconoEscritorio(string nombreObjeto, Sprite sprite)

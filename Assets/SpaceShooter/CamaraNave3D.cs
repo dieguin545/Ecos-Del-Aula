@@ -12,6 +12,7 @@ public class CamaraNave3D : MonoBehaviour
 
     [Header("Mouse")]
     public float sensibilidadMouse = 3f;
+    public float sensibilidadControl = 125f;
     public float limiteArriba = -35f;
     public float limiteAbajo = 60f;
 
@@ -43,8 +44,13 @@ public class CamaraNave3D : MonoBehaviour
 
         BloquearCursor();
 
-        rotacionY += Input.GetAxis("Mouse X") * sensibilidadMouse;
-        rotacionX -= Input.GetAxis("Mouse Y") * sensibilidadMouse;
+        float mouseX = Input.GetAxis("Mouse X") * sensibilidadMouse;
+        float mouseY = Input.GetAxis("Mouse Y") * sensibilidadMouse;
+        float stickX = GestorEntradaGlobal.ObtenerCamaraHorizontal() * sensibilidadControl * Time.unscaledDeltaTime;
+        float stickY = GestorEntradaGlobal.ObtenerCamaraVertical() * sensibilidadControl * Time.unscaledDeltaTime;
+
+        rotacionY += mouseX + stickX;
+        rotacionX -= mouseY + stickY;
         rotacionX = Mathf.Clamp(rotacionX, limiteArriba, limiteAbajo);
 
         Quaternion rotacionCamara = Quaternion.Euler(rotacionX, rotacionY, 0f);

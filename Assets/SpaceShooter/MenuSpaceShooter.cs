@@ -9,10 +9,10 @@ public class MenuSpaceShooter : MonoBehaviour
 {
     private readonly string[] tutorialPaginas =
     {
-        "OBJETIVO\nNeutraliza amenazas digitales y llena la barra de progreso para romper el ciclo.",
-        "CONTROLES\nWASD: mover | Espacio/Ctrl: subir y bajar | Mouse: apuntar | Click: disparar.",
-        "ESQUIVE\nQ y E consumen cargas de dash. Usalas para evitar proyectiles y ataques peligrosos.",
-        "SUPERVIVENCIA\nEsc pausa. Pierdes si se agotan las vidas. Ganas al completar el objetivo."
+        "OBJETIVO\nProtege la convivencia digital. Intercepta rumores, burlas y mensajes dañinos antes de que afecten el aula.",
+        "REGLA EDUCATIVA\nNo se ataca a personas: se detienen conductas dañinas con reportes y evidencia.",
+        "CONTROLES\nWASD: mover | Espacio/Ctrl: subir y bajar | Mouse: apuntar | Click: enviar reporte.",
+        "DEFENSA\nQ y E consumen cargas de protocolo. Úsalas para esquivar alertas peligrosas."
     };
 
     private GameManager gameManager;
@@ -39,6 +39,16 @@ public class MenuSpaceShooter : MonoBehaviour
     private int paginaTutorialActual;
 
     public bool MenuVisible => panelMenu != null && panelMenu.activeSelf;
+
+    private void OnEnable()
+    {
+        GestorEntradaGlobal.AlCambiarDispositivo += AlCambiarDispositivo;
+    }
+
+    private void OnDisable()
+    {
+        GestorEntradaGlobal.AlCambiarDispositivo -= AlCambiarDispositivo;
+    }
 
     public void Inicializar(
         GameManager gameManager,
@@ -325,7 +335,10 @@ public class MenuSpaceShooter : MonoBehaviour
         rect.sizeDelta = tamano;
 
         Image imagen = objeto.GetComponent<Image>();
-        imagen.color = new Color(0.08f, 0.28f, 0.42f, 0.95f);
+        imagen.sprite = FirewallDelAulaVisuales.CargarSprite(
+            "UI/PNG/Blue/Default/button_square_header_large_rectangle"
+        );
+        imagen.color = new Color(0.35f, 0.9f, 1f, imagen.sprite != null ? 0.95f : 1f);
 
         Button boton = objeto.GetComponent<Button>();
         boton.onClick.AddListener(accion);
@@ -359,7 +372,7 @@ public class MenuSpaceShooter : MonoBehaviour
         CrearTexto(
             panelMenu.transform,
             "TituloMenu",
-            "ECOS DEL AULA // SPACE SHOOTER",
+            "FIREWALL DEL AULA",
             42f,
             new Vector2(0f, 300f),
             new Vector2(1100f, 70f),
@@ -368,7 +381,7 @@ public class MenuSpaceShooter : MonoBehaviour
         CrearTexto(
             panelMenu.transform,
             "SubtituloMenu",
-            "Rompe el ciclo de los ataques digitales",
+            "Protege la convivencia digital. Intercepta rumores, burlas y mensajes dañinos.",
             24f,
             new Vector2(0f, 250f),
             new Vector2(800f, 40f),
@@ -403,7 +416,7 @@ public class MenuSpaceShooter : MonoBehaviour
         CrearBoton(panelMenu.transform, "BotonNaveAnterior", "<", new Vector2(-180f, -40f), SeleccionarNaveAnterior);
         CrearBoton(panelMenu.transform, "BotonNaveSiguiente", ">", new Vector2(180f, -40f), SeleccionarNaveSiguiente);
 
-        CrearBoton(panelMenu.transform, "BotonEmpezar", "Empezar", new Vector2(0f, -130f), Empezar);
+        CrearBoton(panelMenu.transform, "BotonEmpezar", "Iniciar defensa", new Vector2(0f, -130f), Empezar);
         CrearBoton(panelMenu.transform, "BotonTutorial", "Tutorial", new Vector2(-280f, -215f), MostrarTutorial);
         CrearBoton(panelMenu.transform, "BotonLeaderboard", "Leaderboard", new Vector2(0f, -215f), MostrarLeaderboard);
         CrearBoton(panelMenu.transform, "BotonOpciones", "Accesibilidad", new Vector2(280f, -215f), MostrarOpciones);
@@ -453,7 +466,7 @@ public class MenuSpaceShooter : MonoBehaviour
         TextMeshProUGUI placeholder = CrearTexto(
             objeto.transform,
             "Placeholder",
-            "Alias del jugador",
+            "Alias del moderador",
             22f,
             Vector2.zero,
             new Vector2(390f, 42f),
@@ -657,7 +670,7 @@ public class MenuSpaceShooter : MonoBehaviour
             + config.nombreVisible
             + " | objetivo "
             + config.objetivoEnemigos
-            + " | dash "
+            + " | protocolo "
             + config.cargasDash;
     }
 
@@ -671,13 +684,13 @@ public class MenuSpaceShooter : MonoBehaviour
         string nombreNave =
             selectorNave != null && selectorNave.SeleccionActual != null
                 ? selectorNave.SeleccionActual.nombre
-                : "Nave base";
+                : "Escudo digital";
 
         int total = selectorNave != null ? selectorNave.CantidadModelos : 0;
         textoNave.text =
             total > 0
-                ? "Nave seleccionada: " + nombreNave + " (" + total + " disponibles)"
-                : "Nave seleccionada: Nave base";
+                ? "Firewall seleccionado: " + nombreNave + " (" + total + " diseños)"
+                : "Firewall seleccionado: Escudo digital";
     }
 
     private void ActualizarTutorial()
@@ -685,12 +698,36 @@ public class MenuSpaceShooter : MonoBehaviour
         if (textoTutorial != null)
         {
             textoTutorial.text =
-                tutorialPaginas[paginaTutorialActual]
+                ObtenerPaginaTutorial(paginaTutorialActual)
                 + "\n\n"
                 + (paginaTutorialActual + 1)
                 + "/"
                 + tutorialPaginas.Length;
         }
+    }
+
+    private string ObtenerPaginaTutorial(int indice)
+    {
+        if (indice == 2)
+        {
+            return GestorEntradaGlobal.UsandoControl
+                ? "CONTROLES XBOX\nStick izquierdo: mover | Stick derecho: apuntar | A: enviar reporte | Y/X: subir/bajar | RB: turbo."
+                : "CONTROLES TECLADO\nWASD: mover | Mouse: apuntar | Click: enviar reporte | Shift: turbo.";
+        }
+
+        if (indice == 3)
+        {
+            return GestorEntradaGlobal.UsandoControl
+                ? "PROTOCOLO\nLB y B consumen cargas de protocolo. Usalas para esquivar alertas peligrosas."
+                : "PROTOCOLO\nQ y E consumen cargas de protocolo. Usalas para esquivar alertas peligrosas.";
+        }
+
+        return tutorialPaginas[Mathf.Clamp(indice, 0, tutorialPaginas.Length - 1)];
+    }
+
+    private void AlCambiarDispositivo(TipoDispositivoEntrada _)
+    {
+        ActualizarTutorial();
     }
 
     private void ActualizarLeaderboard()
@@ -710,7 +747,7 @@ public class MenuSpaceShooter : MonoBehaviour
 
         StringBuilder builder = new StringBuilder();
         builder.AppendLine("TOP 10");
-        builder.AppendLine("Alias        Puntaje   Bajas   Tiempo   Dificultad   Nave");
+        builder.AppendLine("Alias        Convivencia   Neutral. Tiempo   Dificultad   Firewall");
 
         for (int i = 0; i < top.Count; i++)
         {
