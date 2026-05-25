@@ -11,6 +11,7 @@ public enum TipoDispositivoEntrada
 
 public class GestorEntradaGlobal : MonoBehaviour
 {
+    private const string ClaveDispositivo = "EcosAula.UltimoDispositivo";
     private static TipoDispositivoEntrada dispositivoActual = TipoDispositivoEntrada.TecladoMouse;
     private static float mouseXAnterior;
     private static float mouseYAnterior;
@@ -20,6 +21,15 @@ public class GestorEntradaGlobal : MonoBehaviour
 
     public static TipoDispositivoEntrada DispositivoActual => dispositivoActual;
     public static bool UsandoControl => dispositivoActual == TipoDispositivoEntrada.ControlXbox;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void CargarDispositivoGuardado()
+    {
+        dispositivoActual = (TipoDispositivoEntrada)PlayerPrefs.GetInt(
+            ClaveDispositivo,
+            (int)TipoDispositivoEntrada.TecladoMouse
+        );
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void CrearSiHaceFalta()
@@ -33,6 +43,12 @@ public class GestorEntradaGlobal : MonoBehaviour
         DontDestroyOnLoad(objeto);
         objeto.AddComponent<GestorEntradaGlobal>();
         objeto.AddComponent<EcosAulaNavegacionUI>();
+    }
+
+    private void Awake()
+    {
+        mouseXAnterior = Input.mousePosition.x;
+        mouseYAnterior = Input.mousePosition.y;
     }
 
     private void OnEnable()
@@ -134,6 +150,8 @@ public class GestorEntradaGlobal : MonoBehaviour
         }
 
         dispositivoActual = nuevo;
+        PlayerPrefs.SetInt(ClaveDispositivo, (int)dispositivoActual);
+        PlayerPrefs.Save();
         AlCambiarDispositivo?.Invoke(dispositivoActual);
     }
 
@@ -161,7 +179,9 @@ public class GestorEntradaGlobal : MonoBehaviour
                 // También detectar movimiento de stick/D-Pad
                 float h = Input.GetAxisRaw("Horizontal");
                 float v = Input.GetAxisRaw("Vertical");
-                if ((Mathf.Abs(h) > 0.4f || Mathf.Abs(v) > 0.4f) && 
+                float camH = ObtenerCamaraHorizontal();
+                float camV = ObtenerCamaraVertical();
+                if ((Mathf.Abs(h) > 0.4f || Mathf.Abs(v) > 0.4f || Mathf.Abs(camH) > 0.35f || Mathf.Abs(camV) > 0.35f) && 
                     !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && 
                     !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D) &&
                     !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) &&
@@ -180,7 +200,7 @@ public class GestorEntradaGlobal : MonoBehaviour
 
         float mouseX = Input.mousePosition.x;
         float mouseY = Input.mousePosition.y;
-        bool mouseMovido = Mathf.Abs(mouseX - mouseXAnterior) + Mathf.Abs(mouseY - mouseYAnterior) > 0.5f;
+        bool mouseMovido = Mathf.Abs(mouseX - mouseXAnterior) + Mathf.Abs(mouseY - mouseYAnterior) > 6f;
         mouseXAnterior = mouseX;
         mouseYAnterior = mouseY;
 
@@ -249,7 +269,6 @@ public class GestorEntradaGlobal : MonoBehaviour
 
     private void AlCargarEscena(Scene escena, LoadSceneMode modo)
     {
-        CambiarDispositivo(TipoDispositivoEntrada.TecladoMouse);
         AlCambiarDispositivo?.Invoke(dispositivoActual);
     }
 }

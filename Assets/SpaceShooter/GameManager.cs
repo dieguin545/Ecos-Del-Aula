@@ -1,4 +1,5 @@
 using System.IO;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -58,6 +59,7 @@ public class GameManager : MonoBehaviour
     private Image barraTurboRelleno;
     private TextMeshProUGUI textoGameOverResumen;
     private TextMeshProUGUI textoVictoriaResumen;
+    private Tween alertaTween;
     private bool escudoActivo;
     private float tiempoRestanteEscudo;
     private EstadoPartidaSpaceShooter estadoActual = EstadoPartidaSpaceShooter.Menu;
@@ -113,6 +115,18 @@ public class GameManager : MonoBehaviour
         {
             naveController.AlActualizarDash -= ActualizarDash;
             naveController.AlActualizarTurbo -= ActualizarTurbo;
+        }
+
+        alertaTween?.Kill();
+        if (barraTurboRelleno != null)
+        {
+            barraTurboRelleno.DOKill();
+        }
+
+        if (textoAlerta != null)
+        {
+            textoAlerta.DOKill();
+            textoAlerta.rectTransform.DOKill();
         }
     }
 
@@ -389,7 +403,7 @@ public class GameManager : MonoBehaviour
         if (textoObjetivo != null)
         {
             textoObjetivo.text =
-                "Neutralizados: "
+                "Amenazas neutralizadas: "
                 + datosPartida.EnemigosDestruidos
                 + "/"
                 + objetivoEnemigos;
@@ -605,12 +619,12 @@ public class GameManager : MonoBehaviour
             textoAlerta.text = string.Empty;
         }
 
-        ConfigurarTextoHud(textoObjetivo, new Vector2(24f, -20f), 22f, new Vector2(590f, 30f));
-        ConfigurarTextoHud(textoEstado, new Vector2(24f, -48f), 15f, new Vector2(560f, 26f));
-        ConfigurarTextoHud(textoVidas, new Vector2(24f, -82f), 17f, new Vector2(210f, 28f));
-        ConfigurarTextoHud(textoDash, new Vector2(24f, -122f), 17f, new Vector2(170f, 28f));
-        ConfigurarTextoHud(textoTurbo, new Vector2(410f, -82f), 17f, new Vector2(190f, 28f));
-        ConfigurarTextoHud(textoAlerta, new Vector2(24f, -168f), 18f, new Vector2(590f, 30f));
+        ConfigurarTextoHud(textoObjetivo, new Vector2(28f, -24f), 30f, new Vector2(680f, 42f));
+        ConfigurarTextoHud(textoEstado, new Vector2(30f, -64f), 19f, new Vector2(610f, 30f));
+        ConfigurarTextoHud(textoVidas, new Vector2(30f, -106f), 22f, new Vector2(292f, 32f));
+        ConfigurarTextoHud(textoDash, new Vector2(30f, -152f), 22f, new Vector2(248f, 32f));
+        ConfigurarTextoHud(textoTurbo, new Vector2(452f, -106f), 22f, new Vector2(250f, 32f));
+        ConfigurarTextoPopup(textoAlerta);
 
         if (textoVidas != null)
         {
@@ -657,6 +671,10 @@ public class GameManager : MonoBehaviour
         texto.color = Color.white;
         texto.raycastTarget = false;
 
+        Shadow sombra = objetoTexto.AddComponent<Shadow>();
+        sombra.effectColor = new Color(0f, 0f, 0f, 0.72f);
+        sombra.effectDistance = new Vector2(1.6f, -1.6f);
+
         return texto;
     }
 
@@ -684,6 +702,37 @@ public class GameManager : MonoBehaviour
         texto.textWrappingMode = TextWrappingModes.NoWrap;
         texto.overflowMode = TextOverflowModes.Overflow;
         texto.raycastTarget = false;
+    }
+
+    private void ConfigurarTextoPopup(TextMeshProUGUI texto)
+    {
+        if (texto == null)
+        {
+            return;
+        }
+
+        RectTransform rect = texto.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 1f);
+        rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 1f);
+        rect.anchoredPosition = new Vector2(0f, -116f);
+        rect.sizeDelta = new Vector2(860f, 72f);
+
+        texto.fontSize = 34f;
+        texto.alignment = TextAlignmentOptions.Center;
+        texto.textWrappingMode = TextWrappingModes.NoWrap;
+        texto.overflowMode = TextOverflowModes.Ellipsis;
+        texto.raycastTarget = false;
+        texto.color = new Color(0.55f, 1f, 0.8f, 0f);
+
+        Outline borde = texto.GetComponent<Outline>();
+        if (borde == null)
+        {
+            borde = texto.gameObject.AddComponent<Outline>();
+        }
+
+        borde.effectColor = new Color(0.03f, 0.02f, 0.08f, 0.9f);
+        borde.effectDistance = new Vector2(2f, -2f);
     }
 
     private GameObject CrearPanelVictoria(Transform padre)
@@ -782,15 +831,23 @@ public class GameManager : MonoBehaviour
         rect.anchorMax = new Vector2(0f, 1f);
         rect.pivot = new Vector2(0f, 1f);
         rect.anchoredPosition = new Vector2(14f, -14f);
-        rect.sizeDelta = new Vector2(650f, 190f);
+        rect.sizeDelta = new Vector2(760f, 192f);
 
         panelHudVisual = panel.GetComponent<Image>();
-        panelHudVisual.color = new Color(0.01f, 0.04f, 0.09f, 0.78f);
+        panelHudVisual.color = new Color(0.01f, 0.03f, 0.08f, 0.84f);
         panelHudVisual.raycastTarget = false;
 
         Outline borde = panel.AddComponent<Outline>();
-        borde.effectColor = new Color(0.25f, 0.9f, 1f, 0.42f);
-        borde.effectDistance = new Vector2(1f, -1f);
+        borde.effectColor = new Color(0.25f, 0.9f, 1f, 0.5f);
+        borde.effectDistance = new Vector2(2f, -2f);
+
+        Shadow sombra = panel.AddComponent<Shadow>();
+        sombra.effectColor = new Color(0f, 0f, 0f, 0.5f);
+        sombra.effectDistance = new Vector2(0f, -6f);
+
+        CanvasGroup grupo = panel.AddComponent<CanvasGroup>();
+        grupo.alpha = 0f;
+        grupo.DOFade(1f, 0.28f).SetEase(Ease.OutQuad).SetLink(panel);
     }
 
     private void ActualizarTurbo(float energiaActual, float energiaMaxima)
@@ -805,7 +862,10 @@ public class GameManager : MonoBehaviour
 
         if (barraTurboRelleno != null)
         {
-            barraTurboRelleno.fillAmount = porcentaje;
+            barraTurboRelleno.DOKill();
+            barraTurboRelleno.DOFillAmount(porcentaje, 0.16f)
+                .SetEase(Ease.OutQuad)
+                .SetLink(barraTurboRelleno.gameObject);
         }
     }
 
@@ -837,8 +897,8 @@ public class GameManager : MonoBehaviour
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.sizeDelta = new Vector2(22f, 22f);
-            rect.anchoredPosition = new Vector2(218f + i * 30f, -82f);
+            rect.sizeDelta = new Vector2(27f, 27f);
+            rect.anchoredPosition = new Vector2(270f + i * 34f, -98f);
         }
     }
 
@@ -869,8 +929,8 @@ public class GameManager : MonoBehaviour
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(186f + indice * 30f, -122f);
-            rect.sizeDelta = new Vector2(22f, 22f);
+            rect.anchoredPosition = new Vector2(238f + indice * 34f, -142f);
+            rect.sizeDelta = new Vector2(27f, 27f);
 
             Image imagen = objeto.GetComponent<Image>();
             imagen.sprite = spriteDash;
@@ -914,8 +974,8 @@ public class GameManager : MonoBehaviour
         rectFondo.anchorMin = new Vector2(0f, 1f);
         rectFondo.anchorMax = new Vector2(0f, 1f);
         rectFondo.pivot = new Vector2(0f, 1f);
-        rectFondo.anchoredPosition = new Vector2(410f, -116f);
-        rectFondo.sizeDelta = new Vector2(190f, 20f);
+        rectFondo.anchoredPosition = new Vector2(430f, -132f);
+        rectFondo.sizeDelta = new Vector2(230f, 24f);
 
         barraTurboFondo = fondo.GetComponent<Image>();
         barraTurboFondo.sprite = spriteTurbo;
@@ -1173,6 +1233,42 @@ public class GameManager : MonoBehaviour
     public void RegistrarPowerUpRecogido(TipoPowerUp tipo)
     {
         datosPartida.RegistrarPowerUpRecogido(tipo);
+        MostrarFeedbackPowerUp(tipo);
+    }
+
+    private void MostrarFeedbackPowerUp(TipoPowerUp tipo)
+    {
+        if (textoAlerta == null || estadoActual != EstadoPartidaSpaceShooter.Jugando)
+        {
+            return;
+        }
+
+        MostrarPopupEstado(ObtenerMensajePowerUp(tipo), new Color(0.52f, 1f, 0.78f, 1f), 1.14f);
+        UIAudioManager.PlayNotification();
+
+        CancelInvoke(nameof(OcultarAlertaAmenaza));
+        Invoke(nameof(OcultarAlertaAmenaza), 2.4f);
+    }
+
+    private string ObtenerMensajePowerUp(TipoPowerUp tipo)
+    {
+        switch (tipo)
+        {
+            case TipoPowerUp.Vida:
+                return "BIENESTAR DIGITAL +1";
+            case TipoPowerUp.Dash:
+                return "PROTOCOLO RECARGADO";
+            case TipoPowerUp.Escudo:
+                return "ESCUDO DIGITAL ACTIVADO";
+            case TipoPowerUp.DisparoMejorado:
+                return "REPORTES MEJORADOS";
+            case TipoPowerUp.LimpiezaDigital:
+                return "LIMPIEZA DIGITAL ACTIVADA";
+            case TipoPowerUp.Puntos:
+                return "CONVIVENCIA +150";
+            default:
+                return "POWER-UP ACTIVADO";
+        }
     }
 
     public void MostrarAlertaAmenaza(int cantidad)
@@ -1182,8 +1278,11 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        textoAlerta.text =
-            cantidad <= 1 ? "Amenaza entrante" : "Amenazas entrantes: " + cantidad;
+        MostrarPopupEstado(
+            cantidad <= 1 ? "Amenaza entrante" : "Amenazas entrantes: " + cantidad,
+            new Color(1f, 0.86f, 0.36f, 1f),
+            1.05f
+        );
         CancelInvoke(nameof(OcultarAlertaAmenaza));
         Invoke(nameof(OcultarAlertaAmenaza), 1.1f);
     }
@@ -1256,19 +1355,19 @@ public class GameManager : MonoBehaviour
         Color colorTexto =
             AccesibilidadSpaceShooter.AltoContrasteActivo ? Color.white : new Color(0.9f, 0.98f, 1f);
 
-        AplicarTextoHud(textoObjetivo, 22f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoEstado, 15f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoVidas, 17f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoDash, 17f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoTurbo, 17f * escalaTexto, colorTexto);
-        AplicarTextoHud(textoAlerta, 18f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoObjetivo, 26f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoEstado, 18f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoVidas, 20f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoDash, 20f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoTurbo, 20f * escalaTexto, colorTexto);
+        AplicarTextoHud(textoAlerta, 34f * escalaTexto, colorTexto);
 
         if (panelHudVisual != null)
         {
             panelHudVisual.color =
                 AccesibilidadSpaceShooter.AltoContrasteActivo
                     ? new Color(0f, 0f, 0f, 0.94f)
-                    : new Color(0.01f, 0.04f, 0.09f, 0.78f);
+                    : new Color(0.01f, 0.03f, 0.08f, 0.84f);
         }
     }
 
@@ -1287,7 +1386,56 @@ public class GameManager : MonoBehaviour
     {
         if (textoAlerta != null)
         {
-            textoAlerta.text = string.Empty;
+            alertaTween?.Kill();
+            Color colorDestino = textoAlerta.color;
+            colorDestino.a = 0f;
+
+            alertaTween = DOTween.To(
+                    () => textoAlerta.color,
+                    color => textoAlerta.color = color,
+                    colorDestino,
+                    0.18f
+                )
+                .SetEase(Ease.OutQuad)
+                .SetLink(textoAlerta.gameObject)
+                .OnComplete(() =>
+                {
+                    if (textoAlerta != null)
+                    {
+                        textoAlerta.text = string.Empty;
+                    }
+                });
         }
+    }
+
+    private void MostrarPopupEstado(string mensaje, Color color, float escalaMaxima)
+    {
+        if (textoAlerta == null)
+        {
+            return;
+        }
+
+        alertaTween?.Kill();
+        textoAlerta.DOKill();
+        textoAlerta.rectTransform.DOKill();
+
+        textoAlerta.text = mensaje;
+        Color colorInicial = color;
+        colorInicial.a = 0f;
+        textoAlerta.color = colorInicial;
+        textoAlerta.rectTransform.localScale = Vector3.one * 0.92f;
+
+        Sequence secuencia = DOTween.Sequence()
+            .SetLink(textoAlerta.gameObject)
+            .Append(DOTween.To(
+                () => textoAlerta.color,
+                valor => textoAlerta.color = valor,
+                color,
+                0.14f
+            ))
+            .Join(textoAlerta.rectTransform.DOScale(Vector3.one * escalaMaxima, 0.18f).SetEase(Ease.OutBack))
+            .Append(textoAlerta.rectTransform.DOScale(Vector3.one, 0.12f).SetEase(Ease.OutQuad));
+
+        alertaTween = secuencia;
     }
 }

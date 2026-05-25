@@ -1,0 +1,741 @@
+fileFormatVersion: 2
+guid: 26e9a5baeb49abb4b88d7f2b0e80474b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 9115216767600646417
+    second: Spritesheet_Trabajador_00
+  - first:
+      213: 4063579410249699901
+    second: Spritesheet_Trabajador_01
+  - first:
+      213: 16735312915857825630
+    second: Spritesheet_Trabajador_02
+  - first:
+      213: 18143002730097300334
+    second: Spritesheet_Trabajador_03
+  - first:
+      213: 18255950541938449121
+    second: Spritesheet_Trabajador_04
+  - first:
+      213: 14348272330625473163
+    second: Spritesheet_Trabajador_05
+  - first:
+      213: 10496720428139371202
+    second: Spritesheet_Trabajador_06
+  - first:
+      213: 11845287510497448202
+    second: Spritesheet_Trabajador_07
+  - first:
+      213: 15566914807022444504
+    second: Spritesheet_Trabajador_08
+  - first:
+      213: 8543385183600860078
+    second: Spritesheet_Trabajador_09
+  - first:
+      213: 5190427528374541960
+    second: Spritesheet_Trabajador_10
+  - first:
+      213: 18365391200838766625
+    second: Spritesheet_Trabajador_11
+  - first:
+      213: 322618261505660124
+    second: Spritesheet_Trabajador_12
+  - first:
+      213: 16035050651092212619
+    second: Spritesheet_Trabajador_13
+  - first:
+      213: 14793902680666100696
+    second: Spritesheet_Trabajador_14
+  - first:
+      213: 1800956772460352618
+    second: Spritesheet_Trabajador_15
+  - first:
+      213: 14856534707230757786
+    second: Spritesheet_Trabajador_16
+  - first:
+      213: 17103470283610808160
+    second: Spritesheet_Trabajador_17
+  - first:
+      213: 15461679710290599386
+    second: Spritesheet_Trabajador_18
+  - first:
+      213: 13697958503858854208
+    second: Spritesheet_Trabajador_19
+  - first:
+      213: 10465544359992250750
+    second: Spritesheet_Trabajador_20
+  - first:
+      213: 6962586687620993132
+    second: Spritesheet_Trabajador_21
+  - first:
+      213: 8755677975909716398
+    second: Spritesheet_Trabajador_22
+  - first:
+      213: 2246404640746722439
+    second: Spritesheet_Trabajador_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 7
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 0
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+serializedVersion: 2
+sprites:
+- serializedVersion: 2
+      name: Spritesheet_Trabajador_00
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 52
+        width: 86
+        height: 136
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e7fc15b0b855911b8d6f219295fb371
+      internalID: 9115216767600646417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_01
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 52
+        width: 89
+        height: 136
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3864bbf1a086523d9e94fb77e6f6b299
+      internalID: 4063579410249699901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_02
+      rect:
+        serializedVersion: 2
+        x: 860
+        y: 52
+        width: 90
+        height: 134
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e83fc66df2b65f5ea8dc7ba50f96408b
+      internalID: 16735312915857825630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_03
+      rect:
+        serializedVersion: 2
+        x: 485
+        y: 188
+        width: 81
+        height: 134
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbc8e4db7664536e9a8676de8d670326
+      internalID: 18143002730097300334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_04
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 188
+        width: 81
+        height: 134
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd5a2a4b31575ae1a12093499d4f8ed8
+      internalID: 18255950541938449121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_05
+      rect:
+        serializedVersion: 2
+        x: 865
+        y: 188
+        width: 81
+        height: 134
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c71f4daa0f7f5a8ba90239b522f5a9ee
+      internalID: 14348272330625473163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_06
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 322
+        width: 82
+        height: 110
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91abd79d89d55ac2903329aac5a98bdb
+      internalID: 10496720428139371202
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_07
+      rect:
+        serializedVersion: 2
+        x: 677
+        y: 322
+        width: 79
+        height: 110
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a462ea3b5592510ab738a26a679b14e0
+      internalID: 11845287510497448202
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_08
+      rect:
+        serializedVersion: 2
+        x: 864
+        y: 322
+        width: 81
+        height: 110
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d808ca8a39575fd8ba51ebb47bf22b12
+      internalID: 15566914807022444504
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_09
+      rect:
+        serializedVersion: 2
+        x: 487
+        y: 432
+        width: 78
+        height: 126
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7690338f47dd5baeab24abd0071af25a
+      internalID: 8543385183600860078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_10
+      rect:
+        serializedVersion: 2
+        x: 683
+        y: 432
+        width: 77
+        height: 126
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48081a56452c5e88a8d2375f53a31a92
+      internalID: 5190427528374541960
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_11
+      rect:
+        serializedVersion: 2
+        x: 872
+        y: 432
+        width: 77
+        height: 126
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fedef9fe3f145021ae100c7ea0e3049f
+      internalID: 18365391200838766625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_12
+      rect:
+        serializedVersion: 2
+        x: 482
+        y: 558
+        width: 85
+        height: 123
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 047a2b997b1954dcb99ec266d21ffe12
+      internalID: 322618261505660124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_13
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 558
+        width: 86
+        height: 123
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de87f19c1dbf5b8b82e00ee59878f854
+      internalID: 16035050651092212619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_14
+      rect:
+        serializedVersion: 2
+        x: 866
+        y: 558
+        width: 83
+        height: 123
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd4e801b4acd53d892775b6b60f2ca89
+      internalID: 14793902680666100696
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_15
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 681
+        width: 81
+        height: 127
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18fe48a48655546abac68037ad28121a
+      internalID: 1800956772460352618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_16
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 681
+        width: 81
+        height: 127
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce2d039a59c0539ab6f94d2fcbbee6ee
+      internalID: 14856534707230757786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_17
+      rect:
+        serializedVersion: 2
+        x: 865
+        y: 681
+        width: 82
+        height: 127
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed5bbb9ad9125f609321cc18dde71e51
+      internalID: 17103470283610808160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_18
+      rect:
+        serializedVersion: 2
+        x: 487
+        y: 808
+        width: 88
+        height: 134
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d692ebc6eabc5dda806308b64e4e92ad
+      internalID: 15461679710290599386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_19
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 808
+        width: 91
+        height: 134
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be18ecaf328c5940b901ade26a006207
+      internalID: 13697958503858854208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_20
+      rect:
+        serializedVersion: 2
+        x: 867
+        y: 808
+        width: 92
+        height: 134
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 913d1525866e517ebc5ea504b3a47dc6
+      internalID: 10465544359992250750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_21
+      rect:
+        serializedVersion: 2
+        x: 489
+        y: 942
+        width: 82
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60a013b3f983506cbc8d0b7cae0fed4e
+      internalID: 6962586687620993132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_22
+      rect:
+        serializedVersion: 2
+        x: 685
+        y: 942
+        width: 81
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79826abac1cf51aeac7a231e894f97c5
+      internalID: 8755677975909716398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Spritesheet_Trabajador_23
+      rect:
+        serializedVersion: 2
+        x: 867
+        y: 942
+        width: 83
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0.0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f2cd51e697f5487ad7b018273d18bf7
+      internalID: 2246404640746722439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+outline: []
+customData: 
+physicsShape: []
+bones: []
+spriteID: 
+internalID: 0
+vertices: []
+indices: 
+edges: []
+weights: []
+secondaryTextures: []
+spriteCustomMetadata:
+entries: []
+nameFileIdTable:
+Spritesheet_Trabajador_00: 9115216767600646417
+      Spritesheet_Trabajador_01: 4063579410249699901
+      Spritesheet_Trabajador_02: 16735312915857825630
+      Spritesheet_Trabajador_03: 18143002730097300334
+      Spritesheet_Trabajador_04: 18255950541938449121
+      Spritesheet_Trabajador_05: 14348272330625473163
+      Spritesheet_Trabajador_06: 10496720428139371202
+      Spritesheet_Trabajador_07: 11845287510497448202
+      Spritesheet_Trabajador_08: 15566914807022444504
+      Spritesheet_Trabajador_09: 8543385183600860078
+      Spritesheet_Trabajador_10: 5190427528374541960
+      Spritesheet_Trabajador_11: 18365391200838766625
+      Spritesheet_Trabajador_12: 322618261505660124
+      Spritesheet_Trabajador_13: 16035050651092212619
+      Spritesheet_Trabajador_14: 14793902680666100696
+      Spritesheet_Trabajador_15: 1800956772460352618
+      Spritesheet_Trabajador_16: 14856534707230757786
+      Spritesheet_Trabajador_17: 17103470283610808160
+      Spritesheet_Trabajador_18: 15461679710290599386
+      Spritesheet_Trabajador_19: 13697958503858854208
+      Spritesheet_Trabajador_20: 10465544359992250750
+      Spritesheet_Trabajador_21: 6962586687620993132
+      Spritesheet_Trabajador_22: 8755677975909716398
+      Spritesheet_Trabajador_23: 2246404640746722439
+mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -75,7 +75,7 @@ public static class FirewallDelAulaVisuales
         Sprite sprite = CargarSprite("Bubbles/X4/Chat-" + ObtenerIndiceBurbuja(tipo));
         SpriteRenderer renderer = CrearSprite(objeto.transform, "BurbujaAmenaza", sprite, Vector3.zero, ObtenerEscalaBurbuja(tipo));
         renderer.color = ObtenerColorAmenaza(tipo);
-        CrearEtiqueta(objeto.transform, etiqueta.ToUpperInvariant(), new Vector3(0f, 0.08f, 0f), 2.55f, ObtenerColorTextoAmenaza(tipo));
+        CrearEtiqueta(objeto.transform, etiqueta.ToUpperInvariant(), new Vector3(0f, 0.1f, 0f), 3.6f, ObtenerColorTextoAmenaza(tipo));
     }
 
     public static void AplicarProyectilReporte(GameObject objeto)
@@ -86,8 +86,13 @@ public static class FirewallDelAulaVisuales
         }
 
         OcultarRenderers3D(objeto);
-        Sprite sprite = CargarSprite("Icons/ffffff/transparent/1x1/delapouite/check-mark");
-        SpriteRenderer renderer = CrearSprite(objeto.transform, "VisualReporte", sprite, Vector3.zero, 1.18f);
+        Sprite sprite = CargarSprite("Icons/ffffff/transparent/1x1/delapouite/paper-plane");
+        if (sprite == null)
+        {
+            sprite = CargarSprite("Icons/ffffff/transparent/1x1/lorc/paper-arrow");
+        }
+
+        SpriteRenderer renderer = CrearSprite(objeto.transform, "VisualReporte", sprite, Vector3.zero, 1.55f);
         renderer.color = new Color(0.35f, 1f, 0.95f, 1f);
         renderer.sortingOrder = 25;
     }
@@ -166,13 +171,13 @@ public static class FirewallDelAulaVisuales
         switch (tipo)
         {
             case TipoAmenaza.RumorViral:
-                return 1.85f;
+                return 2.45f;
             case TipoAmenaza.AtaqueCoordinado:
-                return 2.25f;
+                return 2.85f;
             case TipoAmenaza.LaserCorrupto:
-                return 2.1f;
+                return 2.65f;
             default:
-                return 1.95f;
+                return 2.55f;
         }
     }
 
@@ -319,7 +324,7 @@ public static class FirewallDelAulaVisuales
         etiqueta.outlineWidth = 0.32f;
 
         RectTransform rect = etiqueta.rectTransform;
-        rect.sizeDelta = new Vector2(10f, 2.4f);
+        rect.sizeDelta = new Vector2(13f, 3.2f);
 
         Renderer renderer = etiqueta.GetComponent<Renderer>();
 

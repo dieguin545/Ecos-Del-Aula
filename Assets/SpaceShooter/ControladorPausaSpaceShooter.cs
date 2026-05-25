@@ -1,4 +1,5 @@
 using TMPro;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -8,6 +9,7 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
     private GameManager gameManager;
     private MenuSpaceShooter menuSpaceShooter;
     private GameObject panelPausa;
+    private CanvasGroup grupoPausa;
     private bool pausado;
 
     public bool EstaPausado => pausado;
@@ -57,7 +59,9 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
         pausado = true;
         Time.timeScale = 0f;
         panelPausa.SetActive(true);
+        AnimarPanel(true);
         gameManager.NotificarPausa(true);
+        UIAudioManager.PlayOpen();
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -67,16 +71,14 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
         pausado = false;
         Time.timeScale = 1f;
 
-        if (panelPausa != null)
-        {
-            panelPausa.SetActive(false);
-        }
+        AnimarPanel(false);
 
         if (gameManager != null)
         {
             gameManager.NotificarPausa(false);
         }
 
+        UIAudioManager.PlayClose();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -162,6 +164,11 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
         );
 
         panel.SetActive(false);
+        grupoPausa = panel.GetComponent<CanvasGroup>();
+        if (grupoPausa == null)
+        {
+            grupoPausa = panel.AddComponent<CanvasGroup>();
+        }
 
         // Prompts en el panel de pausa
         EcosAulaPromptUI.CrearBarraPrompts(panel.transform,
@@ -192,5 +199,53 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
         Image imagen = tarjeta.GetComponent<Image>();
         imagen.color = new Color(0.02f, 0.05f, 0.1f, 0.94f);
         imagen.raycastTarget = false;
+
+        Outline borde = tarjeta.AddComponent<Outline>();
+        borde.effectColor = new Color(0.25f, 0.9f, 1f, 0.5f);
+        borde.effectDistance = new Vector2(2f, -2f);
+
+        Shadow sombra = tarjeta.AddComponent<Shadow>();
+        sombra.effectColor = new Color(0f, 0f, 0f, 0.55f);
+        sombra.effectDistance = new Vector2(0f, -8f);
+    }
+
+    private void AnimarPanel(bool mostrar)
+    {
+        if (panelPausa == null)
+        {
+            return;
+        }
+
+        if (grupoPausa == null)
+        {
+            grupoPausa = panelPausa.GetComponent<CanvasGroup>();
+            if (grupoPausa == null)
+            {
+                grupoPausa = panelPausa.AddComponent<CanvasGroup>();
+            }
+        }
+
+        grupoPausa.DOKill();
+        panelPausa.transform.DOKill();
+
+        if (mostrar)
+        {
+            grupoPausa.alpha = 0f;
+            panelPausa.transform.localScale = Vector3.one * 0.94f;
+            grupoPausa.DOFade(1f, 0.16f).SetUpdate(true).SetLink(panelPausa);
+            panelPausa.transform.DOScale(1f, 0.2f).SetEase(Ease.OutBack).SetUpdate(true).SetLink(panelPausa);
+            return;
+        }
+
+        grupoPausa.DOFade(0f, 0.12f)
+            .SetUpdate(true)
+            .SetLink(panelPausa)
+            .OnComplete(() =>
+            {
+                if (panelPausa != null)
+                {
+                    panelPausa.SetActive(false);
+                }
+            });
     }
 }

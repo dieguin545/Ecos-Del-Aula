@@ -303,20 +303,15 @@ public static class EcosAulaUIRediseno
         }
 
         // ── Reposicionar todos los personajes en el espacio 3D/Mundo a la derecha ──
-        float targetX = 632f;
         Camera mainCam = Camera.main;
         if (mainCam == null)
         {
             mainCam = Object.FindAnyObjectByType<Camera>(FindObjectsInactive.Include);
         }
-        if (mainCam != null)
-        {
-            targetX = mainCam.transform.position.x + 245f;
-        }
 
         foreach (GameObject rootGo in SceneManager.GetActiveScene().GetRootGameObjects())
         {
-            MoverPersonajesRecursivo(rootGo.transform, targetX);
+            MoverPersonajesRecursivo(rootGo.transform, mainCam, canvas);
         }
 
         // Prompts en el menú lateral izquierdo
@@ -729,20 +724,43 @@ public static class EcosAulaUIRediseno
         MarcarSucio(go);
     }
 
-    /// <summary>Mueve recursivamente cualquier objeto que empiece por 'Personaje' a targetX.</summary>
-    private static void MoverPersonajesRecursivo(Transform t, float targetX)
+    /// <summary>Mueve recursivamente cualquier objeto que empiece por 'Personaje' al centro del espacio derecho de la pantalla.</summary>
+    private static void MoverPersonajesRecursivo(Transform t, Camera mainCam, Canvas canvas)
     {
         if (t.gameObject.name.StartsWith("Personaje", System.StringComparison.OrdinalIgnoreCase))
         {
             Vector3 pos = t.position;
-            pos.x = targetX;
+            if (mainCam != null)
+            {
+                // Profundidad del personaje en el espacio de la cámara
+                Vector3 localPos = mainCam.transform.InverseTransformPoint(pos);
+                
+                // Ancho y alto del renderizado de la cámara
+                float W = mainCam.pixelWidth;
+                float H = mainCam.pixelHeight;
+                
+                // Factor de escala del canvas
+                float scaleFactor = (canvas != null) ? canvas.scaleFactor : 1.0f;
+                if (scaleFactor <= 0f) scaleFactor = 1.0f;
+                
+                // Ancho del panel izquierdo (420px de referencia) escalado a píxeles de pantalla
+                float panelWidthScreen = 420f * scaleFactor;
+                
+                // Centro del espacio restante a la derecha
+                float targetScreenX = (panelWidthScreen + W) / 2f;
+                float targetScreenY = H / 2f;
+                
+                // Convertir la coordenada de pantalla a mundo con la profundidad original
+                Vector3 worldPoint = mainCam.ScreenToWorldPoint(new Vector3(targetScreenX, targetScreenY, localPos.z));
+                pos.x = worldPoint.x;
+            }
             t.position = pos;
             MarcarSucio(t);
         }
 
         for (int i = 0; i < t.childCount; i++)
         {
-            MoverPersonajesRecursivo(t.GetChild(i), targetX);
+            MoverPersonajesRecursivo(t.GetChild(i), mainCam, canvas);
         }
     }
 

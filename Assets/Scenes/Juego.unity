@@ -857,169 +857,500 @@ MonoBehaviour:
   textoErrores: {fileID: 668876358}
   panelAviso: {fileID: 169213582}
   textoAviso: {fileID: 522909542}
+  botonRevisarCaso: {fileID: 0}
   panelFinDia: {fileID: 363055768}
   canvasFinDia: {fileID: 363055770}
   textoTituloFinDia: {fileID: 1296914806}
   textoResumenFinDia: {fileID: 2096192292}
   botonContinuarFinDia: {fileID: 0}
   correosFaciles:
-  - remitente: kzolanof@uninorte.edu.co
+  - idCorreo: 
+    remitente: kzolanof@uninorte.edu.co
     asunto: vete de aqui
     texto: realmente nadie te quiere en esta carrera si quiera puedes tener la consideracion
       de largarte a otro nrc
     esBullying: 1
-  - remitente: muerete123@hotmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: muerete123@hotmail.com
     asunto: tarea AYP
     texto: adjunto archivo de la tarea de algoritmia y programacion para trabajar
       desde la casa
     esBullying: 1
-  - remitente: admin@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: admin@uninorte.edu.co
     asunto: "ma\xF1ana se realiza simulacro!!!"
     texto: "ma\xF1ana se realiza simulacro de las sirenas de emergencia en toda la
       universidad, no hay de que alterarse solo es un simulacro"
     esBullying: 0
-  - remitente: bienestar@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: bienestar@uninorte.edu.co
     asunto: Jornada deportiva
     texto: Se invita a todos los estudiantes a participar en la jornada deportiva
       este viernes.
     esBullying: 0
-  - remitente: alumno123@gmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: alumno123@gmail.com
     asunto: Trabajo en grupo
     texto: "No queremos que est\xE9s en nuestro grupo porque siempre arruinas todo."
     esBullying: 1
-  - remitente: monitorias@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: monitorias@uninorte.edu.co
     asunto: "Horarios de monitor\xEDa"
     texto: "Ya est\xE1n disponibles los nuevos horarios de monitor\xEDa de c\xE1lculo
       y f\xEDsica."
     esBullying: 0
-  - remitente: ayudauniversitaria@hotmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: ayudauniversitaria@hotmail.com
     asunto: Consejo
     texto: "Tal vez deber\xEDas dejar de participar tanto en clase porque haces preguntas
       muy tontas."
     esBullying: 1
-  - remitente: biblioteca@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: biblioteca@uninorte.edu.co
     asunto: " Pr\xE9stamo de libros"
     texto: Recuerda devolver los libros prestados antes del lunes.
     esBullying: 0
-  - remitente: estudianteanonimo@gmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: estudianteanonimo@gmail.com
     asunto: Comentario
     texto: "Todos se r\xEDen de ti cuando haces exposiciones."
     esBullying: 1
-  - remitente: coordinacion@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: coordinacion@uninorte.edu.co
     asunto: "Cambio de sal\xF3n"
     texto: "La clase de f\xEDsica ser\xE1 trasladada al sal\xF3n 21."
     esBullying: 0
-  - remitente: usuario777@hotmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: usuario777@hotmail.com
     asunto: "Opini\xF3n"
     texto: " Nadie entiende c\xF3mo lograste entrar a esta universidad."
     esBullying: 1
-  - remitente: sistemas@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: sistemas@uninorte.edu.co
     asunto: "Actualizaci\xF3n de contrase\xF1a"
     texto: "Debes actualizar tu contrase\xF1a institucional antes de fin de mes."
     esBullying: 0
-  - remitente: grupoestudio@gmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: grupoestudio@gmail.com
     asunto: "Invitaci\xF3n"
     texto: "Vamos a reunirnos para estudiar para el parcial ma\xF1ana."
     esBullying: 0
-  - remitente: troll123@gmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: troll123@gmail.com
     asunto: "Recomendaci\xF3n"
     texto: "Ser\xEDa mejor que dejaras de hablar con la gente porque caes mal."
     esBullying: 1
-  - remitente: decanatura@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: decanatura@uninorte.edu.co
     asunto: "Informaci\xF3n acad\xE9mica"
     texto: "El proceso de inscripci\xF3n de materias inicia la pr\xF3xima semana."
     esBullying: 0
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
   correosMedios:
-  - remitente: 'bienestar@uninorte.edu.co '
+  - idCorreo: 
+    remitente: 'bienestar@uninorte.edu.co '
     asunto: "Jornada de apoyo psicol\xF3gico"
     texto: "Se invita a todos los estudiantes a participar en la jornada de apoyo
       psicol\xF3gico este viernes en el bloque J."
     esBullying: 0
-  - remitente: gruposecreto123@gmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: gruposecreto123@gmail.com
     asunto: Lo que todos piensan de ti
     texto: sinceramente tu valor como persona es igual de equivalente al total de
       madera en todo el universo
     esBullying: 1
-  - remitente: monitorias@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: monitorias@uninorte.edu.co
     asunto: "Horarios de monitor\xEDa"
     texto: "Ya est\xE1n disponibles los horarios de monitor\xEDa de c\xE1lculo y
       f\xEDsica para esta semana."
     esBullying: 0
-  - remitente: observador@gmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: observador@gmail.com
     asunto: Consejo amistoso
     texto: "Quiz\xE1s deber\xEDas trabajar m\xE1s en tu manera de hablar, porque
       a veces los dem\xE1s se incomodan cuando participas."
     esBullying: 1
-  - remitente: mreyes@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: mreyes@uninorte.edu.co
     asunto: Sobre el proyecto
     texto: "Quiz\xE1s deber\xEDas limitarte a hacer tareas m\xE1s simples porque
       a veces retrasas al resto del grupo."
     esBullying: 1
-  - remitente: bienestar@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: bienestar@uninorte.edu.co
     asunto: "Jornada de orientaci\xF3n"
     texto: "Este jueves habr\xE1 una jornada de orientaci\xF3n acad\xE9mica para
       estudiantes de primer semestre."
     esBullying: 0
-  - remitente: larias@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: larias@uninorte.edu.co
     asunto: Consejo
     texto: "Tal vez deber\xEDas intentar hablar menos en clase porque a veces haces
       perder el tiempo."
     esBullying: 1
-  - remitente: monitorias@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: monitorias@uninorte.edu.co
     asunto: "Horarios de monitor\xEDa"
     texto: "Ya est\xE1n disponibles los horarios de monitor\xEDa de c\xE1lculo y
       f\xEDsica para esta semana."
     esBullying: 0
-  - remitente: jmendez@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: jmendez@uninorte.edu.co
     asunto: Comentario
     texto: Algunas personas simplemente no encajan bien en ciertos grupos de trabajo.
     esBullying: 0
-  - remitente: rgomez@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: rgomez@uninorte.edu.co
     asunto: "Participaci\xF3n en clase"
     texto: "Quiz\xE1s ser\xEDa mejor que dejaras que otros participaran m\xE1s porque
       no siempre aportas algo \xFAtil."
     esBullying: 1
-  - remitente: rectoria@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: rectoria@uninorte.edu.co
     asunto: "D\xEDa institucional"
     texto: "El pr\xF3ximo lunes no habr\xE1 clases por actividad institucional."
     esBullying: 0
-  - remitente: pcastro@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: pcastro@uninorte.edu.co
     asunto: Sugerencia
     texto: Tal vez trabajar solo sea mejor para ti, porque a veces complicas las
       cosas sin darte cuenta.
     esBullying: 1
-  - remitente: ' servicios@uninorte.edu.co'
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: ' servicios@uninorte.edu.co'
     asunto: "Horarios de monitor\xEDa"
     texto: "Ya est\xE1n disponibles los horarios de monitor\xEDa de c\xE1lculo y
       f\xEDsica para esta semana."
     esBullying: 0
-  - remitente: monitorias@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: monitorias@uninorte.edu.co
     asunto: "Horarios de monitor\xEDa"
     texto: "Ya est\xE1n disponibles los horarios de monitor\xEDa de c\xE1lculo y
       f\xEDsica para esta semana."
     esBullying: 0
-  - remitente: monitorias@uninorte.edu.co
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: monitorias@uninorte.edu.co
     asunto: "Horarios de monitor\xEDa"
     texto: "Ya est\xE1n disponibles los horarios de monitor\xEDa de c\xE1lculo y
       f\xEDsica para esta semana."
     esBullying: 0
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
   correosDificiles:
-  - remitente: marcosrivera@gmail.com
+  - idCorreo: 
+    remitente: marcosrivera@gmail.com
     asunto: "Sobre tu participaci\xF3n"
     texto: "Tal vez ser\xEDa mejor que dejaras que otros hablaran m\xE1s en clase,
       porque cada vez que intervienes todo se vuelve inc\xF3modo."
     esBullying: 1
-  - remitente: anonimo2025@hotmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: anonimo2025@hotmail.com
     asunto: "Reflexi\xF3n sobre el trabajo grupal"
     texto: "Ser\xEDa conveniente que reconsideraras el alcance de tus aportes, pues
       en repetidas ocasiones parecen entorpecer el ritmo natural del grupo."
     esBullying: 1
-  - remitente: estudianteanonimo@hotmail.com
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
+  - idCorreo: 
+    remitente: estudianteanonimo@hotmail.com
     asunto: reconsideracion
     texto: "Algunas personas poseen habilidades que les permiten adaptarse mejor
       al entorno universitario; quiz\xE1 ese no sea tu caso y no tiene nada de malo
       aceptarlo."
     esBullying: 1
+    dia: 0
+    dificultad: 0
+    idCasoRelacionado: 
+    decisionCorrecta: 0
+    evidenciaQueDesbloquea: 
+    esAmbiguo: 0
+    severidad: 1
+    pistas: []
+    explicacionEducativa: 
   OnStatsChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1031,6 +1362,10 @@ MonoBehaviour:
   seguroUsado: 0
   tieneFiltroSpam: 0
   tieneTeclado: 0
+  dificultadEntryFilter: 1
+  bienestarEstudiantil: 70
+  confianzaEscolar: 70
+  precision: 0
 --- !u!1 &115896704
 GameObject:
   m_ObjectHideFlags: 0
@@ -3263,7 +3598,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.063, g: 0.165, b: 0.263, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -3790,6 +4125,7 @@ MonoBehaviour:
   iconoAyuda: {fileID: 0}
   iconoLecturaFacil: {fileID: 0}
   iconoSpaceShooter: {fileID: 0}
+  iconoCasos: {fileID: 0}
 --- !u!65 &566917111
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7700,8 +8036,8 @@ MonoBehaviour:
   mensajes:
   - 'Bienvenido a Ecos del Aula
 
-    para este juego deberas abrir
-    la app "correo" para empezar a trabajar clasificando correos.'
+    para este juego deberas abrir la app "correo"
+    para empezar a trabajar clasificando correos.'
   - Cada vez que veas un correo con algun insulto o algo sospechoso deberas reportar,
     si el correo no tiene nada sospechoso deberas dejarlo pasar.
   - "Cada dia va a ir aumentando la dificultad donde deberas estar mas atento a peque\xF1os

@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Cinemachine;
 using TMPro;
+
 public class SpawnJugador : MonoBehaviour
 {
     public GameObject[] personajes;
@@ -9,25 +10,45 @@ public class SpawnJugador : MonoBehaviour
 
     void Start()
     {
-        int personajeSeleccionado = PlayerPrefs.GetInt("PersonajeSeleccionado", 0);
+        if (personajes == null || personajes.Length == 0 || puntoSpawn == null)
+        {
+            Debug.LogWarning("SpawnJugador no tiene personajes o punto de spawn configurado.");
+            return;
+        }
 
-        GameObject jugador = Instantiate(
-            personajes[personajeSeleccionado],
-            puntoSpawn.position,
-            Quaternion.identity
-        );
+        int personajeSeleccionado = Mathf.Clamp(PlayerPrefs.GetInt("PersonajeSeleccionado", 0), 0, personajes.Length - 1);
+        GameObject prefab = personajes[personajeSeleccionado];
+        if (prefab == null)
+        {
+            Debug.LogWarning("SpawnJugador encontró un prefab de personaje vacío.");
+            return;
+        }
 
-        vcamPasillo.Target.TrackingTarget = jugador.transform;
-        // el database sabe el personaje activo
-            PersonajeType tipo = (PersonajeType)personajeSeleccionado;
-    BullyingDatabase.Instance.SetPersonaje(tipo);
-    // Busca todas las zonas de confort y les asigna el panel de accion del jugador
-ZonaConfort[] zonas = FindObjectsOfType<ZonaConfort>();
-GameObject panelAccion = jugador.transform.Find("PanelAccion").gameObject;
-foreach (ZonaConfort zona in zonas)
-{
-    zona.panelAccion = panelAccion;
-    zona.textoAccion = panelAccion.GetComponentInChildren<TextMeshProUGUI>();
-}
+        GameObject jugador = Instantiate(prefab, puntoSpawn.position, Quaternion.identity);
+
+        if (vcamPasillo != null)
+        {
+            vcamPasillo.Target.TrackingTarget = jugador.transform;
+        }
+
+        if (BullyingDatabase.Instance != null)
+        {
+            BullyingDatabase.Instance.SetPersonaje((PersonajeType)personajeSeleccionado);
+        }
+
+        ZonaConfort[] zonas = FindObjectsByType<ZonaConfort>();
+        Transform panelAccionTransform = jugador.transform.Find("PanelAccion");
+        GameObject panelAccion = panelAccionTransform != null ? panelAccionTransform.gameObject : null;
+
+        foreach (ZonaConfort zona in zonas)
+        {
+            if (zona == null || panelAccion == null)
+            {
+                continue;
+            }
+
+            zona.panelAccion = panelAccion;
+            zona.textoAccion = panelAccion.GetComponentInChildren<TextMeshProUGUI>(true);
+        }
     }
 }

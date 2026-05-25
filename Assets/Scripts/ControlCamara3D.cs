@@ -11,6 +11,11 @@ public class ControlCamara3D : MonoBehaviour
     public float limiteArriba = -25f;
     public float limiteAbajo = 60f;
 
+    [Header("Control Xbox")]
+    public bool intercambiarEjesControl = false;
+    public bool invertirVerticalControl = false;
+    public float deadzoneStickCamara = 0.18f;
+
     [Header("Tercera persona")]
     public float distancia = 4f;
     public float alturaMirada = 0.9f;
@@ -41,11 +46,14 @@ public class ControlCamara3D : MonoBehaviour
     void Update()
     {
         if (jugador == null) return;
+        if (InteraccionPC.PCAbierta || MenuPausaAccesibilidad.EstaPausado) return;
 
         float mouseX = Input.GetAxis("Mouse X") * sensibilidadMouse;
         float mouseY = Input.GetAxis("Mouse Y") * sensibilidadMouse;
-        float stickX = GestorEntradaGlobal.ObtenerCamaraHorizontal() * sensibilidadControl * Time.unscaledDeltaTime;
-        float stickY = GestorEntradaGlobal.ObtenerCamaraVertical() * sensibilidadControl * Time.unscaledDeltaTime;
+
+        Vector2 stickCamara = ObtenerStickCamaraNormalizado();
+        float stickX = stickCamara.x * sensibilidadControl * Time.unscaledDeltaTime;
+        float stickY = stickCamara.y * sensibilidadControl * Time.unscaledDeltaTime;
 
         rotacionY += mouseX + stickX;
         rotacionX -= mouseY + stickY;
@@ -63,6 +71,7 @@ public class ControlCamara3D : MonoBehaviour
     void LateUpdate()
     {
         if (jugador == null) return;
+        if (InteraccionPC.PCAbierta || MenuPausaAccesibilidad.EstaPausado) return;
 
         Quaternion rotacionCamara = Quaternion.Euler(rotacionX, rotacionY, 0f);
 
@@ -125,5 +134,35 @@ public class ControlCamara3D : MonoBehaviour
 
             r.enabled = !primeraPersona;
         }
+    }
+
+    private Vector2 ObtenerStickCamaraNormalizado()
+    {
+        float horizontal = GestorEntradaGlobal.ObtenerCamaraHorizontal();
+        float vertical = GestorEntradaGlobal.ObtenerCamaraVertical();
+
+        if (intercambiarEjesControl)
+        {
+            float temporal = horizontal;
+            horizontal = vertical;
+            vertical = temporal;
+        }
+
+        if (invertirVerticalControl)
+        {
+            vertical *= -1f;
+        }
+
+        if (Mathf.Abs(horizontal) < deadzoneStickCamara)
+        {
+            horizontal = 0f;
+        }
+
+        if (Mathf.Abs(vertical) < deadzoneStickCamara)
+        {
+            vertical = 0f;
+        }
+
+        return new Vector2(horizontal, vertical);
     }
 }

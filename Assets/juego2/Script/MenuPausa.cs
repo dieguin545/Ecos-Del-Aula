@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class MenuPausa : MonoBehaviour
 {
@@ -11,10 +12,13 @@ public class MenuPausa : MonoBehaviour
     public GameObject panelPausa;
     public Button botonReanudar;
     public Button botonGuardar;
+    public Button botonReiniciar;
+    public Button botonSeleccionJuego;
     public Button botonMenuPrincipal;
     public TextMeshProUGUI textoEstado;
 
     private bool pausado;
+    private CanvasGroup grupoPausa;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,6 +33,15 @@ public class MenuPausa : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (grupoPausa != null)
+        {
+            grupoPausa.DOKill();
+        }
+        if (panelPausa != null)
+        {
+            panelPausa.transform.DOKill();
+        }
+
         if (Instance == this)
         {
             Instance = null;
@@ -67,31 +80,19 @@ public class MenuPausa : MonoBehaviour
         if (panelPausa != null)
         {
             panelPausa.SetActive(true);
+            PrepararAnimacionPanel(true);
         }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         ConectarBotones();
+        UIAudioManager.PlayOpen();
 
-        // Configurar navegación
-        if (botonReanudar != null)
-        {
-            Navigation nav = botonReanudar.navigation;
-            nav.mode = Navigation.Mode.Automatic;
-            botonReanudar.navigation = nav;
-        }
-        if (botonGuardar != null)
-        {
-            Navigation nav = botonGuardar.navigation;
-            nav.mode = Navigation.Mode.Automatic;
-            botonGuardar.navigation = nav;
-        }
-        if (botonMenuPrincipal != null)
-        {
-            Navigation nav = botonMenuPrincipal.navigation;
-            nav.mode = Navigation.Mode.Automatic;
-            botonMenuPrincipal.navigation = nav;
-        }
+        ConfigurarNavegacion(botonReanudar);
+        ConfigurarNavegacion(botonReiniciar);
+        ConfigurarNavegacion(botonSeleccionJuego);
+        ConfigurarNavegacion(botonMenuPrincipal);
+        ConfigurarNavegacion(botonGuardar);
 
         if (UnityEngine.EventSystems.EventSystem.current != null && botonReanudar != null)
         {
@@ -114,8 +115,9 @@ public class MenuPausa : MonoBehaviour
 
         if (panelPausa != null)
         {
-            panelPausa.SetActive(false);
+            PrepararAnimacionPanel(false);
         }
+        UIAudioManager.PlayClose();
     }
 
     private void Guardar()
@@ -124,6 +126,7 @@ public class MenuPausa : MonoBehaviour
         {
             SistemaGuardado.Instance.GuardarPartida();
         }
+        UIAudioManager.PlayConfirm();
 
         if (textoEstado != null)
         {
@@ -144,7 +147,24 @@ public class MenuPausa : MonoBehaviour
     {
         pausado = false;
         Time.timeScale = 1f;
+        UIAudioManager.PlayCancel();
         SceneManager.LoadScene("inicio");
+    }
+
+    private void ReiniciarEscena()
+    {
+        pausado = false;
+        Time.timeScale = 1f;
+        UIAudioManager.PlayConfirm();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void IrASeleccionJuego()
+    {
+        pausado = false;
+        Time.timeScale = 1f;
+        UIAudioManager.PlayCancel();
+        SceneManager.LoadScene("SeleccionJuego");
     }
 
     public void ReinicializarTrasCargaEscena()
@@ -177,6 +197,15 @@ public class MenuPausa : MonoBehaviour
 
         if (panelPausa == null)
         {
+            Canvas canvas = FindAnyObjectByType<Canvas>();
+            if (canvas != null)
+            {
+                panelPausa = CrearPanelPausaRuntime(canvas.transform);
+            }
+        }
+
+        if (panelPausa == null)
+        {
             return;
         }
 
@@ -195,10 +224,38 @@ public class MenuPausa : MonoBehaviour
             {
                 botonGuardar = boton;
             }
+            else if (botonReiniciar == null && (texto.Contains("reiniciar") || texto.Contains("reintentar")))
+            {
+                botonReiniciar = boton;
+            }
+            else if (botonSeleccionJuego == null && texto.Contains("selecci"))
+            {
+                botonSeleccionJuego = boton;
+            }
             else if (botonMenuPrincipal == null && (texto.Contains("menu") || texto.Contains("salir")))
             {
                 botonMenuPrincipal = boton;
             }
+        }
+
+        if (botonReanudar == null)
+        {
+            botonReanudar = CrearBotonPausa("BotonContinuarRuntime", "Continuar", new Vector2(0f, 122f));
+        }
+
+        if (botonReiniciar == null)
+        {
+            botonReiniciar = CrearBotonPausa("BotonReintentarRuntime", "Reintentar", new Vector2(0f, 54f));
+        }
+
+        if (botonSeleccionJuego == null)
+        {
+            botonSeleccionJuego = CrearBotonPausa("BotonSeleccionJuegoRuntime", "Volver a selección", new Vector2(0f, -14f));
+        }
+
+        if (botonMenuPrincipal == null)
+        {
+            botonMenuPrincipal = CrearBotonPausa("BotonMenuPrincipalRuntime", "Volver al menú", new Vector2(0f, -82f));
         }
     }
 
@@ -206,6 +263,8 @@ public class MenuPausa : MonoBehaviour
     {
         ConectarBoton(botonReanudar, Reanudar);
         ConectarBoton(botonGuardar, Guardar);
+        ConectarBoton(botonReiniciar, ReiniciarEscena);
+        ConectarBoton(botonSeleccionJuego, IrASeleccionJuego);
         ConectarBoton(botonMenuPrincipal, IrAlMenu);
     }
 
@@ -232,6 +291,29 @@ public class MenuPausa : MonoBehaviour
             }
 
             fondo.color = new Color(0.06f, 0.03f, 0.10f, 0.82f);
+            Outline borde = panelPausa.GetComponent<Outline>();
+            if (borde == null)
+            {
+                borde = panelPausa.AddComponent<Outline>();
+            }
+
+            borde.effectColor = new Color(0.34f, 0.92f, 1f, 0.42f);
+            borde.effectDistance = new Vector2(2f, -2f);
+
+            Shadow sombra = panelPausa.GetComponent<Shadow>();
+            if (sombra == null)
+            {
+                sombra = panelPausa.AddComponent<Shadow>();
+            }
+
+            sombra.effectColor = new Color(0f, 0f, 0f, 0.55f);
+            sombra.effectDistance = new Vector2(0f, -8f);
+
+            grupoPausa = panelPausa.GetComponent<CanvasGroup>();
+            if (grupoPausa == null)
+            {
+                grupoPausa = panelPausa.AddComponent<CanvasGroup>();
+            }
 
             RectTransform rect = panelPausa.GetComponent<RectTransform>();
             if (rect != null)
@@ -240,13 +322,22 @@ public class MenuPausa : MonoBehaviour
                 rect.anchorMax = new Vector2(0.5f, 0.5f);
                 rect.pivot = new Vector2(0.5f, 0.5f);
                 rect.anchoredPosition = Vector2.zero;
-                rect.sizeDelta = new Vector2(520f, 430f);
+                rect.sizeDelta = new Vector2(560f, 500f);
             }
+
+            AsegurarTituloPausa();
+            PosicionarBoton(botonReanudar, new Vector2(0f, 122f));
+            PosicionarBoton(botonReiniciar, new Vector2(0f, 54f));
+            PosicionarBoton(botonSeleccionJuego, new Vector2(0f, -14f));
+            PosicionarBoton(botonMenuPrincipal, new Vector2(0f, -82f));
+            PosicionarBoton(botonGuardar, new Vector2(0f, -150f));
         }
 
         EstilizarBoton(botonReanudar, "Continuar");
+        EstilizarBoton(botonReiniciar, "Reintentar");
+        EstilizarBoton(botonSeleccionJuego, "Volver a selección");
         EstilizarBoton(botonGuardar, "Guardar");
-        EstilizarBoton(botonMenuPrincipal, "Salir al menu");
+        EstilizarBoton(botonMenuPrincipal, "Volver al menú");
 
         if (panelPausa != null)
         {
@@ -261,9 +352,17 @@ public class MenuPausa : MonoBehaviour
                 {
                     EstilizarBoton(boton, "Guardar");
                 }
+                else if (texto.Contains("reiniciar") || texto.Contains("reintentar"))
+                {
+                    EstilizarBoton(boton, "Reintentar");
+                }
+                else if (texto.Contains("selecci"))
+                {
+                    EstilizarBoton(boton, "Volver a selección");
+                }
                 else if (texto.Contains("salir") || texto.Contains("menu"))
                 {
-                    EstilizarBoton(boton, "Salir al menu");
+                    EstilizarBoton(boton, "Volver al menú");
                 }
                 else if (texto.Contains("continuar") || texto.Contains("reanudar"))
                 {
@@ -300,6 +399,47 @@ public class MenuPausa : MonoBehaviour
         }
     }
 
+    private void PrepararAnimacionPanel(bool mostrar)
+    {
+        if (panelPausa == null)
+        {
+            return;
+        }
+
+        if (grupoPausa == null)
+        {
+            grupoPausa = panelPausa.GetComponent<CanvasGroup>();
+            if (grupoPausa == null)
+            {
+                grupoPausa = panelPausa.AddComponent<CanvasGroup>();
+            }
+        }
+
+        grupoPausa.DOKill();
+        panelPausa.transform.DOKill();
+
+        if (mostrar)
+        {
+            grupoPausa.alpha = 0f;
+            panelPausa.transform.localScale = Vector3.one * 0.96f;
+            grupoPausa.DOFade(1f, 0.15f).SetUpdate(true).SetLink(panelPausa);
+            panelPausa.transform.DOScale(1f, 0.18f).SetEase(Ease.OutBack).SetUpdate(true).SetLink(panelPausa);
+        }
+        else
+        {
+            grupoPausa.DOFade(0f, 0.12f)
+                .SetUpdate(true)
+                .SetLink(panelPausa)
+                .OnComplete(() =>
+                {
+                    if (panelPausa != null)
+                    {
+                        panelPausa.SetActive(false);
+                    }
+                });
+        }
+    }
+
     private void EstilizarBoton(Button boton, string texto)
     {
         if (boton == null)
@@ -311,7 +451,24 @@ public class MenuPausa : MonoBehaviour
 
         if (imagen != null)
         {
-            imagen.color = new Color(0.04f, 0.03f, 0.09f, 0.95f);
+            Sprite spriteBoton = texto.ToLowerInvariant().Contains("salir")
+                || texto.ToLowerInvariant().Contains("menú")
+                || texto.ToLowerInvariant().Contains("menu")
+                ? EcosAulaUIAssets.ObtenerBoton("red")
+                : texto.ToLowerInvariant().Contains("guardar") || texto.ToLowerInvariant().Contains("continuar")
+                    ? EcosAulaUIAssets.ObtenerBoton("green")
+                    : EcosAulaUIAssets.ObtenerBoton("blue");
+
+            if (spriteBoton != null)
+            {
+                imagen.sprite = spriteBoton;
+                imagen.type = Image.Type.Simple;
+                imagen.color = Color.white;
+            }
+            else
+            {
+                imagen.color = new Color(0.04f, 0.03f, 0.09f, 0.95f);
+            }
         }
 
         TextMeshProUGUI etiquetaTMP = boton.GetComponentInChildren<TextMeshProUGUI>(true);
@@ -321,6 +478,7 @@ public class MenuPausa : MonoBehaviour
             etiquetaTMP.text = texto;
             etiquetaTMP.color = Color.white;
             etiquetaTMP.fontSize = Mathf.Max(etiquetaTMP.fontSize, 22f);
+            etiquetaTMP.alignment = TextAlignmentOptions.Center;
         }
 
         Text etiquetaLegacy = boton.GetComponentInChildren<Text>(true);
@@ -330,7 +488,144 @@ public class MenuPausa : MonoBehaviour
             etiquetaLegacy.text = texto;
             etiquetaLegacy.color = Color.white;
             etiquetaLegacy.fontSize = Mathf.Max(etiquetaLegacy.fontSize, 22);
+            etiquetaLegacy.alignment = TextAnchor.MiddleCenter;
         }
+
+        RectTransform rect = boton.GetComponent<RectTransform>();
+        if (rect != null)
+        {
+            rect.sizeDelta = new Vector2(360f, 58f);
+        }
+
+        if (boton.GetComponent<EcosAulaBotonAudio>() == null)
+        {
+            boton.gameObject.AddComponent<EcosAulaBotonAudio>();
+        }
+    }
+
+    private void ConfigurarNavegacion(Button boton)
+    {
+        if (boton == null)
+        {
+            return;
+        }
+
+        Navigation nav = boton.navigation;
+        nav.mode = Navigation.Mode.Automatic;
+        boton.navigation = nav;
+    }
+
+    private void PosicionarBoton(Button boton, Vector2 posicion)
+    {
+        if (boton == null)
+        {
+            return;
+        }
+
+        RectTransform rect = boton.GetComponent<RectTransform>();
+        if (rect == null)
+        {
+            return;
+        }
+
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = posicion;
+        rect.sizeDelta = new Vector2(360f, 58f);
+    }
+
+    private GameObject CrearPanelPausaRuntime(Transform padre)
+    {
+        GameObject panel = new GameObject(
+            "PanelPausaJuego2",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
+            typeof(CanvasGroup)
+        );
+        panel.transform.SetParent(padre, false);
+        panel.SetActive(false);
+        return panel;
+    }
+
+    private Button CrearBotonPausa(string nombre, string texto, Vector2 posicion)
+    {
+        if (panelPausa == null)
+        {
+            return null;
+        }
+
+        GameObject objeto = new GameObject(
+            nombre,
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
+            typeof(Button)
+        );
+        objeto.transform.SetParent(panelPausa.transform, false);
+
+        RectTransform rect = objeto.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = posicion;
+        rect.sizeDelta = new Vector2(360f, 58f);
+
+        GameObject etiqueta = new GameObject(
+            "Texto",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(TextMeshProUGUI)
+        );
+        etiqueta.transform.SetParent(objeto.transform, false);
+
+        RectTransform rectEtiqueta = etiqueta.GetComponent<RectTransform>();
+        rectEtiqueta.anchorMin = Vector2.zero;
+        rectEtiqueta.anchorMax = Vector2.one;
+        rectEtiqueta.offsetMin = new Vector2(16f, 4f);
+        rectEtiqueta.offsetMax = new Vector2(-16f, -4f);
+
+        TextMeshProUGUI textoBoton = etiqueta.GetComponent<TextMeshProUGUI>();
+        textoBoton.text = texto;
+        textoBoton.fontSize = 24f;
+        textoBoton.alignment = TextAlignmentOptions.Center;
+        textoBoton.color = Color.white;
+
+        return objeto.GetComponent<Button>();
+    }
+
+    private void AsegurarTituloPausa()
+    {
+        if (panelPausa == null || panelPausa.transform.Find("TituloPausaJuego2") != null)
+        {
+            return;
+        }
+
+        GameObject titulo = new GameObject(
+            "TituloPausaJuego2",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(TextMeshProUGUI)
+        );
+        titulo.transform.SetParent(panelPausa.transform, false);
+
+        RectTransform rect = titulo.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(0f, 196f);
+        rect.sizeDelta = new Vector2(460f, 70f);
+
+        TextMeshProUGUI textoTitulo = titulo.GetComponent<TextMeshProUGUI>();
+        textoTitulo.text = "PAUSA";
+        textoTitulo.fontSize = 48f;
+        textoTitulo.alignment = TextAlignmentOptions.Center;
+        textoTitulo.color = new Color(0.86f, 0.95f, 1f, 1f);
+
+        Shadow sombra = titulo.AddComponent<Shadow>();
+        sombra.effectColor = new Color(0.35f, 0.1f, 1f, 0.65f);
+        sombra.effectDistance = new Vector2(0f, -3f);
     }
 
     private string ObtenerTextoBoton(Button boton)

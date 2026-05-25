@@ -21,13 +21,22 @@ public class AnxietyBarStyler : MonoBehaviour, IAnxietyObserver
 
     void Start()
     {
-        AnxietySystem.Instance.AddObserver(this);
-        backgroundImage.color = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+        ResolverReferencias();
+        AplicarEstiloBase();
+
+        if (AnxietySystem.Instance != null)
+        {
+            AnxietySystem.Instance.AddObserver(this);
+            OnAnxietyChanged(AnxietySystem.Instance.GetCurrentAnxiety(), AnxietySystem.Instance.maxAnxiety);
+        }
     }
 
     void OnDestroy()
     {
-        AnxietySystem.Instance.RemoveObserver(this);
+        if (AnxietySystem.Instance != null)
+        {
+            AnxietySystem.Instance.RemoveObserver(this);
+        }
     }
 
     void Update()
@@ -36,31 +45,44 @@ public class AnxietyBarStyler : MonoBehaviour, IAnxietyObserver
         {
             pulseTimer += Time.deltaTime * 5f;
             float alpha = Mathf.Abs(Mathf.Sin(pulseTimer));
-            fillImage.color = new Color(colorCritico.r, colorCritico.g, colorCritico.b, alpha);
+            if (fillImage != null)
+            {
+                fillImage.color = new Color(colorCritico.r, colorCritico.g, colorCritico.b, Mathf.Lerp(0.58f, 1f, alpha));
+            }
         }
     }
 
     public void OnAnxietyChanged(float currentAnxiety, float maxAnxiety)
     {
-        slider.value = currentAnxiety;
-        slider.maxValue = maxAnxiety;
+        ResolverReferencias();
+
+        if (maxAnxiety <= 0f)
+        {
+            maxAnxiety = 100f;
+        }
+
+        if (slider != null)
+        {
+            slider.maxValue = maxAnxiety;
+            slider.value = Mathf.Clamp(currentAnxiety, 0f, maxAnxiety);
+        }
 
         float porcentaje = currentAnxiety / maxAnxiety;
 
         // Cambia color segun nivel
         if (porcentaje < 0.33f)
         {
-            fillImage.color = colorBajo;
+            AplicarColorRelleno(colorBajo);
             isPulsing = false;
         }
         else if (porcentaje < 0.66f)
         {
-            fillImage.color = colorMedio;
+            AplicarColorRelleno(colorMedio);
             isPulsing = false;
         }
         else if (porcentaje < 0.9f)
         {
-            fillImage.color = colorAlto;
+            AplicarColorRelleno(colorAlto);
             isPulsing = false;
         }
         else
@@ -70,6 +92,65 @@ public class AnxietyBarStyler : MonoBehaviour, IAnxietyObserver
         }
 
         // Actualiza texto
-        textoAnsiedad.text = $"Ansiedad: {Mathf.RoundToInt(currentAnxiety)}%";
+        if (textoAnsiedad != null)
+        {
+            textoAnsiedad.text = $"Ansiedad: {Mathf.RoundToInt(currentAnxiety)}%";
+        }
+    }
+
+    private void ResolverReferencias()
+    {
+        if (slider == null)
+        {
+            slider = GetComponentInChildren<Slider>(true);
+        }
+
+        if (fillImage == null && slider != null && slider.fillRect != null)
+        {
+            fillImage = slider.fillRect.GetComponent<Image>();
+        }
+
+        if (textoAnsiedad == null)
+        {
+            textoAnsiedad = GetComponentInChildren<TextMeshProUGUI>(true);
+        }
+
+        if (backgroundImage == null)
+        {
+            backgroundImage = GetComponent<Image>();
+        }
+    }
+
+    private void AplicarEstiloBase()
+    {
+        if (backgroundImage != null)
+        {
+            backgroundImage.color = new Color(0.025f, 0.018f, 0.055f, 0.86f);
+            backgroundImage.raycastTarget = false;
+
+            Outline outline = backgroundImage.GetComponent<Outline>();
+            if (outline == null)
+            {
+                outline = backgroundImage.gameObject.AddComponent<Outline>();
+            }
+
+            outline.effectColor = new Color(0.20f, 0.86f, 1f, 0.58f);
+            outline.effectDistance = new Vector2(2f, -2f);
+        }
+
+        if (textoAnsiedad != null)
+        {
+            textoAnsiedad.color = new Color(0.90f, 0.98f, 1f, 1f);
+            textoAnsiedad.fontSize = Mathf.Max(textoAnsiedad.fontSize, 18f);
+            textoAnsiedad.fontStyle = FontStyles.Bold;
+        }
+    }
+
+    private void AplicarColorRelleno(Color color)
+    {
+        if (fillImage != null)
+        {
+            fillImage.color = color;
+        }
     }
 }

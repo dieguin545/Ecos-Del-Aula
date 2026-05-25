@@ -8,17 +8,34 @@ public class AnxietyBarUI : MonoBehaviour, IAnxietyObserver
 
     void Start()
     {
-        AnxietySystem.Instance.AddObserver(this);
+        if (slider == null)
+        {
+            slider = GetComponentInChildren<Slider>(true);
+        }
+
+        if (AnxietySystem.Instance != null)
+        {
+            AnxietySystem.Instance.AddObserver(this);
+            OnAnxietyChanged(AnxietySystem.Instance.GetCurrentAnxiety(), AnxietySystem.Instance.maxAnxiety);
+        }
     }
 
     void OnDestroy()
     {
-        AnxietySystem.Instance.RemoveObserver(this);
+        if (AnxietySystem.Instance != null)
+        {
+            AnxietySystem.Instance.RemoveObserver(this);
+        }
     }
 
     public void OnAnxietyChanged(float currentAnxiety, float maxAnxiety)
     {
-        slider.value = currentAnxiety;
+        if (slider == null)
+        {
+            return;
+        }
+
         slider.maxValue = maxAnxiety;
+        slider.value = Mathf.Clamp(currentAnxiety, 0f, maxAnxiety);
     }
 }

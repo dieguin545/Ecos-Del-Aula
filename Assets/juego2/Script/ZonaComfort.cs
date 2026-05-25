@@ -12,6 +12,7 @@ public class ZonaConfort : MonoBehaviour
     public string accionTexto; // ej: "Boxeando", "Dibujando"
     public int vecesMaximas = 5;
     public GameObject signoExclamacion;
+
     [Header("UI")]
     public GameObject panelIndicador;
     public TextMeshProUGUI textoIndicador;
@@ -32,13 +33,17 @@ public class ZonaConfort : MonoBehaviour
     void Start()
     {
         personajeActivo = (PersonajeType)PlayerPrefs.GetInt("PersonajeSeleccionado", 0);
-        movimientoJugador = FindObjectOfType<MovimientoJugador>();
-        animacionJugador = FindObjectOfType<Animacion>();
+        movimientoJugador = FindAnyObjectByType<MovimientoJugador>();
+        animacionJugador = FindAnyObjectByType<Animacion>();
 
         if (panelIndicador != null)
+        {
             panelIndicador.SetActive(false);
+        }
         if (panelAccion != null)
+        {
             panelAccion.SetActive(false);
+        }
     }
 
     void Update()
@@ -57,7 +62,6 @@ public class ZonaConfort : MonoBehaviour
         {
             UsarZonaConfort();
         }
-        
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -66,7 +70,10 @@ public class ZonaConfort : MonoBehaviour
         {
             jugadorDentro = true;
             MostrarIndicador();
-            signoExclamacion.SetActive(false);
+            if (signoExclamacion != null)
+            {
+                signoExclamacion.SetActive(false);
+            }
         }
     }
 
@@ -76,22 +83,35 @@ public class ZonaConfort : MonoBehaviour
         {
             jugadorDentro = false;
             if (panelIndicador != null)
+            {
                 panelIndicador.SetActive(false);
-            signoExclamacion.SetActive(true);
+            }
+            if (signoExclamacion != null)
+            {
+                signoExclamacion.SetActive(true);
+            }
         }
     }
 
     private void MostrarIndicador()
     {
-        if (panelIndicador == null) return;
+        if (panelIndicador == null)
+        {
+            return;
+        }
+
         panelIndicador.SetActive(true);
 
         if (personajeActivo == personajeCompatible)
         {
             if (vecesUsada >= vecesMaximas)
+            {
                 DesactivarPromptYMostrarTexto("Ya estás aburrido de esta actividad");
-            else
+            }
+            else if (textoIndicador != null)
+            {
                 EcosAulaPromptUI.InyectarEn(textoIndicador.gameObject, AccionLogica.InteractuarF, mensajeConfort);
+            }
         }
         else
         {
@@ -101,6 +121,11 @@ public class ZonaConfort : MonoBehaviour
 
     private void DesactivarPromptYMostrarTexto(string texto)
     {
+        if (textoIndicador == null)
+        {
+            return;
+        }
+
         EcosAulaPromptUI prompt = textoIndicador.GetComponent<EcosAulaPromptUI>();
         if (prompt != null)
         {
@@ -110,6 +135,7 @@ public class ZonaConfort : MonoBehaviour
             Transform txt = textoIndicador.transform.Find("_TextoVerbo");
             if (txt != null) txt.gameObject.SetActive(false);
         }
+
         textoIndicador.enabled = true;
         textoIndicador.text = texto;
     }
@@ -120,8 +146,7 @@ public class ZonaConfort : MonoBehaviour
         {
             if (vecesUsada >= vecesMaximas)
             {
-                if (panelIndicador != null)
-                    DesactivarPromptYMostrarTexto("Te estás aburriendo de esta actividad");
+                DesactivarPromptYMostrarTexto("Te estás aburriendo de esta actividad");
                 return;
             }
 
@@ -129,29 +154,35 @@ public class ZonaConfort : MonoBehaviour
             realizandoAccion = true;
             enCooldown = true;
 
-            // Desactiva movimiento
             if (movimientoJugador != null)
+            {
                 movimientoJugador.enabled = false;
+            }
             if (animacionJugador != null)
+            {
                 animacionJugador.enabled = false;
+            }
 
-            // Muestra texto de accion sobre el personaje
             if (panelAccion != null)
             {
                 panelAccion.SetActive(true);
-                textoAccion.text = accionTexto;
+                if (textoAccion != null)
+                {
+                    textoAccion.text = accionTexto;
+                }
             }
 
             if (panelIndicador != null)
+            {
                 panelIndicador.SetActive(false);
+            }
 
-            Invoke("TerminarAccion", 5f);
+            Invoke(nameof(TerminarAccion), 5f);
         }
         else
         {
-            if (panelIndicador != null)
-                DesactivarPromptYMostrarTexto(mensajeIncompatible);
-            Invoke("OcultarIndicador", 2f);
+            DesactivarPromptYMostrarTexto(mensajeIncompatible);
+            Invoke(nameof(OcultarIndicador), 2f);
         }
     }
 
@@ -159,24 +190,32 @@ public class ZonaConfort : MonoBehaviour
     {
         realizandoAccion = false;
 
-        // Reactiva movimiento
         if (movimientoJugador != null)
+        {
             movimientoJugador.enabled = true;
+        }
         if (animacionJugador != null)
+        {
             animacionJugador.enabled = true;
+        }
 
-        // Oculta texto de accion
         if (panelAccion != null)
+        {
             panelAccion.SetActive(false);
+        }
 
-        // Reduce ansiedad solo si no esta aburrido
-        if (vecesUsada <= vecesMaximas)
+        if (vecesUsada <= vecesMaximas && AnxietySystem.Instance != null)
+        {
             AnxietySystem.Instance.DecreaseAnxiety(ansiedadQueReduce);
+            VidaEscolarHUD.Ensure().MostrarToast("Zona de confort: ansiedad reducida");
+        }
     }
 
     private void OcultarIndicador()
     {
         if (panelIndicador != null)
+        {
             panelIndicador.SetActive(false);
+        }
     }
 }

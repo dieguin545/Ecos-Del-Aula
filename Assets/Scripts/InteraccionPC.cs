@@ -39,6 +39,7 @@ public class InteraccionPC : MonoBehaviour
     private bool usandoPC;
     private Behaviour scriptCamara;
     private GestorVentanasPC gestorVentanas;
+    private readonly List<Behaviour> componentesMundoBloqueados = new List<Behaviour>();
 
     private void Start()
     {
@@ -69,6 +70,7 @@ public class InteraccionPC : MonoBehaviour
         {
             scriptCamara = camaraPrincipal.GetComponent("ControlCamara3D") as Behaviour;
         }
+        ResolverReferenciasMundo();
 
         usandoPC = false;
         PCAbierta = false;
@@ -87,6 +89,10 @@ public class InteraccionPC : MonoBehaviour
         bool hayCampoTextoActivo = usandoPC && HayCampoTextoActivo();
 
         ActualizarTextoInteractuar();
+        if (usandoPC && textoInteractuar != null && textoInteractuar.activeSelf)
+        {
+            textoInteractuar.SetActive(false);
+        }
 
         if (jugadorDentro && GestorEntradaGlobal.InteractuarPresionado(teclaInteractuar))
         {
@@ -550,6 +556,7 @@ public class InteraccionPC : MonoBehaviour
         PCAbierta = true;
 
         LimpiarFocoUI();
+        ResolverReferenciasMundo();
 
         if (canvasPC != null)
         {
@@ -570,18 +577,11 @@ public class InteraccionPC : MonoBehaviour
             textoInteractuar.SetActive(false);
         }
 
-        if (scriptMovimientoJugador != null)
-        {
-            scriptMovimientoJugador.enabled = false;
-        }
-
-        if (scriptCamara != null)
-        {
-            scriptCamara.enabled = false;
-        }
+        BloquearInputMundo();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        UIAudioManager.PlayOpen();
     }
 
     private void SalirPC()
@@ -600,15 +600,7 @@ public class InteraccionPC : MonoBehaviour
             canvasPC.SetActive(false);
         }
 
-        if (scriptMovimientoJugador != null)
-        {
-            scriptMovimientoJugador.enabled = true;
-        }
-
-        if (scriptCamara != null)
-        {
-            scriptCamara.enabled = true;
-        }
+        RestaurarInputMundo();
 
         LimpiarFocoUI();
 
@@ -619,6 +611,8 @@ public class InteraccionPC : MonoBehaviour
         {
             textoInteractuar.SetActive(true);
         }
+
+        UIAudioManager.PlayClose();
     }
 
     public void SalirPCDesdeUI()
@@ -633,6 +627,72 @@ public class InteraccionPC : MonoBehaviour
     {
         PCAbierta = false;
         FrameCierrePC = Time.frameCount - 10;
+    }
+
+    private void ResolverReferenciasMundo()
+    {
+        if (scriptMovimientoJugador == null)
+        {
+            MovimientoJugadorConCamara movimiento3D = FindAnyObjectByType<MovimientoJugadorConCamara>();
+            if (movimiento3D != null)
+            {
+                scriptMovimientoJugador = movimiento3D;
+            }
+            else
+            {
+                MovimientoJugador movimiento2D = FindAnyObjectByType<MovimientoJugador>();
+                if (movimiento2D != null)
+                {
+                    scriptMovimientoJugador = movimiento2D;
+                }
+            }
+        }
+
+        if (camaraPrincipal == null)
+        {
+            Camera camara = Camera.main;
+            if (camara != null)
+            {
+                camaraPrincipal = camara.gameObject;
+            }
+        }
+
+        if (scriptCamara == null && camaraPrincipal != null)
+        {
+            scriptCamara = camaraPrincipal.GetComponent("ControlCamara3D") as Behaviour;
+        }
+    }
+
+    private void BloquearInputMundo()
+    {
+        componentesMundoBloqueados.Clear();
+        BloquearComponente(scriptMovimientoJugador);
+        BloquearComponente(scriptCamara);
+    }
+
+    private void BloquearComponente(Behaviour componente)
+    {
+        if (componente == null || !componente.enabled)
+        {
+            return;
+        }
+
+        componentesMundoBloqueados.Add(componente);
+        componente.enabled = false;
+    }
+
+    private void RestaurarInputMundo()
+    {
+        for (int i = 0; i < componentesMundoBloqueados.Count; i++)
+        {
+            Behaviour componente = componentesMundoBloqueados[i];
+            if (componente != null)
+            {
+                componente.enabled = true;
+            }
+        }
+
+        componentesMundoBloqueados.Clear();
     }
 
     private void OnTriggerEnter(Collider other)

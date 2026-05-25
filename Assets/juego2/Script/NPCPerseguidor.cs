@@ -24,7 +24,6 @@ public class NPCPerseguidor : NPCBase
 
         if (persiguiendo && jugador != null)
         {
-             Debug.Log("Distancia al jugador: " + Vector3.Distance(transform.position, jugador.position));
             float distancia = Vector3.Distance(transform.position, jugador.position);
 
             if (distancia > distanciaMaxima)
@@ -48,7 +47,6 @@ public class NPCPerseguidor : NPCBase
 
     protected override void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Algo entró al trigger: " + other.gameObject.name + " Tag: " + other.tag);
         if (other.CompareTag("Player"))
         {
             jugador = other.transform;

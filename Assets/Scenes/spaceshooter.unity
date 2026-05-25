@@ -595,6 +595,7 @@ MonoBehaviour:
   regeneracionTurboPorSegundo: 15
   retrasoRegeneracionTurbo: 0.75
   bloqueoTurboAlVaciar: 0.6
+  humoTurbo: {fileID: 0}
   fuerzaEsquive: 28
   duracionEsquive: 0.22
   cooldownEsquive: 0.55

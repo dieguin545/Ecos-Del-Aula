@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public enum AccionLogica
 {
@@ -20,6 +21,8 @@ public class EcosAulaPromptUI : MonoBehaviour
 {
     public AccionLogica accion;
     public string textoVerbo = "";
+
+    private static readonly Dictionary<string, Sprite> cacheKenney = new Dictionary<string, Sprite>();
 
     private Image imagenPrincipal;
     private Image imagenOverlay;
@@ -89,7 +92,7 @@ public class EcosAulaPromptUI : MonoBehaviour
         rtMain.anchorMax = new Vector2(0f, 0.5f);
         rtMain.pivot = new Vector2(0f, 0.5f);
         rtMain.anchoredPosition = new Vector2(0f, 0f);
-        rtMain.sizeDelta = new Vector2(40f, 40f);
+        rtMain.sizeDelta = new Vector2(32f, 32f);
 
         // 2. Imagen Overlay (para glifos de letras en el teclado, ej. 'E')
         Transform imgOverlayTr = imgPrincipalTr.Find("_IconoOverlay");
@@ -109,7 +112,7 @@ public class EcosAulaPromptUI : MonoBehaviour
         rtOverlay.anchorMax = new Vector2(0.5f, 0.5f);
         rtOverlay.pivot = new Vector2(0.5f, 0.5f);
         rtOverlay.anchoredPosition = new Vector2(0f, 1f); // Un pixel arriba para centrado visual en el keycap
-        rtOverlay.sizeDelta = new Vector2(23f, 23f);
+        rtOverlay.sizeDelta = new Vector2(16f, 16f);
 
         Transform txtFallbackTr = imgPrincipalTr.Find("_TextoFallbackIcono");
         if (txtFallbackTr == null)
@@ -119,7 +122,7 @@ public class EcosAulaPromptUI : MonoBehaviour
             txtFallbackTr = go.transform;
         }
         textoFallbackIcono = txtFallbackTr.GetComponent<TextMeshProUGUI>();
-        textoFallbackIcono.fontSize = 15f;
+        textoFallbackIcono.fontSize = 10f;
         textoFallbackIcono.color = Color.white;
         textoFallbackIcono.alignment = TextAlignmentOptions.Center;
         textoFallbackIcono.fontStyle = FontStyles.Bold;
@@ -140,7 +143,7 @@ public class EcosAulaPromptUI : MonoBehaviour
             txtTr = go.transform;
         }
         componenteTexto = txtTr.GetComponent<TextMeshProUGUI>();
-        componenteTexto.fontSize = 18f;
+        componenteTexto.fontSize = 15f;
         componenteTexto.color = Color.white;
         componenteTexto.alignment = TextAlignmentOptions.MidlineLeft;
         componenteTexto.fontStyle = FontStyles.Bold;
@@ -151,8 +154,8 @@ public class EcosAulaPromptUI : MonoBehaviour
         rtText.anchorMin = new Vector2(0f, 0f);
         rtText.anchorMax = new Vector2(0f, 1f);
         rtText.pivot = new Vector2(0f, 0.5f);
-        rtText.anchoredPosition = new Vector2(48f, 0f);
-        rtText.sizeDelta = new Vector2(158f, 0f);
+        rtText.anchoredPosition = new Vector2(40f, 0f);
+        rtText.sizeDelta = new Vector2(118f, 0f);
     }
 
     private void ActualizarVisual(TipoDispositivoEntrada dispositivo)
@@ -171,8 +174,12 @@ public class EcosAulaPromptUI : MonoBehaviour
 
         if (dispositivo == TipoDispositivoEntrada.ControlXbox)
         {
-            int idxXbox = ObtenerIndexXbox(accion);
-            Sprite sprite = EcosAulaSpriteLoader.ObtenerSpriteXbox(idxXbox);
+            Sprite sprite = ObtenerSpriteKenney("Xbox", ObtenerNombreKenneyXbox(accion));
+            if (sprite == null)
+            {
+                int idxXbox = ObtenerIndexXbox(accion);
+                sprite = EcosAulaSpriteLoader.ObtenerSpriteXbox(idxXbox);
+            }
             if (sprite != null)
             {
                 AplicarSprite(sprite);
@@ -184,27 +191,42 @@ public class EcosAulaPromptUI : MonoBehaviour
         }
         else // TecladoMouse
         {
-            int idxTeclado = ObtenerIndexTeclado(accion);
-            bool esLetraOverlay = RequiereOverlayTeclado(accion, out int idxOverlay);
+            if (accion == AccionLogica.Navegar)
+            {
+                AplicarFallback(ObtenerTextoFallback(dispositivo, accion), new Color(0.08f, 0.08f, 0.14f, 0.96f));
+                return;
+            }
 
-            Sprite spritePrincipal = EcosAulaSpriteLoader.ObtenerSpriteTeclado(idxTeclado);
+            Sprite spritePrincipal = ObtenerSpriteKenney("Keyboard", ObtenerNombreKenneyTeclado(accion));
             if (spritePrincipal != null)
             {
                 AplicarSprite(spritePrincipal);
-
-                if (esLetraOverlay)
-                {
-                    Sprite spriteOverlay = EcosAulaSpriteLoader.ObtenerSpriteTeclado(idxOverlay);
-                    if (spriteOverlay != null)
-                    {
-                        imagenOverlay.sprite = spriteOverlay;
-                        imagenOverlay.gameObject.SetActive(true);
-                    }
-                }
+                imagenOverlay.gameObject.SetActive(false);
             }
             else
             {
-                AplicarFallback(ObtenerTextoFallback(dispositivo, accion), new Color(0.12f, 0.12f, 0.20f, 0.95f));
+                int idxTeclado = ObtenerIndexTeclado(accion);
+                bool esLetraOverlay = RequiereOverlayTeclado(accion, out int idxOverlay);
+
+                spritePrincipal = EcosAulaSpriteLoader.ObtenerSpriteTeclado(idxTeclado);
+                if (spritePrincipal != null)
+                {
+                    AplicarSprite(spritePrincipal);
+
+                    if (esLetraOverlay)
+                    {
+                        Sprite spriteOverlay = EcosAulaSpriteLoader.ObtenerSpriteTeclado(idxOverlay);
+                        if (spriteOverlay != null)
+                        {
+                            imagenOverlay.sprite = spriteOverlay;
+                            imagenOverlay.gameObject.SetActive(true);
+                        }
+                    }
+                }
+                else
+                {
+                    AplicarFallback(ObtenerTextoFallback(dispositivo, accion), new Color(0.12f, 0.12f, 0.20f, 0.95f));
+                }
             }
         }
     }
@@ -245,6 +267,92 @@ public class EcosAulaPromptUI : MonoBehaviour
             case AccionLogica.InteractuarF: return 130; // A
             default: return 130;
         }
+    }
+
+    private string ObtenerNombreKenneyXbox(AccionLogica act)
+    {
+        switch (act)
+        {
+            case AccionLogica.Confirmar:
+            case AccionLogica.Interactuar:
+            case AccionLogica.InteractuarF:
+                return "xbox_button_color_a";
+            case AccionLogica.Cancelar:
+                return "xbox_button_color_b";
+            case AccionLogica.Pausa:
+                return "xbox_button_menu";
+            case AccionLogica.Navegar:
+                return "xbox_dpad";
+            case AccionLogica.SiguientePestana:
+                return "xbox_rb";
+            case AccionLogica.AnteriorPestana:
+                return "xbox_lb";
+            case AccionLogica.RevisarContexto:
+                return "xbox_button_color_x";
+            default:
+                return "xbox_button_color_a";
+        }
+    }
+
+    private string ObtenerNombreKenneyTeclado(AccionLogica act)
+    {
+        switch (act)
+        {
+            case AccionLogica.Confirmar:
+                return "keyboard_enter";
+            case AccionLogica.Cancelar:
+            case AccionLogica.Pausa:
+                return "keyboard_escape";
+            case AccionLogica.Navegar:
+                return "keyboard_arrows";
+            case AccionLogica.Interactuar:
+            case AccionLogica.SiguientePestana:
+                return "keyboard_e";
+            case AccionLogica.AnteriorPestana:
+                return "keyboard_q";
+            case AccionLogica.RevisarContexto:
+                return "keyboard_r";
+            case AccionLogica.InteractuarF:
+                return "keyboard_f";
+            default:
+                return "keyboard_enter";
+        }
+    }
+
+    private static Sprite ObtenerSpriteKenney(string grupo, string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(grupo) || string.IsNullOrWhiteSpace(nombre))
+        {
+            return null;
+        }
+
+        string ruta = $"InputPrompts/Kenney/{grupo}/{nombre}";
+        if (cacheKenney.TryGetValue(ruta, out Sprite spriteCacheado))
+        {
+            return spriteCacheado;
+        }
+
+        Sprite sprite = Resources.Load<Sprite>(ruta);
+        if (sprite == null)
+        {
+            Texture2D textura = Resources.Load<Texture2D>(ruta);
+            if (textura != null)
+            {
+                sprite = Sprite.Create(
+                    textura,
+                    new Rect(0f, 0f, textura.width, textura.height),
+                    new Vector2(0.5f, 0.5f),
+                    Mathf.Max(textura.width, textura.height)
+                );
+            }
+        }
+
+        if (sprite != null)
+        {
+            cacheKenney[ruta] = sprite;
+        }
+
+        return sprite;
     }
 
     private int ObtenerIndexTecladoCorregido(AccionLogica act)
@@ -288,7 +396,7 @@ public class EcosAulaPromptUI : MonoBehaviour
             case AccionLogica.Cancelar: return "Esc";
             case AccionLogica.Interactuar: return "E";
             case AccionLogica.Pausa: return "Esc";
-            case AccionLogica.Navegar: return "Nav";
+            case AccionLogica.Navegar: return "WASD";
             case AccionLogica.SiguientePestana: return "E";
             case AccionLogica.AnteriorPestana: return "Q";
             case AccionLogica.RevisarContexto: return "R";
@@ -412,12 +520,16 @@ public class EcosAulaPromptUI : MonoBehaviour
         rt.anchorMin = new Vector2(0f, 0f);
         rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0f, 0f);
-        rt.anchoredPosition = new Vector2(24f, 14f);
-        rt.sizeDelta = new Vector2(0f, 54f);
+        rt.anchoredPosition = new Vector2(22f, 12f);
+        rt.sizeDelta = new Vector2(0f, 42f);
 
         Image fondo = barra.GetComponent<Image>();
-        fondo.color = new Color(0.025f, 0.018f, 0.05f, 0.72f);
+        fondo.color = new Color(0.018f, 0.012f, 0.04f, 0.68f);
         fondo.raycastTarget = false;
+
+        Outline bordeBarra = barra.AddComponent<Outline>();
+        bordeBarra.effectColor = new Color(0.25f, 0.88f, 1f, 0.18f);
+        bordeBarra.effectDistance = new Vector2(1f, -1f);
 
         // Agregar HorizontalLayoutGroup para alinear los prompts
         HorizontalLayoutGroup layout = barra.AddComponent<HorizontalLayoutGroup>();
@@ -426,20 +538,41 @@ public class EcosAulaPromptUI : MonoBehaviour
         layout.childControlHeight = false;
         layout.childForceExpandWidth = false;
         layout.childForceExpandHeight = false;
-        layout.spacing = 18f;
-        layout.padding = new RectOffset(16, 16, 6, 6);
+        layout.spacing = 10f;
+        layout.padding = new RectOffset(12, 12, 4, 4);
 
         ContentSizeFitter fitter = barra.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
+        HashSet<string> claves = new HashSet<string>();
         foreach (var p in listado)
         {
-            GameObject promptGo = new GameObject("_PromptItem_" + p.accion, typeof(RectTransform));
+            string clave = p.accion + "|" + p.verbo;
+            if (!claves.Add(clave))
+            {
+                continue;
+            }
+
+            GameObject promptGo = new GameObject(
+                "_PromptItem_" + p.accion,
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(Outline)
+            );
             promptGo.transform.SetParent(barra.transform, false);
 
             RectTransform rtItem = promptGo.GetComponent<RectTransform>();
-            rtItem.sizeDelta = new Vector2(214f, 42f);
+            rtItem.sizeDelta = new Vector2(160f, 34f);
+
+            Image itemFondo = promptGo.GetComponent<Image>();
+            itemFondo.color = new Color(0.06f, 0.045f, 0.13f, 0.62f);
+            itemFondo.raycastTarget = false;
+
+            Outline itemBorde = promptGo.GetComponent<Outline>();
+            itemBorde.effectColor = new Color(0.48f, 0.35f, 1f, 0.22f);
+            itemBorde.effectDistance = new Vector2(1f, -1f);
 
             EcosAulaPromptUI promptComp = promptGo.AddComponent<EcosAulaPromptUI>();
             promptComp.Configurar(p.accion, p.verbo);

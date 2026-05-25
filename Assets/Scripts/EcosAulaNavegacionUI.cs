@@ -188,22 +188,47 @@ public class EcosAulaNavegacionUI : MonoBehaviour
             }
         }
 
+        lista.RemoveAll(s => !EsSelectableValido(s));
         if (lista.Count == 0) return null;
 
         // Priorizar por orden de jerarquía o nombre de panel
         lista.Sort((a, b) =>
         {
             // Si uno es del menú izquierdo de inicio, priorizar
-            bool aIsMenu = ObtenerPrioridadSelectable(a) == 0;
-            bool bIsMenu = ObtenerPrioridadSelectable(b) == 0;
-            if (aIsMenu && !bIsMenu) return -1;
-            if (!aIsMenu && bIsMenu) return 1;
-            int ordenA = EsSelectableValido(a) ? a.transform.GetSiblingIndex() : int.MaxValue;
-            int ordenB = EsSelectableValido(b) ? b.transform.GetSiblingIndex() : int.MaxValue;
-            return ordenA.CompareTo(ordenB);
+            try
+            {
+                if (!EsSelectableValido(a) && !EsSelectableValido(b)) return 0;
+                if (!EsSelectableValido(a)) return 1;
+                if (!EsSelectableValido(b)) return -1;
+
+                bool aIsMenu = ObtenerPrioridadSelectable(a) == 0;
+                bool bIsMenu = ObtenerPrioridadSelectable(b) == 0;
+                if (aIsMenu && !bIsMenu) return -1;
+                if (!aIsMenu && bIsMenu) return 1;
+
+                int ordenA = a.transform != null ? a.transform.GetSiblingIndex() : int.MaxValue;
+                int ordenB = b.transform != null ? b.transform.GetSiblingIndex() : int.MaxValue;
+                return ordenA.CompareTo(ordenB);
+            }
+            catch (MissingReferenceException)
+            {
+                return 0;
+            }
+            catch (System.NullReferenceException)
+            {
+                return 0;
+            }
         });
 
-        return lista[0];
+        for (int i = 0; i < lista.Count; i++)
+        {
+            if (EsSelectableValido(lista[i]))
+            {
+                return lista[i];
+            }
+        }
+
+        return null;
     }
 
     private Selectable BuscarEnJerarquia(Transform padre)

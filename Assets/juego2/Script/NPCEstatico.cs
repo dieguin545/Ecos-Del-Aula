@@ -7,7 +7,10 @@ public class NPCEstatico : NPCBase
 
     void Start()
     {
-        burbujaDialogo.SetActive(false);
+        if (burbujaDialogo != null)
+        {
+            burbujaDialogo.SetActive(false);
+        }
     }
 
     protected override void Interactuar()
@@ -27,13 +30,26 @@ public class NPCEstatico : NPCBase
 
     private void MostrarBurbuja(string mensaje)
     {
-        textoBurbuja.text = mensaje;
+        if (textoBurbuja != null)
+        {
+            textoBurbuja.text = mensaje;
+        }
+
+        if (burbujaDialogo == null)
+        {
+            VidaEscolarHUD.Ensure().MostrarToast(mensaje);
+            return;
+        }
+
         burbujaDialogo.SetActive(true);
         Invoke("OcultarBurbuja", 3f);
     }
 
     private void OcultarBurbuja()
     {
-        burbujaDialogo.SetActive(false);
+        if (burbujaDialogo != null)
+        {
+            burbujaDialogo.SetActive(false);
+        }
     }
 }

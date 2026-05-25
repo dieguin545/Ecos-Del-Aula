@@ -16,6 +16,11 @@ public class CamaraNave3D : MonoBehaviour
     public float limiteArriba = -35f;
     public float limiteAbajo = 60f;
 
+    [Header("Control Xbox")]
+    public bool intercambiarEjesControl = true;
+    public bool invertirVerticalControl = false;
+    public float deadzoneStickCamara = 0.18f;
+
     private float rotacionX = 10f;
     private float rotacionY = 0f;
 
@@ -46,8 +51,10 @@ public class CamaraNave3D : MonoBehaviour
 
         float mouseX = Input.GetAxis("Mouse X") * sensibilidadMouse;
         float mouseY = Input.GetAxis("Mouse Y") * sensibilidadMouse;
-        float stickX = GestorEntradaGlobal.ObtenerCamaraHorizontal() * sensibilidadControl * Time.unscaledDeltaTime;
-        float stickY = GestorEntradaGlobal.ObtenerCamaraVertical() * sensibilidadControl * Time.unscaledDeltaTime;
+
+        Vector2 stickCamara = ObtenerStickCamaraNormalizado();
+        float stickX = stickCamara.x * sensibilidadControl * Time.unscaledDeltaTime;
+        float stickY = stickCamara.y * sensibilidadControl * Time.unscaledDeltaTime;
 
         rotacionY += mouseX + stickX;
         rotacionX -= mouseY + stickY;
@@ -83,5 +90,35 @@ public class CamaraNave3D : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private Vector2 ObtenerStickCamaraNormalizado()
+    {
+        float horizontal = GestorEntradaGlobal.ObtenerCamaraHorizontal();
+        float vertical = GestorEntradaGlobal.ObtenerCamaraVertical();
+
+        if (intercambiarEjesControl)
+        {
+            float temporal = horizontal;
+            horizontal = vertical;
+            vertical = temporal;
+        }
+
+        if (invertirVerticalControl)
+        {
+            vertical *= -1f;
+        }
+
+        if (Mathf.Abs(horizontal) < deadzoneStickCamara)
+        {
+            horizontal = 0f;
+        }
+
+        if (Mathf.Abs(vertical) < deadzoneStickCamara)
+        {
+            vertical = 0f;
+        }
+
+        return new Vector2(horizontal, vertical);
     }
 }

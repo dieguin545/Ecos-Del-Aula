@@ -29,21 +29,45 @@ public class AnxietySystem : MonoBehaviour
     // Registrar observer
     public void AddObserver(IAnxietyObserver observer)
     {
+        if (observer == null || observers.Contains(observer))
+        {
+            return;
+        }
+
         observers.AddLast(observer);
     }
 
     // Remover observer
     public void RemoveObserver(IAnxietyObserver observer)
     {
+        if (observer == null)
+        {
+            return;
+        }
+
         observers.Remove(observer);
     }
 
     // Notificar a todos los observers
     private void NotifyObservers()
     {
-        foreach (IAnxietyObserver observer in observers)
+        LinkedListNode<IAnxietyObserver> nodo = observers.First;
+        while (nodo != null)
         {
-            observer.OnAnxietyChanged(currentAnxiety, maxAnxiety);
+            LinkedListNode<IAnxietyObserver> siguiente = nodo.Next;
+            IAnxietyObserver observer = nodo.Value;
+            UnityEngine.Object unityObject = observer as UnityEngine.Object;
+
+            if (observer == null || unityObject == null)
+            {
+                observers.Remove(nodo);
+            }
+            else
+            {
+                observer.OnAnxietyChanged(currentAnxiety, maxAnxiety);
+            }
+
+            nodo = siguiente;
         }
     }
 
@@ -52,6 +76,7 @@ public class AnxietySystem : MonoBehaviour
     {
         currentAnxiety = Mathf.Clamp(currentAnxiety + amount, 0, maxAnxiety);
         NotifyObservers();
+        UIAudioManager.PlayAnxietyUp();
 
         if (currentAnxiety >= maxAnxiety)
         {
@@ -64,6 +89,7 @@ public class AnxietySystem : MonoBehaviour
     {
         currentAnxiety = Mathf.Clamp(currentAnxiety - amount, 0, maxAnxiety);
         NotifyObservers();
+        UIAudioManager.PlayAnxietyDown();
     }
 
     public float GetCurrentAnxiety() => currentAnxiety;

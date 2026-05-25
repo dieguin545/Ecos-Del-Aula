@@ -83,3 +83,7 @@ partida_slot_*.json
 partidas_indice.json
 *.save
 *.sav
+
+# Local test build artifacts
+/TempExtractTest/
+/BuildTemp/
