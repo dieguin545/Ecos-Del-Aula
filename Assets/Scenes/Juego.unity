@@ -3668,8 +3668,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ControlCamara3D
   jugador: {fileID: 1551766276}
   sensibilidadMouse: 2
+  sensibilidadControl: 115
   limiteArriba: -25
   limiteAbajo: 60
+  intercambiarEjesControl: 0
+  invertirVerticalControl: 0
+  deadzoneStickCamara: 0.18
   distancia: 4
   alturaMirada: 0.9
   radioColision: 0.25
@@ -7424,6 +7428,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MovimientoJugadorConCamara
   velocidad: 4
   camara: {fileID: 519420032}
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 0
+  spriteScale: 1.82
 --- !u!1 &1603204004
 GameObject:
   m_ObjectHideFlags: 0
