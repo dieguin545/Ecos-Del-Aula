@@ -197624,7 +197624,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 23
+  orthographic size: 22
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -197649,7 +197649,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -61.9, y: 1, z: -10}
+  m_LocalPosition: {x: -61.3, y: -47.1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -263085,6 +263085,8 @@ MonoBehaviour:
   panelPausa: {fileID: 846020388}
   botonReanudar: {fileID: 1640801096}
   botonGuardar: {fileID: 315270755}
+  botonReiniciar: {fileID: 0}
+  botonSeleccionJuego: {fileID: 0}
   botonMenuPrincipal: {fileID: 1004611455}
   textoEstado: {fileID: 60221733}
 --- !u!114 &846020391
@@ -340335,6 +340337,8 @@ MonoBehaviour:
   panelPausa: {fileID: 846020388}
   botonReanudar: {fileID: 1640801096}
   botonGuardar: {fileID: 315270755}
+  botonReiniciar: {fileID: 0}
+  botonSeleccionJuego: {fileID: 0}
   botonMenuPrincipal: {fileID: 1004611455}
   textoEstado: {fileID: 60221733}
 --- !u!224 &1936055556

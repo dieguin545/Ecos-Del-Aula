@@ -517,10 +517,10 @@ public class EcosAulaPromptUI : MonoBehaviour
         barra.transform.SetParent(parent, false);
 
         RectTransform rt = barra.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0f, 0f);
-        rt.anchorMax = new Vector2(0f, 0f);
-        rt.pivot = new Vector2(0f, 0f);
-        rt.anchoredPosition = new Vector2(22f, 12f);
+        rt.anchorMin = new Vector2(0.5f, 0f);
+        rt.anchorMax = new Vector2(0.5f, 0f);
+        rt.pivot = new Vector2(0.5f, 0f);
+        rt.anchoredPosition = new Vector2(0f, 10f);
         rt.sizeDelta = new Vector2(0f, 42f);
 
         Image fondo = barra.GetComponent<Image>();
@@ -539,7 +539,7 @@ public class EcosAulaPromptUI : MonoBehaviour
         layout.childForceExpandWidth = false;
         layout.childForceExpandHeight = false;
         layout.spacing = 10f;
-        layout.padding = new RectOffset(12, 12, 4, 4);
+        layout.padding = new RectOffset(12, 12, 5, 5);
 
         ContentSizeFitter fitter = barra.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -564,7 +564,8 @@ public class EcosAulaPromptUI : MonoBehaviour
             promptGo.transform.SetParent(barra.transform, false);
 
             RectTransform rtItem = promptGo.GetComponent<RectTransform>();
-            rtItem.sizeDelta = new Vector2(160f, 34f);
+            float itemWidth = Mathf.Clamp(92f + p.verbo.Length * 8.5f, 134f, 210f);
+            rtItem.sizeDelta = new Vector2(itemWidth, 34f);
 
             Image itemFondo = promptGo.GetComponent<Image>();
             itemFondo.color = new Color(0.06f, 0.045f, 0.13f, 0.62f);
@@ -576,6 +577,29 @@ public class EcosAulaPromptUI : MonoBehaviour
 
             EcosAulaPromptUI promptComp = promptGo.AddComponent<EcosAulaPromptUI>();
             promptComp.Configurar(p.accion, p.verbo);
+
+            RectTransform iconoRect = promptGo.transform.Find("_IconoPrincipal") as RectTransform;
+            if (iconoRect != null)
+            {
+                iconoRect.sizeDelta = new Vector2(30f, 30f);
+            }
+
+            RectTransform textoRect = promptGo.transform.Find("_TextoVerbo") as RectTransform;
+            if (textoRect != null)
+            {
+                textoRect.anchoredPosition = new Vector2(40f, 0f);
+                textoRect.sizeDelta = new Vector2(itemWidth - 48f, 0f);
+            }
+
+            TextMeshProUGUI texto = promptGo.transform.Find("_TextoVerbo")?.GetComponent<TextMeshProUGUI>();
+            if (texto != null)
+            {
+                texto.fontSize = 15f;
+                texto.enableAutoSizing = true;
+                texto.fontSizeMin = 11f;
+                texto.fontSizeMax = 15f;
+                texto.overflowMode = TextOverflowModes.Ellipsis;
+            }
         }
 
         return barra;

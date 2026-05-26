@@ -337,4 +337,5 @@ public class PanelAyuda : MonoBehaviour
         rect.anchoredPosition = new Vector2(posicionX, 18f);
         rect.sizeDelta = new Vector2(150f, 42f);
     }
+
 }

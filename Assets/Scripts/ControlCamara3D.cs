@@ -17,15 +17,16 @@ public class ControlCamara3D : MonoBehaviour
     public float deadzoneStickCamara = 0.18f;
 
     [Header("Tercera persona")]
-    public float distancia = 4f;
-    public float alturaMirada = 0.9f;
-    public float radioColision = 0.25f;
+    public float distancia = 3.1f;
+    public float alturaMirada = 0.85f;
+    public float radioColision = 0.18f;
+    public float distanciaMinimaColision = 1.35f;
 
     [Header("Primera persona")]
     public float alturaOjos = 1.2f;
     public KeyCode teclaCambiarVista = KeyCode.V;
 
-    private float rotacionX = 15f;
+    private float rotacionX = 18f;
     private float rotacionY = 0f;
     private bool primeraPersona = false;
     private Renderer[] renderersJugador;
@@ -41,6 +42,22 @@ public class ControlCamara3D : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    public void RecentrarCamaraInicial()
+    {
+        if (jugador == null)
+        {
+            return;
+        }
+
+        primeraPersona = false;
+        distancia = Mathf.Clamp(distancia, 2.9f, 3.35f);
+        alturaMirada = Mathf.Clamp(alturaMirada, 0.75f, 0.95f);
+        rotacionX = 18f;
+        rotacionY = 0f;
+        AplicarVisibilidadJugador();
+        AplicarTransformacionCamara();
     }
 
     void Update()
@@ -73,6 +90,13 @@ public class ControlCamara3D : MonoBehaviour
         if (jugador == null) return;
         if (InteraccionPC.PCAbierta || MenuPausaAccesibilidad.EstaPausado) return;
 
+        AplicarTransformacionCamara();
+    }
+
+    private void AplicarTransformacionCamara()
+    {
+        if (jugador == null) return;
+
         Quaternion rotacionCamara = Quaternion.Euler(rotacionX, rotacionY, 0f);
 
         if (primeraPersona)
@@ -93,7 +117,8 @@ public class ControlCamara3D : MonoBehaviour
             {
                 if (hit.collider.transform != jugador && !hit.collider.transform.IsChildOf(jugador))
                 {
-                    transform.position = puntoMirada + direccionRaycast.normalized * (hit.distance - 0.1f);
+                    float distanciaSegura = Mathf.Max(hit.distance - 0.1f, distanciaMinimaColision);
+                    transform.position = puntoMirada + direccionRaycast.normalized * distanciaSegura;
                 }
                 else
                 {

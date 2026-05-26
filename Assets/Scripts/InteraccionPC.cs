@@ -253,6 +253,7 @@ public class InteraccionPC : MonoBehaviour
         AplicarIconoEscritorio("Casos", iconoCasos);
         AplicarIconoEscritorio("IconoCasos", iconoCasos);
         RenombrarSpaceShooterEnEscritorio();
+        AjustarLayoutIconosEscritorio();
     }
 
     private void RenombrarSpaceShooterEnEscritorio()
@@ -281,6 +282,45 @@ public class InteraccionPC : MonoBehaviour
                 textosLegacy[i].text = "Firewall del Aula";
             }
         }
+    }
+
+    private void AjustarLayoutIconosEscritorio()
+    {
+        AjustarIconoEscritorio("Bloc de notas", new Vector2(0.12f, 0.82f));
+        AjustarIconoEscritorio("IconoBlocNotas", new Vector2(0.12f, 0.82f));
+        AjustarIconoEscritorio("Space Shooter", new Vector2(0.12f, 0.68f));
+        AjustarIconoEscritorio("IconoSpaceShooter", new Vector2(0.12f, 0.68f));
+        AjustarIconoEscritorio("Correo", new Vector2(0.12f, 0.54f));
+        AjustarIconoEscritorio("IconoCorreo", new Vector2(0.12f, 0.54f));
+        AjustarIconoEscritorio("Casos", new Vector2(0.12f, 0.40f));
+        AjustarIconoEscritorio("IconoCasos", new Vector2(0.12f, 0.40f));
+        AjustarIconoEscritorio("ayuda", new Vector2(0.80f, 0.82f));
+        AjustarIconoEscritorio("IconoAyuda", new Vector2(0.80f, 0.82f));
+        AjustarIconoEscritorio("Tienda Virtual", new Vector2(0.80f, 0.62f));
+        AjustarIconoEscritorio("IconoTienda", new Vector2(0.80f, 0.62f));
+        AjustarIconoEscritorio("Finanzas", new Vector2(0.80f, 0.44f));
+        AjustarIconoEscritorio("IconoFinanzas", new Vector2(0.80f, 0.44f));
+    }
+
+    private void AjustarIconoEscritorio(string nombreObjeto, Vector2 anchor)
+    {
+        GameObject objeto = BuscarDescendiente(nombreObjeto);
+        if (objeto == null)
+        {
+            return;
+        }
+
+        RectTransform rect = objeto.GetComponent<RectTransform>();
+        if (rect == null)
+        {
+            return;
+        }
+
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(50f, 50f);
     }
 
     private void AplicarIconoEscritorio(string nombreObjeto, Sprite sprite)
