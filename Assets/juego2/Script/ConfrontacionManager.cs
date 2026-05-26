@@ -131,7 +131,7 @@ public class ConfrontacionManager : MonoBehaviour
         }
     }
 
-    private void MostrarResultado(bool gano)
+    public void MostrarResultado(bool gano)
     {
         PrepararResultado();
 

@@ -8,11 +8,26 @@ public class Objeto
 {
     public string nombre;
     public Sprite icono;
+    public int dano;
+    public int durabilidad;
+    public int durabilidadMaxima;
+    public bool esAtaque;
+    public bool esCuracion;
+    public float valorCuracion;
 
-    public Objeto(string nombre, Sprite icono = null)
+    public Objeto(string nombre, Sprite icono = null,
+        int dano = 0, int durabilidad = 0,
+        bool esAtaque = false, bool esCuracion = false,
+        float valorCuracion = 0f)
     {
         this.nombre = nombre;
         this.icono = icono;
+        this.dano = dano;
+        this.durabilidad = durabilidad;
+        this.durabilidadMaxima = durabilidad;
+        this.esAtaque = esAtaque;
+        this.esCuracion = esCuracion;
+        this.valorCuracion = valorCuracion;
     }
 }
 
@@ -210,4 +225,8 @@ public class Inventario : MonoBehaviour
 
         return slot;
     }
+    public LinkedList<Objeto> GetObjetos()
+{
+    return objetos;
+}
 }

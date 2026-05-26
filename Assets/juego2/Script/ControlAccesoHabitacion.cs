@@ -12,6 +12,7 @@ public class ControlAccesoHabitacion : MonoBehaviour
     public TextMeshProUGUI textoBloqueado;
     public GameObject puertaBloqueada;
 
+    public Transform puntoExpulsion;
     private bool bloqueado = false;
     private Collider2D colliderBloqueo;
 
@@ -100,4 +101,39 @@ public class ControlAccesoHabitacion : MonoBehaviour
         if (panelBloqueado != null)
             panelBloqueado.SetActive(false);
     }
+    private void VerificarAccesos()
+{
+    BloqueTiempo bloqueActual = SistemaTiempo.Instance.GetBloqueActual();
+    bool estabaBloqueado = bloqueado;
+    bloqueado = true;
+
+    foreach (BloqueTiempo bloque in bloquesPermitidos)
+    {
+        if (bloque == bloqueActual)
+        {
+            bloqueado = false;
+            break;
+        }
+    }
+
+    // Si acaba de bloquearse y el jugador esta adentro lo saca
+    if (bloqueado && !estabaBloqueado)
+    {
+        GameObject jugador = GameObject.FindGameObjectWithTag("Player");
+        if (jugador != null)
+        {
+            Collider2D col = GetComponent<Collider2D>();
+            if (col != null && col.bounds.Contains(jugador.transform.position))
+            {
+                jugador.transform.position = puntoExpulsion.position;
+            }
+        }
+    }
+
+    if (colliderBloqueo != null)
+        colliderBloqueo.isTrigger = !bloqueado;
+
+    if (puertaBloqueada != null)
+        puertaBloqueada.SetActive(bloqueado);
+}
 }

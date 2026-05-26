@@ -5,10 +5,15 @@ public class ObjetoRecogible : MonoBehaviour
     [Header("Configuracion")]
     public string nombreObjeto;
     public Sprite iconoObjeto;
-    public bool recogerAlContacto = true; // true = al tocar, false = presionar E
+    public bool recogerAlContacto = true;
+    public int dano = 0;
+    public int durabilidad = 1;
+    public bool esAtaque = false;
+    public bool esCuracion = false;
+    public float valorCuracion = 0f;
 
     [Header("UI")]
-    public GameObject indicador; // el signo de exclamacion
+    public GameObject indicador;
 
     private bool jugadorCerca = false;
 
@@ -20,7 +25,8 @@ public class ObjetoRecogible : MonoBehaviour
 
     void Update()
     {
-        if (!recogerAlContacto && jugadorCerca && GestorEntradaGlobal.InteractuarPresionado(KeyCode.E))
+        if (!recogerAlContacto && jugadorCerca 
+            && Input.GetKeyDown(KeyCode.E))
         {
             Recoger();
         }
@@ -31,9 +37,7 @@ public class ObjetoRecogible : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             if (recogerAlContacto)
-            {
                 Recoger();
-            }
             else
             {
                 jugadorCerca = true;
@@ -46,14 +50,15 @@ public class ObjetoRecogible : MonoBehaviour
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
-        {
             jugadorCerca = false;
-        }
     }
 
     private void Recoger()
     {
-        Inventario.Instance.AgregarObjeto(new Objeto(nombreObjeto, iconoObjeto));
+        Inventario.Instance.AgregarObjeto(new Objeto(
+            nombreObjeto, iconoObjeto,
+            dano, durabilidad,
+            esAtaque, esCuracion, valorCuracion));
         Debug.Log("Recogiste: " + nombreObjeto);
         Destroy(gameObject);
     }
