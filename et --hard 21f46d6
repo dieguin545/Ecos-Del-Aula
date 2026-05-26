@@ -1,0 +1,30 @@
+[33m32aa6a84[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: commit (merge): Resolve merge conflict keeping remote scene
+[33m21f46d6b[m HEAD@{1}: commit: personajes creados ya no hay placeholders
+[33m7bc9bd28[m HEAD@{2}: commit: personajes añadidos
+[33m0dec7191[m HEAD@{3}: pull: Fast-forward
+[33m74fc2da0[m HEAD@{4}: rebase (abort): returning to refs/heads/main
+[33m603c1fd2[m HEAD@{5}: commit: juego2 actualizado
+[33m52968575[m HEAD@{6}: commit (merge): Accept all remote changes
+[33m43391add[m[33m ([m[1;31morigin/sofia-briv[m[33m, [m[1;32msofia-briv[m[33m)[m HEAD@{7}: checkout: moving from sofia-briv to origin/sofia-briv
+[33m43391add[m[33m ([m[1;31morigin/sofia-briv[m[33m, [m[1;32msofia-briv[m[33m)[m HEAD@{8}: checkout: moving from main to sofia-briv
+[33m149a1769[m HEAD@{9}: commit (merge): hola
+[33md0f4bfb6[m HEAD@{10}: commit: hola
+[33m0909393b[m HEAD@{11}: commit (merge): grande el samuel mejorando el juego1 pero aqui ando yo haciendo el juego2
+[33md007858b[m HEAD@{12}: commit: juego 2 casi terminado
+[33m74fc2da0[m HEAD@{13}: commit: cambios realizados
+[33m52d88906[m HEAD@{14}: commit (amend): Primer commit del proyecto
+[33mf6245152[m HEAD@{15}: commit: juego 2 actuaalizado
+[33mb80fe235[m HEAD@{16}: commit: personajes modificados para el minijuego
+[33me1e5a61d[m HEAD@{17}: commit (merge): cambios al juego 2D, cambios al juego 3D (por seor)
+[33mceb566d0[m HEAD@{18}: commit: juego 2D mejoradito uwu
+[33m8a4566da[m[33m ([m[1;31morigin/backup-main-antes-habitacion-3d[m[33m)[m HEAD@{19}: commit: juego con mas mecanicas, incompleto
+[33m12234d74[m HEAD@{20}: commit: juego 2 rediseñado
+[33m55801f69[m HEAD@{21}: commit: hola actualizacion
+[33md4641fdf[m HEAD@{22}: commit: juego mejoradito
+[33mcca3d12b[m HEAD@{23}: pull: Fast-forward
+[33mb2ddbeab[m HEAD@{24}: commit: juego 3D realizado
+[33m38558306[m HEAD@{25}: commit: cambios reeaizadosuwu
+[33ma98f3f0a[m HEAD@{26}: commit (merge): primer commit
+[33m1c1ddbfa[m HEAD@{27}: Branch: renamed refs/heads/main to refs/heads/main
+[33m1c1ddbfa[m HEAD@{29}: commit: jueputa por fin subo esta mierda a github
+[33m0bf2261d[m HEAD@{30}: commit (initial): Initial commit

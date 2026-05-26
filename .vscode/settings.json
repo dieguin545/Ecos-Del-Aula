@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Ecos-Del-Aula.slnx",
+    "dotnet.defaultSolution": "Bullying and Dungeons, no mercy.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }
