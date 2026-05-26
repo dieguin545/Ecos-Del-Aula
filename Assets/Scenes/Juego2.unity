@@ -261967,6 +261967,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NPC_Estatico_salon
       objectReference: {fileID: 0}
+    - target: {fileID: 7124177291221840305, guid: b498062bcb1d16448928e3ff07ea99cf, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -4005399741537405340, guid: b8f358b36e2939e4caae2fcd4f68807e, type: 3}
     - target: {fileID: 8847752741789349266, guid: b498062bcb1d16448928e3ff07ea99cf, type: 3}
       propertyPath: m_SizeDelta.x
       value: 354.017
@@ -341298,6 +341302,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NPC_Estatico_salon (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 7124177291221840305, guid: b498062bcb1d16448928e3ff07ea99cf, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 791906814123193032, guid: 974cba7f32cbe5a41a8d6dc2932de0bd, type: 3}
     - target: {fileID: 8847752741789349266, guid: b498062bcb1d16448928e3ff07ea99cf, type: 3}
       propertyPath: m_SizeDelta.x
       value: 354.017
