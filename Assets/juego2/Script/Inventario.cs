@@ -70,7 +70,7 @@ public class Inventario : MonoBehaviour
                 AbrirInventario();
             }
         }
-        else if (abierto && (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.JoystickButton1)))
+        else if (abierto && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.JoystickButton1)))
         {
             CerrarInventario();
         }

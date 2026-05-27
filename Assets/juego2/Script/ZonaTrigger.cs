@@ -22,4 +22,17 @@ public class ZonaTrigger : MonoBehaviour
             vcamEstaZona.Priority = 0;
         }
     }
+    public void ForzarActivacion()
+{
+    vcamEstaZona.Priority = 10;
+    BullyingDatabase.Instance.SetZona(zonaTipo);
+    
+    // Desactiva todas las demas camaras
+    ZonaTrigger[] triggers = FindObjectsOfType<ZonaTrigger>();
+    foreach (ZonaTrigger t in triggers)
+    {
+        if (t != this)
+            t.vcamEstaZona.Priority = 0;
+    }
+}
 }

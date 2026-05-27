@@ -104,15 +104,31 @@ public class VidaEscolarHUD : MonoBehaviour, IAnxietyObserver
     }
 
     private void RegistrarAnsiedad()
+{
+    if (AnxietySystem.Instance == null)
     {
-        if (AnxietySystem.Instance == null)
-        {
-            return;
-        }
-
-        AnxietySystem.Instance.AddObserver(this);
-        ActualizarAnsiedad(AnxietySystem.Instance.GetCurrentAnxiety(), AnxietySystem.Instance.maxAnxiety);
+        StartCoroutine(EsperarAnxietySystem());
+        return;
     }
+
+    AnxietySystem.Instance.RemoveObserver(this);
+    AnxietySystem.Instance.AddObserver(this);
+    ActualizarAnsiedad(
+        AnxietySystem.Instance.GetCurrentAnxiety(), 
+        AnxietySystem.Instance.maxAnxiety);
+}
+
+private IEnumerator EsperarAnxietySystem()
+{
+    while (AnxietySystem.Instance == null)
+        yield return null;
+
+    AnxietySystem.Instance.RemoveObserver(this);
+    AnxietySystem.Instance.AddObserver(this);
+    ActualizarAnsiedad(
+        AnxietySystem.Instance.GetCurrentAnxiety(), 
+        AnxietySystem.Instance.maxAnxiety);
+}
 
     private void Construir()
     {
