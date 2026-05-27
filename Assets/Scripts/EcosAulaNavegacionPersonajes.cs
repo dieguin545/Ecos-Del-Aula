@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class EcosAulaNavegacionPersonajes : MonoBehaviour
 {
     private SeleccionPersonaje selector;
+    private Button botonSeleccionar;
     private float tiempoSiguienteInput = 0f;
     private const float CooldownInput = 0.25f;
 
@@ -16,6 +17,13 @@ public class EcosAulaNavegacionPersonajes : MonoBehaviour
         {
             Debug.LogWarning("[EcosAulaNavegacionPersonajes] No se encontró SeleccionPersonaje en la escena.");
             enabled = false;
+            return;
+        }
+
+        botonSeleccionar = BuscarBotonPorNombre("Seleccionar");
+        if (EventSystem.current != null && botonSeleccionar != null)
+        {
+            EventSystem.current.SetSelectedGameObject(botonSeleccionar.gameObject);
         }
     }
 
@@ -39,10 +47,14 @@ public class EcosAulaNavegacionPersonajes : MonoBehaviour
             tiempoSiguienteInput = Time.unscaledTime + CooldownInput;
         }
 
-        // Confirmar (A / Enter / Space). Si hay un boton UI seleccionado, dejar que el EventSystem ejecute su OnClick.
-        if (GestorEntradaGlobal.ConfirmarPresionado())
+        // Confirmar (R / A / Enter / Space). R coincide con el prompt visible de la escena.
+        bool confirmarDirecto = Input.GetKeyDown(KeyCode.R);
+        if (confirmarDirecto || GestorEntradaGlobal.ConfirmarPresionado())
         {
-            if (!HayBotonUISeleccionado())
+            GameObject seleccionado = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            bool seleccionarTieneFoco = botonSeleccionar != null && seleccionado == botonSeleccionar.gameObject;
+
+            if (confirmarDirecto || seleccionarTieneFoco || !HayBotonUISeleccionado())
             {
                 selector.Seleccionar();
             }
@@ -65,5 +77,19 @@ public class EcosAulaNavegacionPersonajes : MonoBehaviour
         }
 
         return EventSystem.current.currentSelectedGameObject.GetComponent<Button>() != null;
+    }
+
+    private Button BuscarBotonPorNombre(string nombre)
+    {
+        Button[] botones = FindObjectsByType<Button>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (Button boton in botones)
+        {
+            if (boton != null && boton.gameObject.name.Contains(nombre))
+            {
+                return boton;
+            }
+        }
+
+        return null;
     }
 }

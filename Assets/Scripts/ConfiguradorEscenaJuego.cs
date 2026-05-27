@@ -8,21 +8,40 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
 {
     private const string NombreEscenaJuego = "Juego";
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegistrarCargaEscenas()
+    {
+        SceneManager.sceneLoaded -= AlCargarEscena;
+        SceneManager.sceneLoaded += AlCargarEscena;
+    }
+
+    private static void AlCargarEscena(Scene escena, LoadSceneMode modo)
+    {
+        ConfigurarSiEsEscenaJuego(escena);
+    }
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void CrearSiHaceFalta()
     {
-        if (SceneManager.GetActiveScene().name != NombreEscenaJuego)
+        ConfigurarSiEsEscenaJuego(SceneManager.GetActiveScene());
+    }
+
+    private static void ConfigurarSiEsEscenaJuego(Scene escena)
+    {
+        if (!escena.IsValid() || escena.name != NombreEscenaJuego)
         {
             return;
         }
 
-        if (FindAnyObjectByType<ConfiguradorEscenaJuego>() != null)
+        ConfiguradorEscenaJuego existente = FindAnyObjectByType<ConfiguradorEscenaJuego>();
+        if (existente != null)
         {
-            FindAnyObjectByType<ConfiguradorEscenaJuego>().ConfigurarEscenaActual();
+            existente.ConfigurarEscenaActual();
             return;
         }
 
         GameObject configurador = new GameObject("ConfiguradorEscenaJuego");
+        SceneManager.MoveGameObjectToScene(configurador, escena);
         configurador.AddComponent<ConfiguradorEscenaJuego>().ConfigurarEscenaActual();
     }
 
@@ -35,6 +54,9 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
     {
         Time.timeScale = 1f;
         AsegurarEntradaGlobal();
+        AsegurarCamaraPrincipalActiva();
+        EliminarUISeleccionJuegoPersistente();
+        AsegurarPCInicialmenteCerrada();
         AsegurarEventSystemUnico();
         AsegurarColisionCama();
         AsegurarMenuPausaGlobal();
@@ -52,6 +74,259 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         GameObject entrada = new GameObject("GestorEntradaGlobal");
         DontDestroyOnLoad(entrada);
         entrada.AddComponent<GestorEntradaGlobal>();
+    }
+
+    private void AsegurarCamaraPrincipalActiva()
+    {
+        Camera camara = BuscarCamaraDeEscenaActiva();
+
+        if (camara == null)
+        {
+            GameObject objetoCamara = new GameObject("Main Camera");
+            camara = objetoCamara.AddComponent<Camera>();
+            objetoCamara.transform.SetPositionAndRotation(new Vector3(0f, 2.2f, -6f), Quaternion.Euler(15f, 0f, 0f));
+        }
+
+        DesactivarCamarasPersistentesQueTapan(camara);
+
+        camara.gameObject.SetActive(true);
+        camara.enabled = true;
+        camara.targetTexture = null;
+        camara.rect = new Rect(0f, 0f, 1f, 1f);
+        camara.depth = 0f;
+        camara.clearFlags = CameraClearFlags.Skybox;
+        camara.fieldOfView = 48f;
+        camara.nearClipPlane = Mathf.Min(camara.nearClipPlane, 0.05f);
+        camara.farClipPlane = Mathf.Max(camara.farClipPlane, 100f);
+
+        if (camara.cullingMask == 0)
+        {
+            camara.cullingMask = ~0;
+        }
+
+        if (!camara.CompareTag("MainCamera"))
+        {
+            camara.tag = "MainCamera";
+        }
+
+        AudioListener listener = camara.GetComponent<AudioListener>();
+        if (listener == null)
+        {
+            listener = camara.gameObject.AddComponent<AudioListener>();
+        }
+
+        listener.enabled = true;
+
+        GameObject jugador = GameObject.Find("Jugador");
+        if (jugador == null)
+        {
+            jugador = GameObject.Find("Player");
+        }
+
+        ControlCamara3D controlCamara = camara.GetComponent<ControlCamara3D>();
+        if (controlCamara == null)
+        {
+            controlCamara = camara.gameObject.AddComponent<ControlCamara3D>();
+        }
+
+        if (controlCamara != null && controlCamara.jugador == null)
+        {
+            if (jugador != null)
+            {
+                controlCamara.jugador = jugador.transform;
+            }
+        }
+
+        if (controlCamara != null)
+        {
+            controlCamara.RecentrarCamaraInicial();
+        }
+
+        if (jugador != null)
+        {
+            MovimientoJugadorConCamara movimiento = jugador.GetComponent<MovimientoJugadorConCamara>();
+            if (movimiento != null)
+            {
+                movimiento.camara = camara.transform;
+            }
+        }
+
+        InteraccionPC interaccionPc = FindAnyObjectByType<InteraccionPC>(FindObjectsInactive.Include);
+        if (interaccionPc != null)
+        {
+            interaccionPc.camaraPrincipal = camara.gameObject;
+            if (interaccionPc.scriptMovimientoJugador == null && jugador != null)
+            {
+                interaccionPc.scriptMovimientoJugador = jugador.GetComponent<MovimientoJugadorConCamara>();
+            }
+        }
+    }
+
+    private Camera BuscarCamaraDeEscenaActiva()
+    {
+        Scene escenaActiva = SceneManager.GetActiveScene();
+        Camera[] camaras = Resources.FindObjectsOfTypeAll<Camera>();
+
+        Camera primeraDeEscena = null;
+        for (int i = 0; i < camaras.Length; i++)
+        {
+            Camera camara = camaras[i];
+            if (camara == null || camara.gameObject == null || camara.gameObject.scene != escenaActiva)
+            {
+                continue;
+            }
+
+            if (primeraDeEscena == null)
+            {
+                primeraDeEscena = camara;
+            }
+
+            if (camara.CompareTag("MainCamera") || camara.gameObject.name == "Main Camera")
+            {
+                return camara;
+            }
+        }
+
+        return primeraDeEscena;
+    }
+
+    private void DesactivarCamarasPersistentesQueTapan(Camera camaraPrincipal)
+    {
+        if (camaraPrincipal == null)
+        {
+            return;
+        }
+
+        Scene escenaActiva = SceneManager.GetActiveScene();
+        Camera[] camaras = Resources.FindObjectsOfTypeAll<Camera>();
+
+        for (int i = 0; i < camaras.Length; i++)
+        {
+            Camera camara = camaras[i];
+            if (camara == null || camara == camaraPrincipal || camara.gameObject == null)
+            {
+                continue;
+            }
+
+            bool renderizaPantallaPrincipal = camara.targetTexture == null && camara.targetDisplay == camaraPrincipal.targetDisplay;
+            bool estaFueraDeEscena = camara.gameObject.scene != escenaActiva;
+
+            if (renderizaPantallaPrincipal && estaFueraDeEscena)
+            {
+                camara.enabled = false;
+                AudioListener listener = camara.GetComponent<AudioListener>();
+                if (listener != null)
+                {
+                    listener.enabled = false;
+                }
+            }
+        }
+    }
+
+    private void AsegurarPCInicialmenteCerrada()
+    {
+        InteraccionPC.ResetearEstadoGlobalPC();
+
+        InteraccionPC interaccionPc = FindAnyObjectByType<InteraccionPC>(FindObjectsInactive.Include);
+        if (interaccionPc == null)
+        {
+            return;
+        }
+
+        if (interaccionPc.canvasPC != null)
+        {
+            interaccionPc.canvasPC.SetActive(false);
+        }
+
+        if (interaccionPc.textoInteractuar != null)
+        {
+            interaccionPc.textoInteractuar.SetActive(false);
+        }
+    }
+
+    private void EliminarUISeleccionJuegoPersistente()
+    {
+        Scene escenaActiva = SceneManager.GetActiveScene();
+        Canvas[] canvases = Resources.FindObjectsOfTypeAll<Canvas>();
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (canvas == null || canvas.gameObject == null || !canvas.gameObject.scene.IsValid())
+            {
+                continue;
+            }
+
+            if (canvas.gameObject.scene == escenaActiva)
+            {
+                continue;
+            }
+
+            if (!ContieneUISeleccionJuego(canvas.transform))
+            {
+                continue;
+            }
+
+            Destroy(canvas.gameObject);
+        }
+    }
+
+    private bool ContieneUISeleccionJuego(Transform raiz)
+    {
+        if (raiz == null)
+        {
+            return false;
+        }
+
+        int coincidencias = 0;
+
+        if (raiz.Find("_Sub_seljuego") != null)
+        {
+            coincidencias += 2;
+        }
+
+        TextMeshProUGUI[] textos = raiz.GetComponentsInChildren<TextMeshProUGUI>(true);
+        for (int i = 0; i < textos.Length; i++)
+        {
+            if (textos[i] == null)
+            {
+                continue;
+            }
+
+            string contenido = textos[i].text;
+            if (string.IsNullOrEmpty(contenido))
+            {
+                continue;
+            }
+
+            contenido = contenido.ToLowerInvariant();
+            if (contenido.Contains("selecciona el juego"))
+            {
+                coincidencias += 2;
+            }
+            else if (contenido.Contains("entry filter") || contenido.Contains("vida escolar"))
+            {
+                coincidencias++;
+            }
+        }
+
+        return coincidencias >= 2;
+    }
+
+    private bool EsComponenteDeEscena(Component componente, bool preferirEscenaActiva)
+    {
+        if (componente == null || componente.gameObject == null || !componente.gameObject.scene.IsValid())
+        {
+            return false;
+        }
+
+        Scene escena = componente.gameObject.scene;
+        if (preferirEscenaActiva)
+        {
+            return escena == SceneManager.GetActiveScene();
+        }
+
+        return escena.isLoaded;
     }
 
     private void AsegurarEventSystemUnico()

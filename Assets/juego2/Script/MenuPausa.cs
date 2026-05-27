@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
@@ -74,12 +75,14 @@ public class MenuPausa : MonoBehaviour
     public void Pausar()
     {
         ResolverReferencias();
+        AplicarEstiloVisual();
         pausado = true;
         Time.timeScale = 0f;
 
         if (panelPausa != null)
         {
             panelPausa.SetActive(true);
+            AsegurarOrdenVisualPausa();
             PrepararAnimacionPanel(true);
         }
 
@@ -101,6 +104,7 @@ public class MenuPausa : MonoBehaviour
 
         if (panelPausa != null)
         {
+            AsegurarOrdenVisualPausa();
             EcosAulaPromptUI.CrearBarraPrompts(panelPausa.transform,
                 (AccionLogica.Navegar, "Navegar"),
                 (AccionLogica.Confirmar, "Confirmar"),
@@ -184,29 +188,30 @@ public class MenuPausa : MonoBehaviour
 
     private void ResolverReferencias()
     {
-        if (panelPausa == null)
-        {
-            GameObject panel = GameObject.Find("PanelPausa");
-            if (panel == null)
-            {
-                panel = GameObject.Find("PanelPausaJuego2");
-            }
+        Canvas canvasPausa = ObtenerOCrearCanvasPausa();
+        AsegurarEventSystem();
 
-            panelPausa = panel;
+        GameObject panelRuntime = BuscarPanelRuntimePausa();
+        if (panelRuntime == null && canvasPausa != null)
+        {
+            panelRuntime = CrearPanelPausaRuntime(canvasPausa.transform);
+            panelRuntime.name = "PanelPausaJuego2Runtime";
         }
 
-        if (panelPausa == null)
+        if (panelRuntime != null)
         {
-            Canvas canvas = FindAnyObjectByType<Canvas>();
-            if (canvas != null)
-            {
-                panelPausa = CrearPanelPausaRuntime(canvas.transform);
-            }
+            panelPausa = panelRuntime;
+            LimpiarBotonesExternosAlPanel();
         }
 
         if (panelPausa == null)
         {
             return;
+        }
+
+        if (canvasPausa != null && panelPausa.transform.parent != canvasPausa.transform)
+        {
+            panelPausa.transform.SetParent(canvasPausa.transform, false);
         }
 
         Button[] botones = panelPausa.GetComponentsInChildren<Button>(true);
@@ -268,6 +273,20 @@ public class MenuPausa : MonoBehaviour
         ConectarBoton(botonMenuPrincipal, IrAlMenu);
     }
 
+    private void LimpiarBotonesExternosAlPanel()
+    {
+        if (panelPausa == null)
+        {
+            return;
+        }
+
+        if (botonReanudar != null && !botonReanudar.transform.IsChildOf(panelPausa.transform)) botonReanudar = null;
+        if (botonGuardar != null && !botonGuardar.transform.IsChildOf(panelPausa.transform)) botonGuardar = null;
+        if (botonReiniciar != null && !botonReiniciar.transform.IsChildOf(panelPausa.transform)) botonReiniciar = null;
+        if (botonSeleccionJuego != null && !botonSeleccionJuego.transform.IsChildOf(panelPausa.transform)) botonSeleccionJuego = null;
+        if (botonMenuPrincipal != null && !botonMenuPrincipal.transform.IsChildOf(panelPausa.transform)) botonMenuPrincipal = null;
+    }
+
     private void ConectarBoton(Button boton, UnityEngine.Events.UnityAction accion)
     {
         if (boton == null)
@@ -283,6 +302,7 @@ public class MenuPausa : MonoBehaviour
     {
         if (panelPausa != null)
         {
+            AsegurarOrdenVisualPausa();
             Image fondo = panelPausa.GetComponent<Image>();
 
             if (fondo == null)
@@ -438,6 +458,80 @@ public class MenuPausa : MonoBehaviour
                     }
                 });
         }
+    }
+
+    private void AsegurarOrdenVisualPausa()
+    {
+        if (panelPausa == null)
+        {
+            return;
+        }
+
+        Canvas canvas = panelPausa.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = Mathf.Max(canvas.sortingOrder, 4000);
+        }
+
+        panelPausa.transform.SetAsLastSibling();
+    }
+
+    private Canvas ObtenerOCrearCanvasPausa()
+    {
+        GameObject canvasGo = GameObject.Find("Canvas_PausaJuego2");
+        if (canvasGo == null)
+        {
+            canvasGo = new GameObject("Canvas_PausaJuego2", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        }
+
+        Canvas canvas = canvasGo.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 5000;
+
+        CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
+        if (scaler != null)
+        {
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+        }
+
+        return canvas;
+    }
+
+    private GameObject BuscarPanelRuntimePausa()
+    {
+        if (panelPausa != null && panelPausa.name == "PanelPausaJuego2Runtime")
+        {
+            return panelPausa;
+        }
+
+        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform transformActual = transforms[i];
+            if (transformActual != null
+                && transformActual.name == "PanelPausaJuego2Runtime"
+                && transformActual.gameObject.scene.IsValid())
+            {
+                return transformActual.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private void AsegurarEventSystem()
+    {
+        if (EventSystem.current != null)
+        {
+            return;
+        }
+
+        GameObject eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+        eventSystem.transform.SetAsLastSibling();
     }
 
     private void EstilizarBoton(Button boton, string texto)
