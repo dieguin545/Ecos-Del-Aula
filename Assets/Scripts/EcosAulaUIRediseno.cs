@@ -21,6 +21,9 @@ using UnityEditor.SceneManagement;
 /// </summary>
 public static class EcosAulaUIRediseno
 {
+    internal static readonly bool AplicarRedisenoAutomaticoEnEditor = false;
+    private static readonly bool AplicarRedisenoAutomaticoEnPlay = false;
+
     // ─── Paleta ────────────────────────────────────────────────────────────────
 
     private static readonly Color FondoOscuro     = new Color(0.063f, 0.165f, 0.263f, 1f); // #102A43
@@ -50,6 +53,11 @@ public static class EcosAulaUIRediseno
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Inicializar()
     {
+        if (!AplicarRedisenoAutomaticoEnPlay)
+        {
+            return;
+        }
+
         SceneManager.sceneLoaded -= AlCargarEscena;
         SceneManager.sceneLoaded += AlCargarEscena;
         Aplicar(SceneManager.GetActiveScene().name);
@@ -195,7 +203,7 @@ public static class EcosAulaUIRediseno
 
                 // Convertirlo en nuestro título
                 t.text = "ECOS DEL AULA";
-                t.fontSize = 30f;
+                t.fontSize = 40f;
                 t.color = Lila;
                 t.fontStyle = FontStyles.Bold;
                 t.alignment = TextAlignmentOptions.Center;
@@ -797,15 +805,7 @@ public static class EcosAulaUIRediseno
             MarcarSucio(canvas);
         }
 
-        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
-        if (scaler != null)
-        {
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1280f, 720f);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
-            MarcarSucio(scaler);
-        }
+        // No tocar CanvasScaler aqui: debe quedar editable desde el Inspector.
     }
 
     /// <summary>Crea un texto TMP simple anclado arriba-centro.</summary>
@@ -892,6 +892,11 @@ public static class EcosAulaUIEditorHook
 {
     static EcosAulaUIEditorHook()
     {
+        if (!EcosAulaUIRediseno.AplicarRedisenoAutomaticoEnEditor)
+        {
+            return;
+        }
+
         // Registrar callbacks en el editor para rediseñar en tiempo de diseño
         EditorApplication.delayCall += AplicarEnEditor;
         

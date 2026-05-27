@@ -18,6 +18,9 @@ public class AppCasos : MonoBehaviour
     private bool uiPreparada;
     private CasoBullying casoSeleccionado;
     private const float VelocidadScrollControl = 0.72f;
+    private static readonly Vector2 TamanoVentana = new Vector2(760f, 430f);
+    private static readonly Vector2 TamanoLista = new Vector2(220f, 278f);
+    private static readonly Vector2 TamanoDetalle = new Vector2(490f, 278f);
 
     private void Awake()
     {
@@ -116,8 +119,8 @@ public class AppCasos : MonoBehaviour
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = new Vector2(0f, 10f);
-            rect.sizeDelta = new Vector2(820f, 460f);
+            rect.anchoredPosition = new Vector2(0f, 18f);
+            rect.sizeDelta = TamanoVentana;
         }
 
         CrearHeader();
@@ -133,10 +136,21 @@ public class AppCasos : MonoBehaviour
             EstiloUIJuego.CrearImagen(
                 transform,
                 "HeaderCasos",
-                new Vector2(0f, 202f),
-                new Vector2(820f, 56f),
+                new Vector2(0f, 184f),
+                new Vector2(760f, 54f),
                 EstiloUIJuego.FondoSecundario
             ).transform.SetAsFirstSibling();
+        }
+
+        Transform headerActual = transform.Find("HeaderCasos");
+        if (headerActual != null)
+        {
+            ConfigurarRect(headerActual, new Vector2(0f, 184f), new Vector2(760f, 54f));
+            Image headerImagen = headerActual.GetComponent<Image>();
+            if (headerImagen != null)
+            {
+                headerImagen.color = EstiloUIJuego.FondoSecundario;
+            }
         }
 
         Transform iconoExistente = transform.Find("IconoCasosHeader");
@@ -145,8 +159,8 @@ public class AppCasos : MonoBehaviour
             : EstiloUIJuego.CrearImagen(
                 transform,
                 "IconoCasosHeader",
-                new Vector2(-365f, 202f),
-                new Vector2(42f, 42f),
+                new Vector2(-340f, 184f),
+                new Vector2(38f, 38f),
                 Color.white
             );
 
@@ -154,6 +168,7 @@ public class AppCasos : MonoBehaviour
         icono.color = spriteIconoCasos != null ? Color.white : EstiloUIJuego.FondoTarjeta;
         icono.preserveAspect = spriteIconoCasos != null;
         icono.raycastTarget = false;
+        ConfigurarRect(icono.transform, new Vector2(-340f, 184f), new Vector2(38f, 38f));
 
         if (transform.Find("TituloCasos") == null)
         {
@@ -161,11 +176,21 @@ public class AppCasos : MonoBehaviour
                 transform,
                 "TituloCasos",
                 "Casos",
-                30f,
-                new Vector2(0f, 202f),
-                new Vector2(220f, 42f),
+                28f,
+                new Vector2(0f, 184f),
+                new Vector2(220f, 40f),
                 TextAlignmentOptions.Center
             );
+        }
+
+        Transform tituloActual = transform.Find("TituloCasos");
+        TextMeshProUGUI titulo = tituloActual != null ? tituloActual.GetComponent<TextMeshProUGUI>() : null;
+        if (titulo != null)
+        {
+            ConfigurarRect(titulo.transform, new Vector2(0f, 184f), new Vector2(220f, 40f));
+            titulo.text = "Casos";
+            titulo.fontSize = 28f;
+            titulo.alignment = TextAlignmentOptions.Center;
         }
 
         if (transform.Find("AyudaCasos") == null)
@@ -174,11 +199,21 @@ public class AppCasos : MonoBehaviour
                 transform,
                 "AyudaCasos",
                 "Revisa contexto antes de decidir correos ambiguos. Cada evidencia ayuda a tomar una decisión justa.",
-                14f,
-                new Vector2(0f, 160f),
-                new Vector2(700f, 34f),
+                13f,
+                new Vector2(0f, 142f),
+                new Vector2(660f, 32f),
                 TextAlignmentOptions.Center
             );
+        }
+
+        Transform ayudaActual = transform.Find("AyudaCasos");
+        TextMeshProUGUI ayuda = ayudaActual != null ? ayudaActual.GetComponent<TextMeshProUGUI>() : null;
+        if (ayuda != null)
+        {
+            ConfigurarRect(ayuda.transform, new Vector2(0f, 142f), new Vector2(660f, 32f));
+            ayuda.text = "Revisa contexto antes de decidir. Cada evidencia ayuda a tomar una decision justa.";
+            ayuda.fontSize = 13f;
+            ayuda.alignment = TextAlignmentOptions.Center;
         }
     }
 
@@ -191,8 +226,8 @@ public class AppCasos : MonoBehaviour
             Image listaImagen = EstiloUIJuego.CrearImagen(
                 transform,
                 "ListaCasos",
-                new Vector2(-270f, -28f),
-                new Vector2(250f, 320f),
+                new Vector2(-250f, -24f),
+                TamanoLista,
                 EstiloUIJuego.FondoSecundario
             );
             listaCasos = listaImagen.rectTransform;
@@ -202,6 +237,8 @@ public class AppCasos : MonoBehaviour
             listaCasos = listaExistente.GetComponent<RectTransform>();
         }
 
+        ConfigurarRect(listaCasos, new Vector2(-250f, -24f), TamanoLista);
+
         Transform detalleExistente = transform.Find("PanelDetalleCaso");
 
         if (detalleExistente == null)
@@ -209,10 +246,29 @@ public class AppCasos : MonoBehaviour
             EstiloUIJuego.CrearImagen(
                 transform,
                 "PanelDetalleCaso",
-                new Vector2(145f, -28f),
-                new Vector2(542f, 320f),
+                new Vector2(130f, -24f),
+                TamanoDetalle,
                 EstiloUIJuego.FondoTarjeta
             );
+        }
+
+        Transform detalleActual = transform.Find("PanelDetalleCaso");
+        if (detalleActual != null)
+        {
+            ConfigurarRect(detalleActual, new Vector2(130f, -24f), TamanoDetalle);
+            Image detalleImagen = detalleActual.GetComponent<Image>();
+            if (detalleImagen != null)
+            {
+                detalleImagen.color = EstiloUIJuego.FondoTarjeta;
+            }
+        }
+
+        if (textoTituloDetalle == null)
+        {
+            Transform tituloDetalleExistente = transform.Find("TituloDetalleCaso");
+            textoTituloDetalle = tituloDetalleExistente != null
+                ? tituloDetalleExistente.GetComponent<TextMeshProUGUI>()
+                : null;
         }
 
         if (textoTituloDetalle == null)
@@ -221,11 +277,18 @@ public class AppCasos : MonoBehaviour
                 transform,
                 "TituloDetalleCaso",
                 "Selecciona un caso",
-                24f,
-                new Vector2(145f, 118f),
-                new Vector2(500f, 34f),
+                21f,
+                new Vector2(130f, 102f),
+                new Vector2(454f, 32f),
                 TextAlignmentOptions.Left
             );
+        }
+
+        if (textoTituloDetalle != null)
+        {
+            ConfigurarRect(textoTituloDetalle.transform, new Vector2(130f, 102f), new Vector2(454f, 32f));
+            textoTituloDetalle.fontSize = 21f;
+            textoTituloDetalle.alignment = TextAlignmentOptions.Left;
         }
 
         PrepararScrollDetalle();
@@ -251,9 +314,9 @@ public class AppCasos : MonoBehaviour
                 contenidoDetalle,
                 "TextoDetalleCaso",
                 "Los expedientes aparecen cuando usas Revisar contexto en Correo.",
-                17f,
+                15f,
                 new Vector2(0f, 0f),
-                new Vector2(492f, 270f),
+                new Vector2(434f, 230f),
                 TextAlignmentOptions.TopLeft
             );
         }
@@ -265,15 +328,16 @@ public class AppCasos : MonoBehaviour
             rectTexto.anchorMax = new Vector2(1f, 1f);
             rectTexto.pivot = new Vector2(0f, 1f);
             rectTexto.anchoredPosition = new Vector2(10f, -8f);
-            rectTexto.sizeDelta = new Vector2(-20f, 270f);
+            rectTexto.sizeDelta = new Vector2(-20f, 230f);
+            textoDetalle.fontSize = 15f;
             textoDetalle.textWrappingMode = TextWrappingModes.Normal;
             textoDetalle.overflowMode = TextOverflowModes.Overflow;
         }
 
-        CrearBotonAccionCaso("BotonObservarMas", "Observar", new Vector2(-20f, -178f), TipoResolucionCaso.ObservarMas);
-        CrearBotonAccionCaso("BotonMediar", "Mediar", new Vector2(105f, -178f), TipoResolucionCaso.MediarConversacion);
-        CrearBotonAccionCaso("BotonReportarOrientacion", "Reportar", new Vector2(230f, -178f), TipoResolucionCaso.ReportarOrientacion);
-        CrearBotonAccionCaso("BotonProtocoloGrave", "Protocolo", new Vector2(355f, -178f), TipoResolucionCaso.ActivarProtocoloGrave);
+        CrearBotonAccionCaso("BotonObservarMas", "Observar", new Vector2(-48f, -176f), TipoResolucionCaso.ObservarMas);
+        CrearBotonAccionCaso("BotonMediar", "Mediar", new Vector2(66f, -176f), TipoResolucionCaso.MediarConversacion);
+        CrearBotonAccionCaso("BotonReportarOrientacion", "Reportar", new Vector2(180f, -176f), TipoResolucionCaso.ReportarOrientacion);
+        CrearBotonAccionCaso("BotonProtocoloGrave", "Protocolo", new Vector2(294f, -176f), TipoResolucionCaso.ActivarProtocoloGrave);
     }
 
     private void PrepararScrollDetalle()
@@ -302,8 +366,8 @@ public class AppCasos : MonoBehaviour
         rectScroll.anchorMin = new Vector2(0.5f, 0.5f);
         rectScroll.anchorMax = new Vector2(0.5f, 0.5f);
         rectScroll.pivot = new Vector2(0.5f, 0.5f);
-        rectScroll.anchoredPosition = new Vector2(145f, -32f);
-        rectScroll.sizeDelta = new Vector2(500f, 238f);
+        rectScroll.anchoredPosition = new Vector2(130f, -28f);
+        rectScroll.sizeDelta = new Vector2(454f, 210f);
 
         Image fondoScroll = scrollObjeto.GetComponent<Image>();
         fondoScroll.color = new Color(0.04f, 0.06f, 0.12f, 0.72f);
@@ -338,7 +402,7 @@ public class AppCasos : MonoBehaviour
         contenidoDetalle.anchorMax = new Vector2(1f, 1f);
         contenidoDetalle.pivot = new Vector2(0.5f, 1f);
         contenidoDetalle.anchoredPosition = Vector2.zero;
-        contenidoDetalle.sizeDelta = new Vector2(0f, 270f);
+        contenidoDetalle.sizeDelta = new Vector2(0f, 230f);
         scrollDetalle.content = contenidoDetalle;
     }
 
@@ -349,28 +413,34 @@ public class AppCasos : MonoBehaviour
         TipoResolucionCaso decision
     )
     {
-        if (transform.Find(nombre) != null)
-        {
-            return;
-        }
+        Transform existente = transform.Find(nombre);
+        GameObject objeto;
 
-        GameObject objeto = new GameObject(
-            nombre,
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image),
-            typeof(Button)
-        );
-        objeto.transform.SetParent(transform, false);
+        if (existente != null)
+        {
+            objeto = existente.gameObject;
+        }
+        else
+        {
+            objeto = new GameObject(
+                nombre,
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(Button)
+            );
+            objeto.transform.SetParent(transform, false);
+        }
 
         RectTransform rect = objeto.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = posicion;
-        rect.sizeDelta = new Vector2(110f, 32f);
+        rect.sizeDelta = new Vector2(104f, 32f);
 
         Button boton = objeto.GetComponent<Button>();
+        boton.onClick.RemoveAllListeners();
         boton.onClick.AddListener(() => ResolverCasoSeleccionado(decision));
         EstiloUIJuego.AplicarBoton(
             boton,
@@ -378,15 +448,28 @@ public class AppCasos : MonoBehaviour
             EstiloUIJuego.Acento
         );
 
-        EstiloUIJuego.CrearTextoTMP(
-            objeto.transform,
-            "Texto",
-            texto,
-            14f,
-            Vector2.zero,
-            new Vector2(104f, 28f),
-            TextAlignmentOptions.Center
-        );
+        Transform textoExistente = objeto.transform.Find("Texto");
+        TextMeshProUGUI textoBoton = textoExistente != null
+            ? textoExistente.GetComponent<TextMeshProUGUI>()
+            : null;
+
+        if (textoBoton == null)
+        {
+            textoBoton = EstiloUIJuego.CrearTextoTMP(
+                objeto.transform,
+                "Texto",
+                texto,
+                13f,
+                Vector2.zero,
+                new Vector2(98f, 28f),
+                TextAlignmentOptions.Center
+            );
+        }
+
+        ConfigurarRect(textoBoton.transform, Vector2.zero, new Vector2(98f, 28f));
+        textoBoton.text = texto;
+        textoBoton.fontSize = 13f;
+        textoBoton.alignment = TextAlignmentOptions.Center;
     }
 
     private void PrepararBotonCerrar()
@@ -635,7 +718,7 @@ public class AppCasos : MonoBehaviour
         }
 
         Canvas.ForceUpdateCanvases();
-        float alto = Mathf.Max(270f, textoDetalle.preferredHeight + 28f);
+        float alto = Mathf.Max(230f, textoDetalle.preferredHeight + 28f);
         contenidoDetalle.sizeDelta = new Vector2(contenidoDetalle.sizeDelta.x, alto);
 
         RectTransform rectTexto = textoDetalle.GetComponent<RectTransform>();
@@ -694,5 +777,26 @@ public class AppCasos : MonoBehaviour
         {
             gameObject.SetActive(false);
         }
+    }
+
+    private static void ConfigurarRect(Transform objetivo, Vector2 posicion, Vector2 tamano)
+    {
+        if (objetivo == null)
+        {
+            return;
+        }
+
+        RectTransform rect = objetivo.GetComponent<RectTransform>();
+        if (rect == null)
+        {
+            return;
+        }
+
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = posicion;
+        rect.sizeDelta = tamano;
+        rect.localScale = Vector3.one;
     }
 }

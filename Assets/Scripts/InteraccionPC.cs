@@ -286,20 +286,20 @@ public class InteraccionPC : MonoBehaviour
 
     private void AjustarLayoutIconosEscritorio()
     {
-        AjustarIconoEscritorio("Bloc de notas", new Vector2(0.12f, 0.82f));
-        AjustarIconoEscritorio("IconoBlocNotas", new Vector2(0.12f, 0.82f));
-        AjustarIconoEscritorio("Space Shooter", new Vector2(0.12f, 0.68f));
-        AjustarIconoEscritorio("IconoSpaceShooter", new Vector2(0.12f, 0.68f));
-        AjustarIconoEscritorio("Correo", new Vector2(0.12f, 0.54f));
-        AjustarIconoEscritorio("IconoCorreo", new Vector2(0.12f, 0.54f));
-        AjustarIconoEscritorio("Casos", new Vector2(0.12f, 0.40f));
-        AjustarIconoEscritorio("IconoCasos", new Vector2(0.12f, 0.40f));
-        AjustarIconoEscritorio("ayuda", new Vector2(0.80f, 0.82f));
-        AjustarIconoEscritorio("IconoAyuda", new Vector2(0.80f, 0.82f));
-        AjustarIconoEscritorio("Tienda Virtual", new Vector2(0.80f, 0.62f));
-        AjustarIconoEscritorio("IconoTienda", new Vector2(0.80f, 0.62f));
-        AjustarIconoEscritorio("Finanzas", new Vector2(0.80f, 0.44f));
-        AjustarIconoEscritorio("IconoFinanzas", new Vector2(0.80f, 0.44f));
+        AjustarIconoEscritorio("Bloc de notas", new Vector2(0.16f, 0.82f));
+        AjustarIconoEscritorio("IconoBlocNotas", new Vector2(0.16f, 0.82f));
+        AjustarIconoEscritorio("Space Shooter", new Vector2(0.16f, 0.68f));
+        AjustarIconoEscritorio("IconoSpaceShooter", new Vector2(0.16f, 0.68f));
+        AjustarIconoEscritorio("Correo", new Vector2(0.16f, 0.54f));
+        AjustarIconoEscritorio("IconoCorreo", new Vector2(0.16f, 0.54f));
+        AjustarIconoEscritorio("Casos", new Vector2(0.16f, 0.40f));
+        AjustarIconoEscritorio("IconoCasos", new Vector2(0.16f, 0.40f));
+        AjustarIconoEscritorio("ayuda", new Vector2(0.72f, 0.82f));
+        AjustarIconoEscritorio("IconoAyuda", new Vector2(0.72f, 0.82f));
+        AjustarIconoEscritorio("Tienda Virtual", new Vector2(0.72f, 0.62f));
+        AjustarIconoEscritorio("IconoTienda", new Vector2(0.72f, 0.62f));
+        AjustarIconoEscritorio("Finanzas", new Vector2(0.72f, 0.44f));
+        AjustarIconoEscritorio("IconoFinanzas", new Vector2(0.72f, 0.44f));
     }
 
     private void AjustarIconoEscritorio(string nombreObjeto, Vector2 anchor)
@@ -320,7 +320,7 @@ public class InteraccionPC : MonoBehaviour
         rect.anchorMax = anchor;
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = Vector2.zero;
-        rect.sizeDelta = new Vector2(50f, 50f);
+        rect.sizeDelta = new Vector2(56f, 56f);
     }
 
     private void AplicarIconoEscritorio(string nombreObjeto, Sprite sprite)
@@ -521,8 +521,8 @@ public class InteraccionPC : MonoBehaviour
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(-345f, -40f);
-        rect.sizeDelta = new Vector2(44f, 44f);
+        rect.anchoredPosition = new Vector2(-300f, -58f);
+        rect.sizeDelta = new Vector2(56f, 56f);
 
         icono.SetActive(true);
         icono.transform.SetAsLastSibling();

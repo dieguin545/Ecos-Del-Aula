@@ -94,7 +94,8 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         camara.targetTexture = null;
         camara.rect = new Rect(0f, 0f, 1f, 1f);
         camara.depth = 0f;
-        camara.clearFlags = CameraClearFlags.Skybox;
+        camara.clearFlags = CameraClearFlags.SolidColor;
+        camara.backgroundColor = new Color(0.52f, 0.43f, 0.31f, 1f);
         camara.fieldOfView = 48f;
         camara.nearClipPlane = Mathf.Min(camara.nearClipPlane, 0.05f);
         camara.farClipPlane = Mathf.Max(camara.farClipPlane, 100f);
@@ -598,8 +599,8 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(-345f, -40f);
-        rect.sizeDelta = new Vector2(44f, 44f);
+        rect.anchoredPosition = new Vector2(-300f, -58f);
+        rect.sizeDelta = new Vector2(56f, 56f);
 
         imagen.sprite = iconoCasos;
         imagen.color = iconoCasos != null ? Color.white : EstiloUIJuego.FondoTarjeta;
@@ -691,6 +692,7 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         string[] nombresGenerados =
         {
             "Techo_Habitacion",
+            "TechoHabitacion",
             "Poster_EcosDelAula",
             "Panel_Recordatorio_Ayuda",
             "Alfombra_Estudio",
@@ -732,6 +734,7 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         string[] nombresGenerados =
         {
             "Techo_Habitacion",
+            "TechoHabitacion",
             "Poster_EcosDelAula",
             "Panel_Recordatorio_Ayuda",
             "Alfombra_Estudio",
@@ -776,10 +779,10 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
     private void CrearTecho(Bounds bounds, Transform padre)
     {
         GameObject techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        techo.name = "Techo_Habitacion";
+        techo.name = "TechoHabitacion";
         techo.transform.SetParent(padre, false);
-        techo.transform.position = new Vector3(bounds.center.x, bounds.center.y + 3.25f, bounds.center.z);
-        techo.transform.localScale = new Vector3(bounds.size.x, 0.16f, bounds.size.z);
+        techo.transform.position = new Vector3(bounds.center.x, bounds.center.y + 2.35f, bounds.center.z);
+        techo.transform.localScale = new Vector3(bounds.size.x + 2.0f, 0.22f, bounds.size.z + 2.0f);
         Renderer renderer = techo.GetComponent<Renderer>();
 
         if (renderer != null)
