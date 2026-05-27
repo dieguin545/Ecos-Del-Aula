@@ -50,6 +50,13 @@ public class VidaEscolarHUD : MonoBehaviour, IAnxietyObserver
         else
         {
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
+            if (scaler != null)
+            {
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920f, 1080f);
+                scaler.matchWidthOrHeight = 0.5f;
+            }
         }
 
         Transform raizExistente = canvas.transform.Find("VidaEscolarHUD");
@@ -165,6 +172,8 @@ public class VidaEscolarHUD : MonoBehaviour, IAnxietyObserver
                 barraRect.anchoredPosition = new Vector2(0f, 18f);
             }
         }
+
+        ReajustarLayoutHUD();
     }
 
     public void ActualizarAnsiedad(float actual, float maxima)
@@ -295,9 +304,9 @@ public class VidaEscolarHUD : MonoBehaviour, IAnxietyObserver
 
     private void CrearPanelAnsiedad(RectTransform root)
     {
-        GameObject panel = CrearPanel("PanelAnsiedad", root, new Vector2(20f, -20f), new Vector2(300f, 92f), new Vector2(0f, 1f));
-        CrearTexto(panel.transform, "Titulo", "ANSIEDAD", 20f, FontStyles.Bold, new Vector2(18f, -12f), new Vector2(160f, 28f), TextAlignmentOptions.Left);
-        textoAnsiedad = CrearTexto(panel.transform, "Valor", "0%", 22f, FontStyles.Bold, new Vector2(192f, -10f), new Vector2(88f, 30f), TextAlignmentOptions.Right);
+        GameObject panel = CrearPanel("PanelAnsiedad", root, new Vector2(28f, -24f), new Vector2(340f, 98f), new Vector2(0f, 1f));
+        CrearTexto(panel.transform, "Titulo", "ANSIEDAD", 22f, FontStyles.Bold, new Vector2(18f, -12f), new Vector2(184f, 30f), TextAlignmentOptions.Left);
+        textoAnsiedad = CrearTexto(panel.transform, "Valor", "0%", 24f, FontStyles.Bold, new Vector2(224f, -10f), new Vector2(94f, 32f), TextAlignmentOptions.Right);
 
         GameObject barraBg = new GameObject("BarraFondo", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         barraBg.transform.SetParent(panel.transform, false);
@@ -327,23 +336,147 @@ public class VidaEscolarHUD : MonoBehaviour, IAnxietyObserver
 
     private void CrearPanelTiempo(RectTransform root)
     {
-        GameObject panel = CrearPanel("PanelTiempo", root, new Vector2(-20f, -20f), new Vector2(250f, 92f), new Vector2(1f, 1f));
-        textoZona = CrearTexto(panel.transform, "Zona", "Entrada", 25f, FontStyles.Bold, new Vector2(18f, -12f), new Vector2(214f, 34f), TextAlignmentOptions.Center);
-        textoTiempo = CrearTexto(panel.transform, "Tiempo", "00:00", 24f, FontStyles.Bold, new Vector2(18f, -50f), new Vector2(214f, 30f), TextAlignmentOptions.Center);
+        GameObject panel = CrearPanel("PanelTiempo", root, new Vector2(-28f, -24f), new Vector2(250f, 92f), new Vector2(1f, 1f));
+        textoZona = CrearTexto(panel.transform, "Zona", "Entrada", 24f, FontStyles.Bold, new Vector2(16f, -10f), new Vector2(218f, 34f), TextAlignmentOptions.Center);
+        textoTiempo = CrearTexto(panel.transform, "Tiempo", "00:00", 24f, FontStyles.Bold, new Vector2(16f, -50f), new Vector2(218f, 32f), TextAlignmentOptions.Center);
     }
 
     private void CrearPanelTareas(RectTransform root)
     {
-        GameObject panel = CrearPanel("PanelTareas", root, new Vector2(-20f, -126f), new Vector2(386f, 216f), new Vector2(1f, 1f));
-        CrearTexto(panel.transform, "Titulo", "TAREAS", 24f, FontStyles.Bold, new Vector2(20f, -14f), new Vector2(190f, 32f), TextAlignmentOptions.Left);
-        textoEvidencias = CrearTexto(panel.transform, "Evidencias", "Evidencias 0/3", 19f, FontStyles.Bold, new Vector2(190f, -16f), new Vector2(176f, 28f), TextAlignmentOptions.Right);
-        textoTareas = CrearTexto(panel.transform, "Lista", "Sin tareas activas", 18f, FontStyles.Normal, new Vector2(20f, -58f), new Vector2(346f, 136f), TextAlignmentOptions.TopLeft);
+        GameObject panel = CrearPanel("PanelTareas", root, new Vector2(-28f, -134f), new Vector2(390f, 218f), new Vector2(1f, 1f));
+        CrearTexto(panel.transform, "Titulo", "TAREAS", 24f, FontStyles.Bold, new Vector2(20f, -14f), new Vector2(174f, 32f), TextAlignmentOptions.Left);
+        textoEvidencias = CrearTexto(panel.transform, "Evidencias", "Evidencias 0/3", 18f, FontStyles.Bold, new Vector2(198f, -16f), new Vector2(172f, 28f), TextAlignmentOptions.Right);
+        textoTareas = CrearTexto(panel.transform, "Lista", "Sin tareas activas", 18f, FontStyles.Normal, new Vector2(20f, -58f), new Vector2(350f, 140f), TextAlignmentOptions.TopLeft);
+    }
+
+    private void ReajustarLayoutHUD()
+    {
+        RectTransform panelAnsiedad = transform.Find("PanelAnsiedad") as RectTransform;
+        ConfigurarRect(panelAnsiedad, new Vector2(0f, 1f), new Vector2(28f, -24f), new Vector2(340f, 98f), new Vector2(0f, 1f));
+        AjustarTexto(panelAnsiedad, "Titulo", 22f, new Vector2(18f, -12f), new Vector2(184f, 30f), TextAlignmentOptions.Left);
+        AjustarTexto(panelAnsiedad, "Valor", 24f, new Vector2(224f, -10f), new Vector2(94f, 32f), TextAlignmentOptions.Right);
+
+        RectTransform barraFondo = panelAnsiedad != null ? panelAnsiedad.Find("BarraFondo") as RectTransform : null;
+        if (barraFondo != null)
+        {
+            barraFondo.anchorMin = new Vector2(0f, 0f);
+            barraFondo.anchorMax = new Vector2(1f, 0f);
+            barraFondo.pivot = new Vector2(0.5f, 0f);
+            barraFondo.offsetMin = new Vector2(18f, 18f);
+            barraFondo.offsetMax = new Vector2(-18f, 38f);
+        }
+
+        RectTransform panelTiempo = transform.Find("PanelTiempo") as RectTransform;
+        ConfigurarRect(panelTiempo, new Vector2(1f, 1f), new Vector2(-28f, -24f), new Vector2(250f, 92f), new Vector2(1f, 1f));
+        AjustarTexto(panelTiempo, "Zona", 24f, new Vector2(16f, -10f), new Vector2(218f, 34f), TextAlignmentOptions.Center);
+        AjustarTexto(panelTiempo, "Tiempo", 24f, new Vector2(16f, -50f), new Vector2(218f, 32f), TextAlignmentOptions.Center);
+
+        RectTransform panelTareas = transform.Find("PanelTareas") as RectTransform;
+        ConfigurarRect(panelTareas, new Vector2(1f, 1f), new Vector2(-28f, -134f), new Vector2(390f, 218f), new Vector2(1f, 1f));
+        AjustarTexto(panelTareas, "Titulo", 24f, new Vector2(20f, -14f), new Vector2(174f, 32f), TextAlignmentOptions.Left);
+        AjustarTexto(panelTareas, "Evidencias", 18f, new Vector2(198f, -16f), new Vector2(172f, 28f), TextAlignmentOptions.Right);
+        AjustarTexto(panelTareas, "Lista", 18f, new Vector2(20f, -58f), new Vector2(350f, 140f), TextAlignmentOptions.TopLeft);
+
+        ansiedadFill = transform.Find("PanelAnsiedad/BarraFondo/BarraRelleno")?.GetComponent<Image>();
+        textoAnsiedad = transform.Find("PanelAnsiedad/Valor")?.GetComponent<TextMeshProUGUI>();
+        textoZona = transform.Find("PanelTiempo/Zona")?.GetComponent<TextMeshProUGUI>();
+        textoTiempo = transform.Find("PanelTiempo/Tiempo")?.GetComponent<TextMeshProUGUI>();
+        textoEvidencias = transform.Find("PanelTareas/Evidencias")?.GetComponent<TextMeshProUGUI>();
+        textoTareas = transform.Find("PanelTareas/Lista")?.GetComponent<TextMeshProUGUI>();
+
+        RectTransform barraPrompts = transform.Find("_BarraPrompts") as RectTransform;
+        if (barraPrompts != null)
+        {
+            barraPrompts.anchorMin = new Vector2(0.5f, 0f);
+            barraPrompts.anchorMax = new Vector2(0.5f, 0f);
+            barraPrompts.pivot = new Vector2(0.5f, 0f);
+            barraPrompts.anchoredPosition = new Vector2(0f, 20f);
+        }
+    }
+
+    private void ConfigurarRect(RectTransform rect, Vector2 anchor, Vector2 posicion, Vector2 size, Vector2 pivot)
+    {
+        if (rect == null)
+        {
+            return;
+        }
+
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = pivot;
+        rect.anchoredPosition = posicion;
+        rect.sizeDelta = size;
+    }
+
+    private void AjustarTexto(RectTransform parent, string nombre, float fontSize, Vector2 posicion, Vector2 size, TextAlignmentOptions alignment)
+    {
+        TextMeshProUGUI texto = parent != null ? parent.Find(nombre)?.GetComponent<TextMeshProUGUI>() : null;
+        RectTransform rect = texto != null ? texto.GetComponent<RectTransform>() : null;
+        if (texto == null || rect == null)
+        {
+            return;
+        }
+
+        texto.fontSize = fontSize;
+        texto.enableAutoSizing = false;
+        texto.alignment = alignment;
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = posicion;
+        rect.sizeDelta = size;
     }
 
     private void CrearToast(RectTransform root)
     {
-        GameObject toast = CrearPanel("Toast", root, new Vector2(0f, 96f), new Vector2(500f, 64f), new Vector2(0.5f, 0f));
-        toastGroup = toast.AddComponent<CanvasGroup>();
+        if (root == null)
+        {
+            Debug.LogError("VidaEscolarHUD no pudo crear Toast: root nulo.");
+            return;
+        }
+
+        GameObject toast = new GameObject(
+            "Toast",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
+            typeof(Outline),
+            typeof(Shadow),
+            typeof(CanvasGroup)
+        );
+        toast.transform.SetParent(root, false);
+
+        RectTransform rt = toast.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0f);
+        rt.anchorMax = new Vector2(0.5f, 0f);
+        rt.pivot = new Vector2(0.5f, 0f);
+        rt.anchoredPosition = new Vector2(0f, 96f);
+        rt.sizeDelta = new Vector2(500f, 64f);
+
+        Image imagen = toast.GetComponent<Image>();
+        imagen.color = new Color(0.018f, 0.014f, 0.05f, 0.90f);
+        imagen.raycastTarget = false;
+
+        Outline outline = toast.GetComponent<Outline>();
+        outline.effectColor = new Color(0.25f, 0.88f, 1f, 0.55f);
+        outline.effectDistance = new Vector2(2f, -2f);
+
+        Shadow sombra = toast.GetComponent<Shadow>();
+        sombra.effectColor = new Color(0f, 0f, 0f, 0.42f);
+        sombra.effectDistance = new Vector2(4f, -4f);
+
+        toastGroup = toast.GetComponent<CanvasGroup>();
+        if (toastGroup == null)
+        {
+            toastGroup = toast.AddComponent<CanvasGroup>();
+        }
+
+        if (toastGroup == null)
+        {
+            Debug.LogError("VidaEscolarHUD no pudo crear CanvasGroup para Toast.");
+            return;
+        }
+
         toastGroup.alpha = 0f;
         toastGroup.blocksRaycasts = false;
         textoToast = CrearTexto(toast.transform, "Texto", "", 20f, FontStyles.Bold, new Vector2(20f, -12f), new Vector2(460f, 40f), TextAlignmentOptions.Center);

@@ -20,7 +20,10 @@ public class DialogoManager : MonoBehaviour
         if (Instance == null)
             Instance = this;
 
-        panelDialogo.SetActive(false);
+        if (panelDialogo != null)
+        {
+            panelDialogo.SetActive(false);
+        }
     }
 
     public void MostrarMensaje(string mensaje, Vector3 posicionNPC)
@@ -33,6 +36,12 @@ public class DialogoManager : MonoBehaviour
 
     private IEnumerator MostrarYOcultar(string mensaje)
     {
+        if (panelDialogo == null || textoDialogo == null)
+        {
+            Debug.LogWarning("DialogoManager no tiene referencias UI asignadas.");
+            yield break;
+        }
+
         textoDialogo.text = mensaje;
         panelDialogo.SetActive(true);
 

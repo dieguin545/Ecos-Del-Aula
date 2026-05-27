@@ -118,6 +118,7 @@ public static class EcosAulaUIRediseno
 
         Canvas canvas = Object.FindAnyObjectByType<Canvas>(FindObjectsInactive.Include);
         if (canvas == null) return;
+        AsegurarCanvasOverlay(canvas);
 
         // ── Crear o buscar panel lateral izquierdo ──
         Transform leftPanelTr = canvas.transform.Find("_LeftMenuPanel");
@@ -194,7 +195,7 @@ public static class EcosAulaUIRediseno
 
                 // Convertirlo en nuestro título
                 t.text = "ECOS DEL AULA";
-                t.fontSize = 40f;
+                t.fontSize = 30f;
                 t.color = Lila;
                 t.fontStyle = FontStyles.Bold;
                 t.alignment = TextAlignmentOptions.Center;
@@ -330,6 +331,7 @@ public static class EcosAulaUIRediseno
 
         Canvas canvas = Object.FindAnyObjectByType<Canvas>(FindObjectsInactive.Include);
         if (canvas == null) return;
+        AsegurarCanvasOverlay(canvas);
 
         Transform raiz = canvas.transform;
 
@@ -346,7 +348,7 @@ public static class EcosAulaUIRediseno
             {
                 // Título principal - restilar in-place
                 t.text = "SELECCIONA EL JUEGO";
-                t.fontSize = 40f;
+                t.fontSize = 30f;
                 t.color = Lila;
                 t.fontStyle = FontStyles.Bold;
                 t.alignment = TextAlignmentOptions.Center;
@@ -354,40 +356,57 @@ public static class EcosAulaUIRediseno
                 RectTransform rect = t.GetComponent<RectTransform>();
                 if (rect != null)
                 {
-                    rect.anchorMin = new Vector2(0f, 1f);
-                    rect.anchorMax = new Vector2(1f, 1f);
-                    rect.pivot = new Vector2(0.5f, 1f);
-                    rect.anchoredPosition = new Vector2(0f, -15f);
-                    rect.sizeDelta = new Vector2(0f, 55f);
+                    AsegurarHijoDirecto(rect, raiz);
+                    PosicionarSeleccionJuego(rect, new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(760f, 46f), new Vector2(0.5f, 1f));
                 }
             }
             else if (contenido.Contains("filtro") || contenido.Contains("entry"))
             {
                 // Etiqueta juego 1
                 t.text = "ENTRY FILTER";
-                t.fontSize = 22f;
+                t.fontSize = 20f;
                 t.color = Verde;
                 t.fontStyle = FontStyles.Bold;
                 t.alignment = TextAlignmentOptions.Center;
+                RectTransform rect = t.GetComponent<RectTransform>();
+                AsegurarHijoDirecto(rect, raiz);
+                PosicionarSeleccionJuego(rect, new Vector2(0.28f, 0.66f), Vector2.zero, new Vector2(300f, 34f), new Vector2(0.5f, 0.5f));
             }
             else if (contenido.Contains("minijuego") || contenido.Contains("vida"))
             {
                 // Etiqueta juego 2
                 t.text = "VIDA ESCOLAR";
-                t.fontSize = 22f;
+                t.fontSize = 20f;
                 t.color = Amarillo;
                 t.fontStyle = FontStyles.Bold;
                 t.alignment = TextAlignmentOptions.Center;
+                RectTransform rect = t.GetComponent<RectTransform>();
+                AsegurarHijoDirecto(rect, raiz);
+                PosicionarSeleccionJuego(rect, new Vector2(0.72f, 0.66f), Vector2.zero, new Vector2(300f, 34f), new Vector2(0.5f, 0.5f));
             }
         }
 
         // ── Subtítulo ──
-        if (raiz.Find("_Sub_seljuego") == null)
+        Transform sub = raiz.Find("_Sub_seljuego");
+        if (sub == null)
         {
             CrearTextoSimple(raiz, "_Sub_seljuego",
                 "Elige una experiencia para comenzar",
                 16f, TextoApagado,
                 new Vector2(0f, -65f), new Vector2(0f, 25f));
+        }
+        else
+        {
+            TextMeshProUGUI subTmp = sub.GetComponent<TextMeshProUGUI>();
+            if (subTmp != null)
+            {
+                subTmp.text = "Elige una experiencia para comenzar";
+                subTmp.fontSize = 16f;
+                subTmp.alignment = TextAlignmentOptions.Center;
+                subTmp.color = TextoApagado;
+            }
+
+            PosicionarSeleccionJuego(sub.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0f, -62f), new Vector2(620f, 28f), new Vector2(0.5f, 1f));
         }
 
         // ── Restilar botones ──
@@ -401,16 +420,28 @@ public static class EcosAulaUIRediseno
             if (nombre == "jugar")
             {
                 // Botón Jugar del Entry Filter
-                EstilizarBoton(b, Verde * 0.5f, Verde * 0.7f, "JUGAR", 20f, Blanco);
+                EstilizarBoton(b, new Color(0.12f, 0.42f, 0.32f, 0.96f), BtnVerdeH, "JUGAR", 20f, Blanco);
+                RectTransform rect = b.GetComponent<RectTransform>();
+                AsegurarHijoDirecto(rect, raiz);
+                PosicionarSeleccionJuego(rect, new Vector2(0.28f, 0.20f), Vector2.zero, new Vector2(190f, 40f), new Vector2(0.5f, 0.5f));
+                b.transform.SetAsLastSibling();
             }
             else if (nombre == "minijuego")
             {
                 // Botón Jugar del Minijuego/Vida Escolar
-                EstilizarBoton(b, Amarillo * 0.45f, Amarillo * 0.65f, "JUGAR", 20f, Blanco);
+                EstilizarBoton(b, new Color(0.22f, 0.13f, 0.04f, 0.96f), new Color(0.42f, 0.27f, 0.08f, 1f), "JUGAR", 20f, Blanco);
+                RectTransform rect = b.GetComponent<RectTransform>();
+                AsegurarHijoDirecto(rect, raiz);
+                PosicionarSeleccionJuego(rect, new Vector2(0.72f, 0.20f), Vector2.zero, new Vector2(190f, 40f), new Vector2(0.5f, 0.5f));
+                b.transform.SetAsLastSibling();
             }
             else if (nombre.Contains("atras") || nombre == "button")
             {
                 EstilizarBoton(b, BtnMorado, BtnMoradoH, "ATRÁS", 20f, Blanco);
+                RectTransform rect = b.GetComponent<RectTransform>();
+                AsegurarHijoDirecto(rect, raiz);
+                PosicionarSeleccionJuego(rect, new Vector2(0.50f, 0.12f), Vector2.zero, new Vector2(184f, 36f), new Vector2(0.5f, 0.5f));
+                b.transform.SetAsLastSibling();
             }
         }
 
@@ -418,18 +449,46 @@ public static class EcosAulaUIRediseno
         Image[] imagenes = canvas.GetComponentsInChildren<Image>(true);
         foreach (Image img in imagenes)
         {
-            if (img.sprite != null && img.GetComponent<Button>() == null)
+            if (img.sprite != null && img.GetComponent<Button>() == null && img.GetComponentInParent<Button>() == null)
             {
                 // Es una imagen de preview (no un botón)
                 img.preserveAspect = true;
+                string nombreImagen = img.gameObject.name.ToLowerInvariant();
+                if (nombreImagen.Contains("entry"))
+                {
+                    RectTransform rect = img.GetComponent<RectTransform>();
+                    AsegurarHijoDirecto(rect, raiz);
+                    PosicionarSeleccionJuego(rect, new Vector2(0.28f, 0.43f), Vector2.zero, new Vector2(266f, 150f), new Vector2(0.5f, 0.5f));
+                }
+                else if (nombreImagen.Contains("minijuego") || nombreImagen.Contains("vida"))
+                {
+                    RectTransform rect = img.GetComponent<RectTransform>();
+                    AsegurarHijoDirecto(rect, raiz);
+                    PosicionarSeleccionJuego(rect, new Vector2(0.72f, 0.43f), Vector2.zero, new Vector2(266f, 150f), new Vector2(0.5f, 0.5f));
+                }
+            }
+        }
+
+        foreach (Button b in botones)
+        {
+            if (b == null || b.gameObject.name.StartsWith("_"))
+            {
+                continue;
+            }
+
+            string nombre = b.gameObject.name.ToLowerInvariant();
+            if (nombre == "jugar" || nombre == "minijuego" || nombre.Contains("atras") || nombre == "button")
+            {
+                b.transform.SetAsLastSibling();
             }
         }
 
         // Prompts para seleccionar tarjeta de juego
-        EcosAulaPromptUI.CrearBarraPrompts(canvas.transform,
+        GameObject barra = EcosAulaPromptUI.CrearBarraPrompts(canvas.transform,
             (AccionLogica.Navegar, "Cambiar juego"),
             (AccionLogica.Confirmar, "Jugar"),
             (AccionLogica.Cancelar, "Atrás"));
+        PosicionarSeleccionJuego(barra != null ? barra.GetComponent<RectTransform>() : null, new Vector2(0.5f, 0f), new Vector2(0f, 8f), new Vector2(0f, 42f), new Vector2(0.5f, 0f));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -443,6 +502,7 @@ public static class EcosAulaUIRediseno
 
         Canvas canvas = Object.FindAnyObjectByType<Canvas>(FindObjectsInactive.Include);
         if (canvas == null) return;
+        AsegurarCanvasOverlay(canvas);
 
         // ── Restilar título existente ──
         TextMeshProUGUI[] textos = canvas.GetComponentsInChildren<TextMeshProUGUI>(true);
@@ -615,7 +675,36 @@ public static class EcosAulaUIRediseno
     // UTILIDADES
     // ═══════════════════════════════════════════════════════════════════════════
 
+    private static void PosicionarSeleccionJuego(RectTransform rect, Vector2 anchor, Vector2 posicion, Vector2 size, Vector2 pivot)
+    {
+        if (rect == null)
+        {
+            return;
+        }
+
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = pivot;
+        rect.anchoredPosition = posicion;
+        rect.sizeDelta = size;
+    }
+
     /// <summary>Estiliza un botón: colores + texto (si se proporciona).</summary>
+    private static void AsegurarHijoDirecto(RectTransform rect, Transform parent)
+    {
+        if (rect == null || parent == null)
+        {
+            return;
+        }
+
+        if (rect.parent != parent)
+        {
+            rect.SetParent(parent, false);
+        }
+
+        rect.localScale = Vector3.one;
+    }
+
     private static void EstilizarBoton(Button boton, Color normal, Color hover,
         string texto, float fontSize, Color colorTexto)
     {
@@ -694,6 +783,28 @@ public static class EcosAulaUIRediseno
             cam.backgroundColor = color;
             cam.clearFlags = CameraClearFlags.SolidColor;
             MarcarSucio(cam);
+        }
+    }
+
+    private static void AsegurarCanvasOverlay(Canvas canvas)
+    {
+        if (canvas == null) return;
+
+        if (canvas.renderMode == RenderMode.ScreenSpaceCamera && canvas.worldCamera == null)
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.worldCamera = null;
+            MarcarSucio(canvas);
+        }
+
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler != null)
+        {
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1280f, 720f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
+            MarcarSucio(scaler);
         }
     }
 
