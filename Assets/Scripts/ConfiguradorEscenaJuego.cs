@@ -778,8 +778,8 @@ public class ConfiguradorEscenaJuego : MonoBehaviour
         GameObject techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
         techo.name = "Techo_Habitacion";
         techo.transform.SetParent(padre, false);
-        techo.transform.position = new Vector3(bounds.center.x, bounds.center.y + 3.25f, bounds.center.z);
-        techo.transform.localScale = new Vector3(bounds.size.x, 0.16f, bounds.size.z);
+        techo.transform.position = new Vector3(bounds.center.x, bounds.center.y + 2.75f, bounds.center.z);
+        techo.transform.localScale = new Vector3(bounds.size.x + 0.9f, 0.18f, bounds.size.z + 0.9f);
         Renderer renderer = techo.GetComponent<Renderer>();
 
         if (renderer != null)

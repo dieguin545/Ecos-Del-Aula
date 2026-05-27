@@ -195,7 +195,7 @@ public static class EcosAulaUIRediseno
 
                 // Convertirlo en nuestro título
                 t.text = "ECOS DEL AULA";
-                t.fontSize = 30f;
+                t.fontSize = 40f;
                 t.color = Lila;
                 t.fontStyle = FontStyles.Bold;
                 t.alignment = TextAlignmentOptions.Center;
