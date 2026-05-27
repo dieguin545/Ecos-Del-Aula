@@ -14,7 +14,11 @@ public class NPCPerseguidor : NPCBase
     void Start()
     {
         posicionOriginal = transform.position;
-        burbujaDialogo.SetActive(false);
+        if (burbujaDialogo != null)
+        {
+            burbujaDialogo.SetActive(false);
+        }
+
         rb = GetComponent<Rigidbody2D>();
     }
 
@@ -24,6 +28,8 @@ public class NPCPerseguidor : NPCBase
 
         if (persiguiendo && jugador != null)
         {
+            if (rb == null) return;
+
             float distancia = Vector3.Distance(transform.position, jugador.position);
 
             if (distancia > distanciaMaxima)
@@ -40,6 +46,8 @@ public class NPCPerseguidor : NPCBase
         }
         else if (!persiguiendo && Vector3.Distance(transform.position, posicionOriginal) > 0.1f)
         {
+            if (rb == null) return;
+
             Vector3 direccionRegreso = (posicionOriginal - transform.position).normalized;
             rb.MovePosition(transform.position + direccionRegreso * velocidad * Time.deltaTime);
         }
@@ -83,6 +91,8 @@ public class NPCPerseguidor : NPCBase
 
     private void MostrarBurbuja(string mensaje)
     {
+        if (burbujaDialogo == null || textoBurbuja == null) return;
+
         textoBurbuja.text = mensaje;
         burbujaDialogo.SetActive(true);
         Invoke("OcultarBurbuja", 3f);
@@ -90,6 +100,8 @@ public class NPCPerseguidor : NPCBase
 
     private void OcultarBurbuja()
     {
+        if (burbujaDialogo == null) return;
+
         burbujaDialogo.SetActive(false);
     }
 }
