@@ -96,7 +96,19 @@ public class EcosAulaNavegacionUI : MonoBehaviour
         // Gamepad: Sticks
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-        if (Mathf.Abs(horizontal) > 0.3f || Mathf.Abs(vertical) > 0.3f)
+        
+        // Gamepad: D-pad
+        float dpadH = 0f;
+        float dpadV = 0f;
+        try
+        {
+            dpadH = Input.GetAxis("Debug Horizontal");
+            dpadV = Input.GetAxis("Debug Vertical");
+        }
+        catch {}
+
+        if (Mathf.Abs(horizontal) > 0.3f || Mathf.Abs(vertical) > 0.3f ||
+            Mathf.Abs(dpadH) > 0.3f || Mathf.Abs(dpadV) > 0.3f)
         {
             return true;
         }
@@ -165,6 +177,36 @@ public class EcosAulaNavegacionUI : MonoBehaviour
             if (panelTr != null && panelTr.gameObject.activeInHierarchy)
             {
                 Selectable s = BuscarEnJerarquia(panelTr);
+                if (s != null) return s;
+            }
+        }
+
+        // 1c. Buscar en MenuSpaceShooter si está activo
+        Canvas canvasSpaceShooter = FindAnyObjectByType<Canvas>(FindObjectsInactive.Include);
+        if (canvasSpaceShooter != null)
+        {
+            Transform pOpciones = canvasSpaceShooter.transform.Find("PanelOpcionesSpaceShooter");
+            if (pOpciones != null && pOpciones.gameObject.activeInHierarchy)
+            {
+                Selectable s = BuscarEnJerarquia(pOpciones);
+                if (s != null) return s;
+            }
+            Transform pTutorial = canvasSpaceShooter.transform.Find("PanelTutorialSpaceShooter");
+            if (pTutorial != null && pTutorial.gameObject.activeInHierarchy)
+            {
+                Selectable s = BuscarEnJerarquia(pTutorial);
+                if (s != null) return s;
+            }
+            Transform pLeaderboard = canvasSpaceShooter.transform.Find("PanelLeaderboardSpaceShooter");
+            if (pLeaderboard != null && pLeaderboard.gameObject.activeInHierarchy)
+            {
+                Selectable s = BuscarEnJerarquia(pLeaderboard);
+                if (s != null) return s;
+            }
+            Transform pMenu = canvasSpaceShooter.transform.Find("PanelMenuSpaceShooter");
+            if (pMenu != null && pMenu.gameObject.activeInHierarchy)
+            {
+                Selectable s = BuscarEnJerarquia(pMenu);
                 if (s != null) return s;
             }
         }

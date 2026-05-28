@@ -158,37 +158,42 @@ public class GestorEntradaGlobal : MonoBehaviour
     private static void DetectarDispositivo()
     {
         bool hayActividadJoystick = false;
-        if (HayJoystickConectado())
+
+        // 1. Detectar botones de joystick
+        for (int i = 0; i <= 19; i++)
         {
-            if (
-                Input.GetKeyDown(KeyCode.JoystickButton0)
-                || Input.GetKeyDown(KeyCode.JoystickButton1)
-                || Input.GetKeyDown(KeyCode.JoystickButton2)
-                || Input.GetKeyDown(KeyCode.JoystickButton3)
-                || Input.GetKeyDown(KeyCode.JoystickButton4)
-                || Input.GetKeyDown(KeyCode.JoystickButton5)
-                || Input.GetKeyDown(KeyCode.JoystickButton7)
-                || Input.GetKeyDown(KeyCode.JoystickButton8)
-                || Input.GetKeyDown(KeyCode.JoystickButton9)
-            )
+            if (Input.GetKeyDown(KeyCode.JoystickButton0 + i))
             {
                 hayActividadJoystick = true;
+                break;
             }
-            else
+        }
+
+        // 2. Detectar ejes de joystick
+        if (!hayActividadJoystick)
+        {
+            float h = Input.GetAxisRaw("Horizontal");
+            float v = Input.GetAxisRaw("Vertical");
+            float camH = ObtenerCamaraHorizontal();
+            float camV = ObtenerCamaraVertical();
+            float dpadH = 0f;
+            float dpadV = 0f;
+            try
             {
-                // También detectar movimiento de stick/D-Pad
-                float h = Input.GetAxisRaw("Horizontal");
-                float v = Input.GetAxisRaw("Vertical");
-                float camH = ObtenerCamaraHorizontal();
-                float camV = ObtenerCamaraVertical();
-                if ((Mathf.Abs(h) > 0.4f || Mathf.Abs(v) > 0.4f || Mathf.Abs(camH) > 0.35f || Mathf.Abs(camV) > 0.35f) && 
-                    !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && 
-                    !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D) &&
-                    !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) &&
-                    !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
-                {
-                    hayActividadJoystick = true;
-                }
+                dpadH = Input.GetAxisRaw("Debug Horizontal");
+                dpadV = Input.GetAxisRaw("Debug Vertical");
+            }
+            catch {}
+
+            if ((Mathf.Abs(h) > 0.4f || Mathf.Abs(v) > 0.4f || 
+                 Mathf.Abs(camH) > 0.35f || Mathf.Abs(camV) > 0.35f ||
+                 Mathf.Abs(dpadH) > 0.4f || Mathf.Abs(dpadV) > 0.4f) && 
+                !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && 
+                !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D) &&
+                !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) &&
+                !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+            {
+                hayActividadJoystick = true;
             }
         }
 
@@ -198,11 +203,8 @@ public class GestorEntradaGlobal : MonoBehaviour
             return;
         }
 
-        float mouseX = Input.mousePosition.x;
-        float mouseY = Input.mousePosition.y;
-        bool mouseMovido = Mathf.Abs(mouseX - mouseXAnterior) + Mathf.Abs(mouseY - mouseYAnterior) > 6f;
-        mouseXAnterior = mouseX;
-        mouseYAnterior = mouseY;
+        // Detectar actividad de teclado/mouse con filtro robusto contra ruido de hardware y recentrado
+        bool mouseMovido = (Mathf.Abs(Input.GetAxis("Mouse X")) > 0.05f || Mathf.Abs(Input.GetAxis("Mouse Y")) > 0.05f);
 
         if (Input.anyKeyDown && !HayBotonJoystickPresionado())
         {
@@ -210,7 +212,7 @@ public class GestorEntradaGlobal : MonoBehaviour
             return;
         }
 
-        if (mouseMovido || Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+        if (mouseMovido || Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
         {
             CambiarDispositivo(TipoDispositivoEntrada.TecladoMouse);
         }
@@ -218,11 +220,6 @@ public class GestorEntradaGlobal : MonoBehaviour
 
     private static bool HayBotonJoystickPresionado()
     {
-        if (!HayJoystickConectado())
-        {
-            return false;
-        }
-
         for (int i = 0; i <= 19; i++)
         {
             if (Input.GetKeyDown(KeyCode.JoystickButton0 + i))
@@ -230,12 +227,16 @@ public class GestorEntradaGlobal : MonoBehaviour
                 return true;
             }
         }
-
         return false;
     }
 
     private static bool HayJoystickConectado()
     {
+        if (UsandoControl)
+        {
+            return true;
+        }
+
         string[] nombres = Input.GetJoystickNames();
 
         for (int i = 0; i < nombres.Length; i++)
