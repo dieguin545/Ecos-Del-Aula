@@ -49,8 +49,14 @@ public class TutorialPresentation : MonoBehaviour
     {
         panelTutorial.SetActive(true);
         panelCanvasGroup.alpha = 0f;
-        panelCanvasGroup.DOFade(1f, duracionFade);
+        panelCanvasGroup.DOFade(1f, duracionFade).SetUpdate(true);
         ActualizarContenido();
+
+        // Pausar el juego al inicio si el tutorial está activo
+        Time.timeScale = 0f;
+
+        MovimientoJugador mov = FindAnyObjectByType<MovimientoJugador>();
+        if (mov != null) mov.enabled = false;
     }
 
     public void Siguiente()
@@ -75,6 +81,7 @@ public class TutorialPresentation : MonoBehaviour
 
         // Fade out del contenido, swap, fade in
         Sequence seq = DOTween.Sequence();
+        seq.SetUpdate(true); // Permite que la secuencia corra en tiempo real cuando la escala de tiempo es 0
 
         seq.Append(panelCanvasGroup.DOFade(0.3f, duracionFade * 0.5f));
         seq.AppendCallback(() =>
@@ -88,14 +95,15 @@ public class TutorialPresentation : MonoBehaviour
 
     private void ActualizarContenido()
     {
-        textoTitulo.text     = titulos[paginaActual];
+        textoTitulo.text = titulos[paginaActual];
         textoDescripcion.text = descripciones[paginaActual];
 
         if (iconosPantallas != null &&
             paginaActual < iconosPantallas.Length &&
             iconosPantallas[paginaActual] != null)
         {
-            iconoImagen.sprite  = iconosPantallas[paginaActual];
+            iconoImagen.sprite = iconosPantallas[paginaActual];
+            iconoImagen.color = Color.white; // Evita que la imagen se vea negra si el color de tinte en el Inspector estaba en negro
             iconoImagen.enabled = true;
         }
         else
@@ -118,10 +126,13 @@ public class TutorialPresentation : MonoBehaviour
     private void CerrarTutorial()
     {
         animando = true;
-        panelCanvasGroup.DOFade(0f, duracionFade).OnComplete(() =>
+        panelCanvasGroup.DOFade(0f, duracionFade).SetUpdate(true).OnComplete(() =>
         {
             panelTutorial.SetActive(false);
             animando = false;
+
+            // Reanudar el juego
+            Time.timeScale = 1f;
 
             MovimientoJugador mov = FindAnyObjectByType<MovimientoJugador>();
             if (mov != null) mov.enabled = true;
@@ -134,7 +145,10 @@ public class TutorialPresentation : MonoBehaviour
         panelTutorial.SetActive(true);
         panelCanvasGroup.alpha = 0f;
         ActualizarContenido();
-        panelCanvasGroup.DOFade(1f, duracionFade);
+        panelCanvasGroup.DOFade(1f, duracionFade).SetUpdate(true);
+
+        // Pausar el juego
+        Time.timeScale = 0f;
 
         MovimientoJugador mov = FindAnyObjectByType<MovimientoJugador>();
         if (mov != null) mov.enabled = false;
