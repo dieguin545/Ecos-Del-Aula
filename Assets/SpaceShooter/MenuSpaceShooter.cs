@@ -50,6 +50,25 @@ public class MenuSpaceShooter : MonoBehaviour
         GestorEntradaGlobal.AlCambiarDispositivo -= AlCambiarDispositivo;
     }
 
+    private void Update()
+    {
+        if (GestorEntradaGlobal.CancelarPresionado())
+        {
+            if (panelTutorial != null && panelTutorial.activeSelf)
+            {
+                VolverAlMenu();
+            }
+            else if (panelLeaderboard != null && panelLeaderboard.activeSelf)
+            {
+                VolverAlMenu();
+            }
+            else if (panelOpciones != null && panelOpciones.activeSelf)
+            {
+                VolverAlMenu();
+            }
+        }
+    }
+
     public void Inicializar(
         GameManager gameManager,
         SelectorNave selectorNave,
@@ -803,7 +822,20 @@ public class MenuSpaceShooter : MonoBehaviour
                     (AccionLogica.Cancelar, "Volver"));
             }
 
-            Selectable first = EncontrarPrimerSelectableEnPanel(objetivo);
+            Selectable first = null;
+            if (objetivo == panelMenu)
+            {
+                Transform botonEmpezar = panelMenu.transform.Find("BotonEmpezar");
+                if (botonEmpezar != null)
+                {
+                    first = botonEmpezar.GetComponent<Selectable>();
+                }
+            }
+            if (first == null || !first.gameObject.activeInHierarchy || !first.interactable)
+            {
+                first = EncontrarPrimerSelectableEnPanel(objetivo);
+            }
+
             if (first != null && UnityEngine.EventSystems.EventSystem.current != null)
             {
                 UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(first.gameObject);
@@ -818,6 +850,10 @@ public class MenuSpaceShooter : MonoBehaviour
         {
             if (c.gameObject.activeInHierarchy && c.interactable && c.navigation.mode != Navigation.Mode.None)
             {
+                if (c is TMP_InputField)
+                {
+                    continue;
+                }
                 return c;
             }
         }

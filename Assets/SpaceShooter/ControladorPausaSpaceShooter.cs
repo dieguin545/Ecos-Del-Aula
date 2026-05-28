@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using DG.Tweening;
 using UnityEngine;
@@ -18,6 +19,12 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
     {
         if (gameManager == null || !gameManager.PuedePausar)
         {
+            return;
+        }
+
+        if (pausado && GestorEntradaGlobal.CancelarPresionado())
+        {
+            Reanudar();
             return;
         }
 
@@ -60,6 +67,7 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
         Time.timeScale = 0f;
         panelPausa.SetActive(true);
         AnimarPanel(true);
+        StartCoroutine(AsignarFocoPausa());
         gameManager.NotificarPausa(true);
         UIAudioManager.PlayOpen();
         Cursor.lockState = CursorLockMode.None;
@@ -247,5 +255,20 @@ public class ControladorPausaSpaceShooter : MonoBehaviour
                     panelPausa.SetActive(false);
                 }
             });
+    }
+
+    private IEnumerator AsignarFocoPausa()
+    {
+        yield return new WaitForSecondsRealtime(0.25f);
+        if (panelPausa == null || !panelPausa.activeSelf || UnityEngine.EventSystems.EventSystem.current == null) yield break;
+        Transform botonReanudar = panelPausa.transform.Find("BotonReanudar");
+        if (botonReanudar != null)
+        {
+            Selectable sel = botonReanudar.GetComponent<Selectable>();
+            if (sel != null && sel.gameObject.activeInHierarchy && sel.interactable)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(sel.gameObject);
+            }
+        }
     }
 }
