@@ -121,6 +121,29 @@ public class TutorialPresentation : MonoBehaviour
         // Texto del botón siguiente
         bool esUltima = paginaActual == titulos.Length - 1;
         textoBtnSiguiente.text = esUltima ? "[ JUGAR ]" : "SIGUIENTE >";
+
+        // Asegurar que el texto de los botones sea negro y no blanco
+        if (textoBtnSiguiente != null)
+        {
+            textoBtnSiguiente.color = Color.black;
+        }
+
+        if (btnAnterior != null)
+        {
+            TextMeshProUGUI txtAnteriorTMP = btnAnterior.GetComponentInChildren<TextMeshProUGUI>();
+            if (txtAnteriorTMP != null)
+            {
+                txtAnteriorTMP.color = Color.black;
+            }
+            else
+            {
+                Text txtAnteriorNormal = btnAnterior.GetComponentInChildren<Text>();
+                if (txtAnteriorNormal != null)
+                {
+                    txtAnteriorNormal.color = Color.black;
+                }
+            }
+        }
     }
 
     private void CerrarTutorial()
