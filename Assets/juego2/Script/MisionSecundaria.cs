@@ -17,6 +17,7 @@ public class MisionSecundaria : MonoBehaviour
     [Header("Configuracion")]
     public Mision mision;
     public bool misionIniciada = false;
+    public bool esSoloDador = false;
 
     [Header("Sprites")]
     public Sprite iconoRecompensa;
@@ -31,6 +32,12 @@ public class MisionSecundaria : MonoBehaviour
     {
         if (burbujaDialogo != null)
             burbujaDialogo.SetActive(false);
+
+        // Failsafe auto-detección del rol dador
+        if (!string.IsNullOrEmpty(mision.objetoRecompensa) && string.IsNullOrEmpty(mision.objetoRequerido))
+        {
+            esSoloDador = true;
+        }
     }
 
     void Update()
@@ -65,12 +72,27 @@ public class MisionSecundaria : MonoBehaviour
         if (burbujaDialogo == null) return;
         burbujaDialogo.SetActive(true);
 
-        if (!misionIniciada)
-            EcosAulaPromptUI.InyectarEn(textoBurbuja.gameObject, AccionLogica.Interactuar, "Hablar");
-        else if (!mision.completada)
-            DesactivarPromptYMostrarTexto("¿Ya tienes lo que te pedí?");
-        else
+        bool activaEnManager = MisionManager.Instance != null && MisionManager.Instance.EstaMisionActiva(mision.id);
+        bool completadaEnManager = MisionManager.Instance != null && MisionManager.Instance.EstaMisionCompletada(mision.id);
+
+        if (completadaEnManager || mision.completada)
+        {
             DesactivarPromptYMostrarTexto("¡Gracias por tu ayuda!");
+        }
+        else if (esSoloDador)
+        {
+            if (!misionIniciada)
+                EcosAulaPromptUI.InyectarEn(textoBurbuja.gameObject, AccionLogica.Interactuar, "Hablar");
+            else
+                DesactivarPromptYMostrarTexto("Lleva el objeto a quien corresponde.");
+        }
+        else // Es Receptor
+        {
+            if (activaEnManager)
+                EcosAulaPromptUI.InyectarEn(textoBurbuja.gameObject, AccionLogica.Interactuar, "Entregar");
+            else
+                DesactivarPromptYMostrarTexto("Hola...");
+        }
     }
 
     private void DesactivarPromptYMostrarTexto(string texto)
@@ -90,15 +112,35 @@ public class MisionSecundaria : MonoBehaviour
 
     private void Interactuar()
     {
-        if (mision.completada) return;
-
-        if (!misionIniciada)
+        bool completadaEnManager = MisionManager.Instance != null && MisionManager.Instance.EstaMisionCompletada(mision.id);
+        if (mision.completada || completadaEnManager)
         {
-            IniciarMision();
+            MostrarDialogo("¡Gracias por tu ayuda!");
+            return;
         }
-        else
+
+        if (esSoloDador)
         {
-            VerificarMision();
+            if (!misionIniciada)
+            {
+                IniciarMision();
+            }
+            else
+            {
+                MostrarDialogo("Por favor, lleva el objeto a quien corresponde.");
+            }
+        }
+        else // Es Receptor
+        {
+            bool activaEnManager = MisionManager.Instance != null && MisionManager.Instance.EstaMisionActiva(mision.id);
+            if (activaEnManager)
+            {
+                VerificarMision();
+            }
+            else
+            {
+                MostrarDialogo("Hola. Qué día tan tranquilo...");
+            }
         }
     }
 

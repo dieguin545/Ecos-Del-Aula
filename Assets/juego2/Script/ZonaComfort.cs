@@ -39,6 +39,14 @@ public class ZonaConfort : MonoBehaviour
         if (panelIndicador != null)
         {
             panelIndicador.SetActive(false);
+            CanvasGroup cg = panelIndicador.GetComponent<CanvasGroup>();
+            if (cg == null)
+            {
+                cg = panelIndicador.AddComponent<CanvasGroup>();
+            }
+            cg.alpha = 1f;
+            cg.interactable = false;
+            cg.blocksRaycasts = false;
         }
         if (panelAccion != null)
         {
@@ -100,7 +108,30 @@ public class ZonaConfort : MonoBehaviour
             return;
         }
 
+        CanvasGroup cg = panelIndicador.GetComponent<CanvasGroup>();
+        if (cg != null)
+        {
+            cg.alpha = 1f;
+            cg.interactable = false;
+            cg.blocksRaycasts = false;
+        }
+        panelIndicador.transform.localScale = Vector3.one;
+
         panelIndicador.SetActive(true);
+
+        if (textoIndicador != null)
+        {
+            textoIndicador.enabled = true;
+            RectTransform rect = textoIndicador.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.zero;
+                rect.sizeDelta = new Vector2(372f, 66f);
+            }
+        }
 
         if (personajeActivo == personajeCompatible)
         {
@@ -111,11 +142,47 @@ public class ZonaConfort : MonoBehaviour
             else if (textoIndicador != null)
             {
                 EcosAulaPromptUI.InyectarEn(textoIndicador.gameObject, AccionLogica.InteractuarF, mensajeConfort);
+                AjustarPromptInyectado(textoIndicador.transform);
             }
         }
         else
         {
             DesactivarPromptYMostrarTexto(mensajeIncompatible);
+        }
+    }
+
+    private void AjustarPromptInyectado(Transform raiz)
+    {
+        if (raiz == null) return;
+
+        Transform icono = raiz.Find("_IconoPrincipal");
+        if (icono != null)
+        {
+            RectTransform rectIcono = icono.GetComponent<RectTransform>();
+            if (rectIcono != null)
+            {
+                rectIcono.sizeDelta = new Vector2(38f, 38f);
+                rectIcono.anchoredPosition = new Vector2(0f, 0f);
+            }
+        }
+
+        Transform texto = raiz.Find("_TextoVerbo");
+        if (texto != null)
+        {
+            RectTransform rectTexto = texto.GetComponent<RectTransform>();
+            if (rectTexto != null)
+            {
+                rectTexto.anchoredPosition = new Vector2(50f, 0f);
+                rectTexto.sizeDelta = new Vector2(288f, 0f);
+            }
+
+            TextMeshProUGUI tmp = texto.GetComponent<TextMeshProUGUI>();
+            if (tmp != null)
+            {
+                tmp.fontSize = 19f;
+                tmp.textWrappingMode = TextWrappingModes.Normal;
+                tmp.overflowMode = TextOverflowModes.Ellipsis;
+            }
         }
     }
 

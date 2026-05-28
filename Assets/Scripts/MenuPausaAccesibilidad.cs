@@ -692,7 +692,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
                 : tamanosOriginalesTMP[i];
 
             textosTMP[i].fontSize = EstaTextoGrandeActivo()
-                ? tamanoBase * 1.25f
+                ? tamanoBase * 1.10f
                 : tamanoBase;
 
             textosTMP[i].color = EstaModoDaltonicoActivo()
@@ -720,7 +720,7 @@ public class MenuPausaAccesibilidad : MonoBehaviour
                 : tamanosOriginalesNormales[i];
 
             textosNormales[i].fontSize = EstaTextoGrandeActivo()
-                ? Mathf.RoundToInt(tamanoBase * 1.25f)
+                ? Mathf.RoundToInt(tamanoBase * 1.10f)
                 : tamanoBase;
 
             textosNormales[i].color = EstaModoDaltonicoActivo()
@@ -749,7 +749,16 @@ public class MenuPausaAccesibilidad : MonoBehaviour
             }
             else if (EstaAltoContrasteActivo())
             {
-                imagenesUI[i].color = new Color(0f, 0f, 0f, 0.9f);
+                // Only apply dark background to large panels to preserve outlines and detail scales
+                RectTransform rect = imagenesUI[i].GetComponent<RectTransform>();
+                if (rect != null && (rect.rect.width < 100f || rect.rect.height < 100f))
+                {
+                    imagenesUI[i].color = coloresOriginalesImagenes[i];
+                }
+                else
+                {
+                    imagenesUI[i].color = new Color(0.03f, 0.03f, 0.06f, 0.95f);
+                }
             }
             else if (EstaModoDaltonicoActivo())
             {

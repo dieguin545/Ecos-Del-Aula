@@ -15,6 +15,9 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void CrearSiHaceFalta()
     {
+        // Forzar pantalla completa al iniciar el juego
+        Screen.fullScreen = true;
+
         if (instancia != null)
         {
             return;
@@ -94,7 +97,7 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
 
             float baseSize = tamanosBaseTMP[textos[i]];
             textos[i].fontSize = ConfiguracionAccesibilidadJuego.TextoGrandeActivo
-                ? baseSize * 1.12f
+                ? baseSize * 1.08f
                 : baseSize;
         }
     }
@@ -119,7 +122,7 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
 
             int baseSize = tamanosBaseText[textos[i]];
             textos[i].fontSize = ConfiguracionAccesibilidadJuego.TextoGrandeActivo
-                ? Mathf.RoundToInt(baseSize * 1.12f)
+                ? Mathf.RoundToInt(baseSize * 1.08f)
                 : baseSize;
         }
     }
@@ -133,6 +136,14 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
             Image imagen = imagenes[i];
 
             if (imagen == null || imagen.sprite != null)
+            {
+                continue;
+            }
+
+            // Only apply high-contrast panel coloring to actual large containers/panels
+            // to avoid turning small outlines, slots, or decorative elements into black blocks.
+            RectTransform rect = imagen.GetComponent<RectTransform>();
+            if (rect != null && (rect.rect.width < 100f || rect.rect.height < 100f))
             {
                 continue;
             }
@@ -198,7 +209,7 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
         if (ConfiguracionAccesibilidadJuego.AltoContrasteActivo ||
             ConfiguracionAccesibilidadJuego.TipoDaltonismoActual == TipoDaltonismo.Acromatopsia)
         {
-            return new Color(0f, 0f, 0f, Mathf.Max(alpha, 0.85f));
+            return new Color(0.03f, 0.03f, 0.06f, 0.95f); // Charcoal-navy elegante de alto contraste
         }
 
         switch (ConfiguracionAccesibilidadJuego.TipoDaltonismoActual)
@@ -219,7 +230,7 @@ public class AplicadorAccesibilidadGlobal : MonoBehaviour
         if (ConfiguracionAccesibilidadJuego.AltoContrasteActivo ||
             ConfiguracionAccesibilidadJuego.TipoDaltonismoActual == TipoDaltonismo.Acromatopsia)
         {
-            return new Color(0.02f, 0.02f, 0.02f, 1f);
+            return new Color(0.12f, 0.12f, 0.16f, 1f); // Charcoal-grey de alto contraste
         }
 
         switch (ConfiguracionAccesibilidadJuego.TipoDaltonismoActual)

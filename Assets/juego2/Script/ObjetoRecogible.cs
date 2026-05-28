@@ -21,6 +21,56 @@ public class ObjetoRecogible : MonoBehaviour
     {
         if (indicador != null)
             indicador.SetActive(true);
+
+        // Auto-configure stats based on name in Start to show correct info in Editor or if instantiated dynamically
+        string nombreNormalizado = string.IsNullOrEmpty(nombreObjeto) ? "" : nombreObjeto.Trim().ToLower();
+        if (nombreNormalizado.Contains("regla"))
+        {
+            esAtaque = true;
+            esCuracion = false;
+            dano = 5;
+            durabilidad = 6;
+        }
+        else if (nombreNormalizado.Contains("audifonos") || nombreNormalizado.Contains("audífonos"))
+        {
+            esAtaque = false;
+            esCuracion = true;
+            valorCuracion = 25f;
+            durabilidad = 6;
+        }
+        else if (nombreNormalizado.Contains("chocolate"))
+        {
+            esAtaque = false;
+            esCuracion = true;
+            valorCuracion = 35f;
+            durabilidad = 6;
+        }
+        else if (nombreNormalizado.Contains("termo"))
+        {
+            esAtaque = true;
+            esCuracion = false;
+            dano = 4;
+            durabilidad = 6;
+        }
+        else if (nombreNormalizado.Contains("escudo"))
+        {
+            esAtaque = false;
+            esCuracion = true;
+            valorCuracion = 40f;
+            durabilidad = 6;
+        }
+        else if (nombreNormalizado.Contains("rosa"))
+        {
+            esAtaque = false;
+            esCuracion = true;
+            valorCuracion = 20f;
+            durabilidad = 6;
+        }
+        else
+        {
+            if (durabilidad <= 1)
+                durabilidad = 6;
+        }
     }
 
     void Update()

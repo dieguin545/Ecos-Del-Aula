@@ -57,6 +57,37 @@ public class TutorialPresentation : MonoBehaviour
 
         MovimientoJugador mov = FindAnyObjectByType<MovimientoJugador>();
         if (mov != null) mov.enabled = false;
+
+        // Asignar foco inicial al botón de siguiente para navegación con control
+        if (btnSiguiente != null && UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(btnSiguiente.gameObject);
+        }
+    }
+
+    private void Update()
+    {
+        // Si el panel no está activo, no hacemos nada
+        if (panelTutorial == null || !panelTutorial.activeInHierarchy) return;
+
+        // Failsafe: Asegurar que siempre haya un botón seleccionado cuando el tutorial esté abierto
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            GameObject selected = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+            
+            // Si por alguna razón se deseleccionó (ej. click fuera, desactivación de botón, etc.)
+            if (selected == null)
+            {
+                if (btnSiguiente != null && btnSiguiente.gameObject.activeInHierarchy)
+                {
+                    UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(btnSiguiente.gameObject);
+                }
+                else if (btnAnterior != null && btnAnterior.gameObject.activeInHierarchy)
+                {
+                    UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(btnAnterior.gameObject);
+                }
+            }
+        }
     }
 
     public void Siguiente()
@@ -116,7 +147,60 @@ public class TutorialPresentation : MonoBehaviour
             dots[i].color = (i == paginaActual) ? colorDotActivo : colorDotInactivo;
 
         // Botón anterior
-        btnAnterior.gameObject.SetActive(paginaActual > 0);
+        bool mostrarAnterior = paginaActual > 0;
+
+        // Configurar navegación explícita y robusta entre los dos botones para mandos/teclado
+        if (btnSiguiente != null && btnAnterior != null)
+        {
+            Navigation navSiguiente = btnSiguiente.navigation;
+            Navigation navAnterior = btnAnterior.navigation;
+
+            if (mostrarAnterior)
+            {
+                navSiguiente.mode = Navigation.Mode.Explicit;
+                navSiguiente.selectOnLeft = btnAnterior;
+                navSiguiente.selectOnRight = null;
+                navSiguiente.selectOnUp = null;
+                navSiguiente.selectOnDown = null;
+
+                navAnterior.mode = Navigation.Mode.Explicit;
+                navAnterior.selectOnRight = btnSiguiente;
+                navAnterior.selectOnLeft = null;
+                navAnterior.selectOnUp = null;
+                navAnterior.selectOnDown = null;
+            }
+            else
+            {
+                navSiguiente.mode = Navigation.Mode.Explicit;
+                navSiguiente.selectOnLeft = null;
+                navSiguiente.selectOnRight = null;
+                navSiguiente.selectOnUp = null;
+                navSiguiente.selectOnDown = null;
+            }
+
+            btnSiguiente.navigation = navSiguiente;
+            btnAnterior.navigation = navAnterior;
+        }
+
+        // Si el botón anterior va a ocultarse, movemos la selección activa de EventSystem al de Siguiente
+        if (!mostrarAnterior && UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            if (btnSiguiente != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(btnSiguiente.gameObject);
+            }
+        }
+
+        btnAnterior.gameObject.SetActive(mostrarAnterior);
+
+        // Failsafe por si Unity deseleccionó el elemento al desactivar el botón anterior
+        if (!mostrarAnterior && UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == null && btnSiguiente != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(btnSiguiente.gameObject);
+            }
+        }
 
         // Texto del botón siguiente
         bool esUltima = paginaActual == titulos.Length - 1;

@@ -53,7 +53,15 @@ public class AtaqueAnsiedad : MonoBehaviour, IAnxietyObserver
     {
         if (currentAnxiety >= maxAnxiety && !enAtaque)
         {
-            StartCoroutine(EjecutarAtaque());
+            if (SistemaCombate.Instance != null && SistemaCombate.Instance.CombateActivo)
+            {
+                // If in boss combat and suffer an anxiety attack, immediately lose and show game over!
+                SistemaCombate.Instance.TerminarCombatePublico(false);
+            }
+            else
+            {
+                StartCoroutine(EjecutarAtaque());
+            }
         }
     }
 

@@ -67920,7 +67920,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -67980,7 +67980,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 64, y: 64}
+  m_SizeDelta: {x: 128, y: 128}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &197176784
 MonoBehaviour:
@@ -68369,11 +68369,11 @@ RectTransform:
   - {fileID: 1148478376}
   m_Father: {fileID: 974383348}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 197.75, y: -43.218918}
-  m_SizeDelta: {x: -395.5, y: -86.4388}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 262.55603, y: 300.6053}
+  m_Pivot: {x: 1, y: 0}
 --- !u!114 &232870599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134065,6 +134065,7 @@ MonoBehaviour:
     objetoRecompensa: carta
     completada: 0
   misionIniciada: 0
+  esSoloDador: 0
   iconoRecompensa: {fileID: 7910087066200451227, guid: e4f6012fcf51eab40ba35b801bade3ca, type: 3}
   burbujaDialogo: {fileID: 1573813093}
   textoBurbuja: {fileID: 874761754}
@@ -134832,7 +134833,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.25, y: 6.5}
+  m_AnchoredPosition: {x: 28, y: 6.5}
   m_SizeDelta: {x: 318, y: 145.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &455835077
@@ -200715,7 +200716,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 110.5}
+  m_AnchoredPosition: {x: 17, y: 110.5}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &543761557
@@ -272220,8 +272221,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000005722, y: 2.5586}
-  m_SizeDelta: {x: 141.5, y: 235.6789}
+  m_AnchoredPosition: {x: -6.8529053, y: -0.0009765625}
+  m_SizeDelta: {x: 185.109, y: 300.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1148478377
 MonoBehaviour:
@@ -273743,7 +273744,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.01132071, g: 0.011171191, b: 0.011171191, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -274833,9 +274834,9 @@ RectTransform:
   - {fileID: 188001856}
   m_Father: {fileID: 974383348}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 264, y: -174}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1411702283
@@ -275721,7 +275722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdd4156aa9c5e224a8a810f67fc49aa7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SistemaTiempo
-  duracionBloque: 75
+  duracionBloque: 30
   textoTiempo: {fileID: 93138134}
   textoBloque: {fileID: 762939887}
 --- !u!4 &1461872059
@@ -275969,6 +275970,7 @@ MonoBehaviour:
     objetoRecompensa: libro viejo
     completada: 0
   misionIniciada: 0
+  esSoloDador: 0
   iconoRecompensa: {fileID: -3548923140773230514, guid: 335b103d0d3492a4aab1d7da64fc16b2, type: 3}
   burbujaDialogo: {fileID: 1494765774}
   textoBurbuja: {fileID: 1494765773}

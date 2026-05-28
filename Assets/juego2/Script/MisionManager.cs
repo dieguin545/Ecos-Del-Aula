@@ -140,6 +140,24 @@ public class MisionManager : MonoBehaviour
         VidaEscolarHUD.Ensure().ActualizarMisiones(misionesActivas, misionesCompletadas);
     }
 
+    public bool EstaMisionActiva(string id)
+    {
+        foreach (Mision m in misionesActivas)
+        {
+            if (m != null && m.id == id) return true;
+        }
+        return false;
+    }
+
+    public bool EstaMisionCompletada(string id)
+    {
+        foreach (Mision m in misionesCompletadas)
+        {
+            if (m != null && m.id == id) return true;
+        }
+        return false;
+    }
+
     private void OcultarPanel()
     {
         if (panelMisiones != null)

@@ -1351,7 +1351,7 @@ public class GameManager : MonoBehaviour
 
     public void AplicarAccesibilidadVisual()
     {
-        float escalaTexto = AccesibilidadSpaceShooter.TextoGrandeActivo ? 1.18f : 1f;
+        float escalaTexto = AccesibilidadSpaceShooter.TextoGrandeActivo ? 1.10f : 1f;
         Color colorTexto =
             AccesibilidadSpaceShooter.AltoContrasteActivo ? Color.white : new Color(0.9f, 0.98f, 1f);
 

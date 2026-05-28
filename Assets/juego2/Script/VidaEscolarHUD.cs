@@ -92,6 +92,34 @@ public class VidaEscolarHUD : MonoBehaviour, IAnxietyObserver
         RegistrarAnsiedad();
     }
 
+    private void Update()
+    {
+        Transform barraPrompts = transform.Find("_BarraPrompts");
+        if (barraPrompts != null)
+        {
+            // Ocultar la barra de prompts si la PC está abierta (correos, casos, etc.)
+            // o si el combate está activo, o si el inventario está abierto.
+            bool pcAbierta = InteraccionPC.PCAbierta;
+            bool combateActivo = SistemaCombate.Instance != null && SistemaCombate.Instance.CombateActivo;
+            bool inventarioAbierto = Inventario.Instance != null && Inventario.Instance.panelInventario != null && Inventario.Instance.panelInventario.activeSelf;
+
+            if (pcAbierta || combateActivo || inventarioAbierto)
+            {
+                if (barraPrompts.gameObject.activeSelf)
+                {
+                    barraPrompts.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                if (!barraPrompts.gameObject.activeSelf)
+                {
+                    barraPrompts.gameObject.SetActive(true);
+                }
+            }
+        }
+    }
+
     private void OnEnable()
     {
         RegistrarAnsiedad();
@@ -186,6 +214,7 @@ private IEnumerator EsperarAnxietySystem()
                 barraRect.anchorMax = new Vector2(0.5f, 0f);
                 barraRect.pivot = new Vector2(0.5f, 0f);
                 barraRect.anchoredPosition = new Vector2(0f, 18f);
+                barraRect.localScale = new Vector3(0.85f, 0.85f, 1f);
             }
         }
 
@@ -407,6 +436,7 @@ private IEnumerator EsperarAnxietySystem()
             barraPrompts.anchorMax = new Vector2(0.5f, 0f);
             barraPrompts.pivot = new Vector2(0.5f, 0f);
             barraPrompts.anchoredPosition = new Vector2(0f, 20f);
+            barraPrompts.localScale = new Vector3(0.85f, 0.85f, 1f);
         }
     }
 

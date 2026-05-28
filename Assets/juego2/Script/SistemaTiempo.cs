@@ -113,13 +113,30 @@ public class SistemaTiempo : MonoBehaviour
     private void NotificarBloque(BloqueTiempo bloque)
     {
         Debug.Log("Nuevo bloque: " + bloque);
-        // Aqui despues conectamos con el bully y las zonas
+        
+        if (bloque == BloqueTiempo.Salida)
+        {
+            // 1. Ocultar todos los NPCs activos para la confrontación
+            NPCBase[] npcs = FindObjectsByType<NPCBase>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (NPCBase npc in npcs)
+            {
+                if (npc != null)
+                {
+                    npc.gameObject.SetActive(false);
+                }
+            }
+
+            // 2. Activar la confrontación final automáticamente
+            if (ConfrontacionManager.Instance != null)
+            {
+                ConfrontacionManager.Instance.IniciarConfrontacion();
+            }
+        }
     }
 
     private void TerminarDia()
     {
         Debug.Log("El dia termino");
-        // Aqui despues activamos la confrontacion final
     }
 
     public BloqueTiempo GetBloqueActual()

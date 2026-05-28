@@ -25,6 +25,7 @@ public class SpawnJugador : MonoBehaviour
         }
 
         GameObject jugador = Instantiate(prefab, puntoSpawn.position, Quaternion.identity);
+        jugador.SetActive(true); // Failsafe: Asegurar que el clon esté activo si el prefab original estaba inactivo
 
         if (vcamPasillo != null)
         {

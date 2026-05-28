@@ -488,6 +488,13 @@ public class EcosAulaPromptUI : MonoBehaviour
         {
             prompt = destino.AddComponent<EcosAulaPromptUI>();
         }
+        prompt.enabled = true;
+
+        Transform img = destino.transform.Find("_IconoPrincipal");
+        if (img != null) img.gameObject.SetActive(true);
+        Transform txt = destino.transform.Find("_TextoVerbo");
+        if (txt != null) txt.gameObject.SetActive(true);
+
         prompt.Configurar(accion, verbo);
         return prompt;
     }
