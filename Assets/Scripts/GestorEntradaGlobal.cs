@@ -16,6 +16,7 @@ public class GestorEntradaGlobal : MonoBehaviour
     private static float mouseXAnterior;
     private static float mouseYAnterior;
     private static readonly HashSet<string> ejesNoDisponibles = new HashSet<string>();
+    private static bool joystickConectadoAnterior = false;
 
     public static event Action<TipoDispositivoEntrada> AlCambiarDispositivo;
 
@@ -25,6 +26,14 @@ public class GestorEntradaGlobal : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void CargarDispositivoGuardado()
     {
+        // Si hay un control conectado físicamente, priorizarlo de entrada.
+        if (VerificarNombresJoystick())
+        {
+            dispositivoActual = TipoDispositivoEntrada.ControlXbox;
+            joystickConectadoAnterior = true;
+            return;
+        }
+
         dispositivoActual = (TipoDispositivoEntrada)PlayerPrefs.GetInt(
             ClaveDispositivo,
             (int)TipoDispositivoEntrada.TecladoMouse
@@ -159,17 +168,28 @@ public class GestorEntradaGlobal : MonoBehaviour
     {
         bool hayActividadJoystick = false;
 
-        // 1. Detectar botones de joystick
-        for (int i = 0; i <= 19; i++)
+        // 1. Detectar si cambió la conexión física (se conectó un joystick) en caliente
+        bool joystickConectado = VerificarNombresJoystick();
+        if (joystickConectado && !joystickConectadoAnterior)
         {
-            if (Input.GetKeyDown(KeyCode.JoystickButton0 + i))
+            hayActividadJoystick = true;
+        }
+        joystickConectadoAnterior = joystickConectado;
+
+        // 2. Detectar si se presiona o mantiene cualquier botón del mando (JoystickButton0 a JoystickButton19)
+        if (!hayActividadJoystick)
+        {
+            for (int i = 0; i <= 19; i++)
             {
-                hayActividadJoystick = true;
-                break;
+                if (Input.GetKey(KeyCode.JoystickButton0 + i) || Input.GetKeyDown(KeyCode.JoystickButton0 + i))
+                {
+                    hayActividadJoystick = true;
+                    break;
+                }
             }
         }
 
-        // 2. Detectar ejes de joystick
+        // 3. Detectar si se mueve cualquier eje analógico relevante con deadzone responsiva
         if (!hayActividadJoystick)
         {
             float h = Input.GetAxisRaw("Horizontal");
@@ -185,9 +205,12 @@ public class GestorEntradaGlobal : MonoBehaviour
             }
             catch {}
 
-            if ((Mathf.Abs(h) > 0.4f || Mathf.Abs(v) > 0.4f || 
-                 Mathf.Abs(camH) > 0.35f || Mathf.Abs(camV) > 0.35f ||
-                 Mathf.Abs(dpadH) > 0.4f || Mathf.Abs(dpadV) > 0.4f) && 
+            // Umbral/deadzone razonable de 0.15f para máxima sensibilidad
+            const float deadzoneDeteccion = 0.15f;
+
+            if ((Mathf.Abs(h) > deadzoneDeteccion || Mathf.Abs(v) > deadzoneDeteccion || 
+                 Mathf.Abs(camH) > deadzoneDeteccion || Mathf.Abs(camV) > deadzoneDeteccion ||
+                 Mathf.Abs(dpadH) > deadzoneDeteccion || Mathf.Abs(dpadV) > deadzoneDeteccion) && 
                 !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && 
                 !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D) &&
                 !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) &&
@@ -203,7 +226,7 @@ public class GestorEntradaGlobal : MonoBehaviour
             return;
         }
 
-        // Detectar actividad de teclado/mouse con filtro robusto contra ruido de hardware y recentrado
+        // 4. Detectar actividad de teclado/mouse con filtro robusto contra ruido de hardware y deltas de centrado
         bool mouseMovido = (Mathf.Abs(Input.GetAxis("Mouse X")) > 0.05f || Mathf.Abs(Input.GetAxis("Mouse Y")) > 0.05f);
 
         if (Input.anyKeyDown && !HayBotonJoystickPresionado())
@@ -222,7 +245,20 @@ public class GestorEntradaGlobal : MonoBehaviour
     {
         for (int i = 0; i <= 19; i++)
         {
-            if (Input.GetKeyDown(KeyCode.JoystickButton0 + i))
+            if (Input.GetKey(KeyCode.JoystickButton0 + i) || Input.GetKeyDown(KeyCode.JoystickButton0 + i))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool VerificarNombresJoystick()
+    {
+        string[] nombres = Input.GetJoystickNames();
+        for (int i = 0; i < nombres.Length; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(nombres[i]))
             {
                 return true;
             }
@@ -236,18 +272,7 @@ public class GestorEntradaGlobal : MonoBehaviour
         {
             return true;
         }
-
-        string[] nombres = Input.GetJoystickNames();
-
-        for (int i = 0; i < nombres.Length; i++)
-        {
-            if (!string.IsNullOrWhiteSpace(nombres[i]))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return VerificarNombresJoystick();
     }
 
     private static float LeerEjeSeguro(string nombre)
