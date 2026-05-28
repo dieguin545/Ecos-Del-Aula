@@ -73,7 +73,10 @@ public class ControlCamara3D : MonoBehaviour
         float stickY = stickCamara.y * sensibilidadControl * Time.unscaledDeltaTime;
 
         rotacionY += mouseX + stickX;
-        rotacionX -= mouseY + stickY;
+        // Mouse: restar mouseY para que mover arriba suba la cámara (comportamiento natural)
+        rotacionX -= mouseY;
+        // Stick: separado del mouse para poder invertirlo independientemente
+        rotacionX -= stickY;
         rotacionX = Mathf.Clamp(rotacionX, limiteArriba, limiteAbajo);
 
         if (Input.GetKeyDown(teclaCambiarVista))
@@ -173,6 +176,8 @@ public class ControlCamara3D : MonoBehaviour
             vertical = temporal;
         }
 
+        // invertirVerticalControl solo afecta el stick, no el mouse
+        // (el mouse ya se maneja con signo correcto arriba)
         if (invertirVerticalControl)
         {
             vertical *= -1f;

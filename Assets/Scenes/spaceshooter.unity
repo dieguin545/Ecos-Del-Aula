@@ -1128,7 +1128,7 @@ MonoBehaviour:
   sensibilidadControl: 125
   limiteArriba: -35
   limiteAbajo: 60
-  intercambiarEjesControl: 1
+  intercambiarEjesControl: 0
   invertirVerticalControl: 0
   deadzoneStickCamara: 0.18
 --- !u!1 &1035445777

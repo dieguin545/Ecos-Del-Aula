@@ -17,7 +17,7 @@ public class CamaraNave3D : MonoBehaviour
     public float limiteAbajo = 60f;
 
     [Header("Control Xbox")]
-    public bool intercambiarEjesControl = true;
+    public bool intercambiarEjesControl = false;
     public bool invertirVerticalControl = false;
     public float deadzoneStickCamara = 0.18f;
 
@@ -57,7 +57,10 @@ public class CamaraNave3D : MonoBehaviour
         float stickY = stickCamara.y * sensibilidadControl * Time.unscaledDeltaTime;
 
         rotacionY += mouseX + stickX;
-        rotacionX -= mouseY + stickY;
+        // Mouse: restar mouseY para que mover arriba suba la cámara (natural)
+        rotacionX -= mouseY;
+        // Stick: separado para poder invertirlo con invertirVerticalControl
+        rotacionX -= stickY;
         rotacionX = Mathf.Clamp(rotacionX, limiteArriba, limiteAbajo);
 
         Quaternion rotacionCamara = Quaternion.Euler(rotacionX, rotacionY, 0f);
