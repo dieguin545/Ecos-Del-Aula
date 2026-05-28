@@ -129,6 +129,10 @@ public class TutorialPresentation : MonoBehaviour
         panelCanvasGroup.DOFade(0f, duracionFade).SetUpdate(true).OnComplete(() =>
         {
             panelTutorial.SetActive(false);
+            
+            // Restablecer el alpha del CanvasGroup a 1 para no dejar invisible el Canvas/Personaje de fondo
+            panelCanvasGroup.alpha = 1f;
+            
             animando = false;
 
             // Reanudar el juego
